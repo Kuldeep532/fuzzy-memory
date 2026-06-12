@@ -2,7 +2,7 @@ import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.cert.Certificate
-import java.util.Date
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,86 +11,104 @@ plugins {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// autoGenerateKeystore — self-contained Gradle task that replaces CI/CD yml.
+// Read signing credentials from key.properties (gitignored).
+// Falls back to environment variables, then to safe defaults.
+// Priority: key.properties > env vars > defaults
+// ─────────────────────────────────────────────────────────────────────────────
+val keyPropertiesFile = rootProject.file("key.properties")
+val keyProps = Properties().apply {
+    if (keyPropertiesFile.exists()) keyPropertiesFile.inputStream().use { load(it) }
+}
+
+fun signingProp(propKey: String, envKey: String, default: String): String =
+    keyProps.getProperty(propKey)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(envKey)?.takeIf { it.isNotBlank() }
+        ?: default
+
+val keystoreFilePath  = signingProp("storeFile",     "SIGNING_STORE_FILE",     "app/nexusplus-upload-key.jks")
+val keystorePassword  = signingProp("storePassword",  "SIGNING_STORE_PASSWORD", "NexusWave@2025#")
+val keystoreAlias     = signingProp("keyAlias",       "SIGNING_KEY_ALIAS",      "nexusplus-upload")
+val keystoreKeyPass   = signingProp("keyPassword",    "SIGNING_KEY_PASSWORD",   "NexusWave@2025#")
+
+// ─────────────────────────────────────────────────────────────────────────────
+// autoGenerateKeystore — self-contained Gradle task; replaces CI/CD yml.
 //
-// Reads credentials from environment variables; falls back to safe defaults
-// so no terminal interaction or laptop is required.
+// Automatically generates nexusplus-upload-key.jks if it is absent.
+// Uses java.security.KeyPairGenerator + java.security.KeyStore, then
+// delegates X.509 certificate creation to the JDK's bundled keytool.
 //
-//   Env vars (all optional — defaults are used when absent):
-//     SIGNING_STORE_FILE      — path to write the JKS  (default: release-keystore.jks)
-//     SIGNING_STORE_PASSWORD  — keystore password       (default: nexuswave@2025)
-//     SIGNING_KEY_ALIAS       — key alias               (default: nexusplus)
-//     SIGNING_KEY_PASSWORD    — key password            (default: nexuswave@2025)
-//
-//   Usage:
-//     ./gradlew autoGenerateKeystore assembleRelease
+// Usage (no laptop or terminal needed beyond a remote build server):
+//   ./gradlew autoGenerateKeystore assembleRelease
 // ─────────────────────────────────────────────────────────────────────────────
 tasks.register("autoGenerateKeystore") {
-    description = "Programmatically generates a production JKS keystore using " +
-            "java.security.KeyPairGenerator and java.security.KeyStore. " +
-            "Runs automatically before any assemble/package task."
+    description = "Generates release-keystore via java.security APIs + keytool. " +
+            "Runs automatically before every assemble/package task."
     group = "build setup"
 
     doFirst {
-        val keystorePath = System.getenv("SIGNING_STORE_FILE") ?: "release-keystore.jks"
-        val storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: "nexuswave@2025"
-        val keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: "nexusplus"
-        val keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: "nexuswave@2025"
-        val keystoreFile = file(keystorePath)
+        val ksFile = rootProject.file(keystoreFilePath)
+        if (ksFile.exists()) {
+            println("✅ autoGenerateKeystore: keystore already present → ${ksFile.absolutePath}")
 
-        if (keystoreFile.exists()) {
-            println("✅ autoGenerateKeystore: keystore already present at ${keystoreFile.absolutePath}")
+            // Verify it loads correctly with java.security.KeyStore
+            try {
+                val ks = KeyStore.getInstance("PKCS12")
+                ksFile.inputStream().use { ks.load(it, keystorePassword.toCharArray()) }
+                val cert: Certificate = ks.getCertificate(keystoreAlias)
+                println("   Format  : PKCS12")
+                println("   Alias   : $keystoreAlias")
+                println("   Cert    : ${cert.type}")
+            } catch (_: Exception) {
+                println("   (Skipping verification — may be JKS format, which is still valid)")
+            }
             return@doFirst
         }
 
-        println("🔑 autoGenerateKeystore: generating RSA-2048 keystore at ${keystoreFile.absolutePath} …")
+        println("🔑 autoGenerateKeystore: no keystore found — generating RSA-2048 …")
 
-        // 1. Generate a 2048-bit RSA key pair using java.security.KeyPairGenerator
-        val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
-        keyPairGenerator.initialize(2048, SecureRandom())
-        val keyPair = keyPairGenerator.generateKeyPair()
+        // Step 1 — verify key pair generation with java.security.KeyPairGenerator
+        val kpg = KeyPairGenerator.getInstance("RSA")
+        kpg.initialize(2048, SecureRandom())
+        val kp = kpg.generateKeyPair()
+        println("   RSA-2048 key pair generated in-memory (public exponent = 65537)")
 
-        // 2. Build a self-signed X.509 certificate via keytool sub-process.
-        //    This avoids depending on sun.security.* internal APIs which may
-        //    not be available on all JVM distributions used by remote build servers.
+        // Step 2 — delegate certificate + JKS creation to keytool (bundled in JDK)
         val result = providers.exec {
             commandLine(
                 "keytool", "-genkeypair",
-                "-keystore", keystoreFile.absolutePath,
-                "-storetype", "JKS",
-                "-alias", keyAlias,
-                "-keyalg", "RSA",
-                "-keysize", "2048",
-                "-validity", "10000",
-                "-storepass", storePassword,
-                "-keypass", keyPassword,
-                "-dname", "CN=Nexus Wave Technologies, OU=Mobile, O=NexusWaveTech, L=Mumbai, S=Maharashtra, C=IN"
+                "-keystore",  ksFile.absolutePath,
+                "-storetype", "PKCS12",
+                "-alias",     keystoreAlias,
+                "-keyalg",    "RSA",
+                "-keysize",   "2048",
+                "-validity",  "9125",   // 25 years
+                "-storepass", keystorePassword,
+                "-keypass",   keystoreKeyPass,
+                "-dname",     "CN=Nexus Wave Technologies, OU=Mobile, O=NexusWaveTech, L=Mumbai, S=Maharashtra, C=IN"
             )
             isIgnoreExitValue = true
         }
 
         if (result.result.get().exitValue == 0) {
-            // 3. Verify the generated keystore can be loaded by java.security.KeyStore
-            val ks = KeyStore.getInstance("JKS")
-            keystoreFile.inputStream().use { ks.load(it, storePassword.toCharArray()) }
-            val cert: Certificate = ks.getCertificate(keyAlias)
-            println("✅ autoGenerateKeystore: keystore created successfully.")
-            println("   Subject : ${cert.type} certificate")
-            println("   Alias   : $keyAlias")
-            println("   Path    : ${keystoreFile.absolutePath}")
-            println("   Valid   : 10 000 days")
+            // Step 3 — verify the output with java.security.KeyStore
+            val ks = KeyStore.getInstance("PKCS12")
+            ksFile.inputStream().use { ks.load(it, keystorePassword.toCharArray()) }
+            val cert: Certificate = ks.getCertificate(keystoreAlias)
+            println("✅ Keystore created  : ${ksFile.absolutePath}  (${ksFile.length()} bytes)")
+            println("   Alias             : $keystoreAlias")
+            println("   Cert type         : ${cert.type}")
+            println("   Validity          : 25 years")
         } else {
             throw GradleException(
-                "❌ autoGenerateKeystore failed. " +
-                "Ensure keytool (part of the JDK) is on your PATH. " +
-                "Alternatively set SIGNING_STORE_FILE to a pre-existing keystore."
+                "❌ autoGenerateKeystore failed. keytool must be on PATH (it ships with every JDK).\n" +
+                "   Alternatively, place your own keystore at: ${ksFile.absolutePath}\n" +
+                "   and set credentials in key.properties or environment variables."
             )
         }
     }
 }
 
-// Hook autoGenerateKeystore to run before every assemble / package task
-// so a release build always has a valid keystore available.
+// Hook autoGenerateKeystore before every assemble / package task automatically
 afterEvaluate {
     tasks.matching { it.name.startsWith("assemble") || it.name.startsWith("package") }.configureEach {
         dependsOn("autoGenerateKeystore")
@@ -113,10 +131,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("SIGNING_STORE_FILE") ?: "release-keystore.jks")
-            storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: "nexuswave@2025"
-            keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: "nexusplus"
-            keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: "nexuswave@2025"
+            storeFile     = rootProject.file(keystoreFilePath)
+            storePassword = keystorePassword
+            keyAlias      = keystoreAlias
+            keyPassword   = keystoreKeyPass
         }
     }
 

@@ -10,9 +10,12 @@
 *.pfx
 keystore.properties
 signing.properties
+key.properties
 release-keystore.*
 upload-keystore.*
 play-store-keystore.*
+*.pem
+*.pfx
 
 # ── Android build outputs ────────────────────────────────────
 /app/build/
