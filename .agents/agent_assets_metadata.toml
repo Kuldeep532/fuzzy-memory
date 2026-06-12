@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "gOJ-KYhjXzXiGYE_iOuGl"
+uri = "file://NexusPlus-source.tar.gz"
+type = "unspecified"
+title = "Nexus Plus — Android Source Code (tar.gz)"

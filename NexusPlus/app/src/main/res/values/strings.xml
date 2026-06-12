@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Nexus Plus</string>
+    <string name="developer_name">Nexus Wave Technologies</string>
+    <string name="app_version">Version 1.0.0</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome_title">Welcome to Nexus Plus</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="continue_as_guest">Continue as Guest</string>
+    <string name="guest_name_prompt">Enter your name to continue</string>
+    <string name="guest_name_hint">Your name</string>
+    <string name="enter_app">Enter Nexus Plus</string>
+
+    <!-- Navigation -->
+    <string name="tab_favorites">Favorites</string>
+    <string name="tab_all_features">All Features</string>
+    <string name="tab_more">More</string>
+
+    <!-- Accessibility -->
+    <string name="cd_feature_card">Feature: %1$s. Double tap to open. Long press to manage favorites.</string>
+    <string name="cd_favorite_added">%1$s added to favorites</string>
+    <string name="cd_favorite_removed">%1$s removed from favorites</string>
+    <string name="cd_restricted_feature">%1$s requires Google Sign-In. This feature is restricted for guest users.</string>
+
+    <!-- Gatekeeper -->
+    <string name="restricted_title">Full Account Required</string>
+    <string name="restricted_message">"%1$s" requires a Google-authenticated account. Sign in to unlock all premium features.</string>
+    <string name="sign_in_now">Sign In with Google</string>
+    <string name="dismiss">Dismiss</string>
+
+    <!-- Legal -->
+    <string name="about_us">About Us</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_conditions">Terms &amp; Conditions</string>
+    <string name="developed_by">Developed and Maintained by Nexus Wave Technologies</string>
+</resources>
