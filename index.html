@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus Plus — Multi-Utility Android App</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #222230;
+      --accent: #7c5cfc;
+      --accent2: #a78bfa;
+      --text: #f0f0f8;
+      --muted: #9090a8;
+      --border: #2e2e42;
+      --media: #e040fb;
+      --productivity: #00bcd4;
+      --utilities: #43a047;
+      --tools: #ff9800;
+      --security: #f44336;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    header {
+      background: linear-gradient(135deg, #1a1030 0%, #0f0f1a 60%, #0a1a2e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 60px 24px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%; transform: translateX(-50%);
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(124,92,252,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 72px; height: 72px;
+      background: linear-gradient(135deg, var(--accent), #5b21b6);
+      border-radius: 20px;
+      margin-bottom: 20px;
+      font-size: 36px;
+      box-shadow: 0 8px 32px rgba(124,92,252,0.4);
+    }
+    h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 1.1rem;
+      margin-bottom: 28px;
+    }
+    .badges {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+      margin-bottom: 32px;
+    }
+    .badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .badge span { color: var(--accent2); font-weight: 600; }
+
+    .notice {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124,92,252,0.12);
+      border: 1px solid rgba(124,92,252,0.3);
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.88rem;
+      color: var(--accent2);
+    }
+
+    /* STATS */
+    .stats {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
+      padding: 32px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat {
+      text-align: center;
+      padding: 16px 24px;
+      background: var(--surface2);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      min-width: 130px;
+    }
+    .stat-num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent2);
+    }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* MAIN */
+    main { max-width: 1280px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      margin-bottom: 32px;
+    }
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+    .filter-btn.cat-media.active { background: var(--media); border-color: var(--media); }
+    .filter-btn.cat-productivity.active { background: var(--productivity); border-color: var(--productivity); }
+    .filter-btn.cat-utilities.active { background: var(--utilities); border-color: var(--utilities); }
+    .filter-btn.cat-tools.active { background: var(--tools); border-color: var(--tools); }
+    .filter-btn.cat-security.active { background: var(--security); border-color: var(--security); }
+
+    .search-box {
+      flex: 1; min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-box:focus { border-color: var(--accent); }
+    .search-box::placeholder { color: var(--muted); }
+
+    /* SECTION HEADERS */
+    .section-header {
+      display: flex; align-items: center; gap: 10px;
+      margin: 36px 0 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .section-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+
+    /* GRID */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      cursor: default;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    }
+    .feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .feature-card.hidden { display: none; }
+    .feature-card[data-cat="MEDIA"]:hover { border-color: var(--media); }
+    .feature-card[data-cat="PRODUCTIVITY"]:hover { border-color: var(--productivity); }
+    .feature-card[data-cat="UTILITIES"]:hover { border-color: var(--utilities); }
+    .feature-card[data-cat="TOOLS"]:hover { border-color: var(--tools); }
+    .feature-card[data-cat="SECURITY"]:hover { border-color: var(--security); }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .feature-icon.MEDIA { background: rgba(224,64,251,0.15); }
+    .feature-icon.PRODUCTIVITY { background: rgba(0,188,212,0.15); }
+    .feature-icon.UTILITIES { background: rgba(67,160,71,0.15); }
+    .feature-icon.TOOLS { background: rgba(255,152,0,0.15); }
+    .feature-icon.SECURITY { background: rgba(244,67,54,0.15); }
+
+    .feature-info { flex: 1; min-width: 0; }
+    .feature-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .feature-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+    .feature-tag {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .feature-tag.MEDIA { background: rgba(224,64,251,0.15); color: var(--media); }
+    .feature-tag.PRODUCTIVITY { background: rgba(0,188,212,0.15); color: var(--productivity); }
+    .feature-tag.UTILITIES { background: rgba(67,160,71,0.15); color: var(--utilities); }
+    .feature-tag.TOOLS { background: rgba(255,152,0,0.15); color: var(--tools); }
+    .feature-tag.SECURITY { background: rgba(244,67,54,0.15); color: var(--security); }
+    .feature-tag.stub { opacity: 0.6; }
+
+    .no-results {
+      text-align: center;
+      color: var(--muted);
+      padding: 60px;
+      display: none;
+      grid-column: 1/-1;
+    }
+
+    /* TECH STACK */
+    .tech-section {
+      margin-top: 56px;
+      padding: 36px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    .tech-section h2 {
+      font-size: 1.2rem; font-weight: 700; margin-bottom: 24px;
+      color: var(--accent2);
+    }
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .tech-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .tech-item-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+    .tech-item-desc { font-size: 0.78rem; color: var(--muted); }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 32px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡</div>
+  <h1>Nexus Plus</h1>
+  <p class="tagline">The all-in-one Android super-app — 42 powerful utilities in one place</p>
+  <div class="badges">
+    <div class="badge">Version <span>1.1.0</span></div>
+    <div class="badge">Min SDK <span>26</span> (Android 8.0)</div>
+    <div class="badge">Target SDK <span>35</span> (Android 15)</div>
+    <div class="badge">Language <span>Kotlin</span></div>
+    <div class="badge">UI <span>Jetpack Compose</span></div>
+    <div class="badge">Architecture <span>MVVM + Koin</span></div>
+  </div>
+  <div class="notice">
+    📱 This is a native Android app — open <code>NexusPlus/</code> in Android Studio to build &amp; run
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">42</div><div class="stat-label">Features</div></div>
+  <div class="stat"><div class="stat-num">5</div><div class="stat-label">Categories</div></div>
+  <div class="stat"><div class="stat-num">API 26+</div><div class="stat-label">Min Android</div></div>
+  <div class="stat"><div class="stat-num">0</div><div class="stat-label">API Keys Needed</div></div>
+  <div class="stat"><div class="stat-num">Material 3</div><div class="stat-label">Design System</div></div>
+</div>
+
+<main>
+  <div class="filter-bar">
+    <input class="search-box" id="search" type="text" placeholder="Search features…" />
+    <button class="filter-btn active" data-filter="ALL">All (42)</button>
+    <button class="filter-btn cat-media" data-filter="MEDIA">🎬 Media (5)</button>
+    <button class="filter-btn cat-productivity" data-filter="PRODUCTIVITY">💼 Productivity (6)</button>
+    <button class="filter-btn cat-utilities" data-filter="UTILITIES">🔧 Utilities (9)</button>
+    <button class="filter-btn cat-tools" data-filter="TOOLS">🛠 Smart Tools (13)</button>
+    <button class="filter-btn cat-security" data-filter="SECURITY">🔒 Security (9)</button>
+  </div>
+
+  <div class="features-grid" id="grid">
+
+    <!-- MEDIA -->
+    <div class="feature-card" data-cat="MEDIA" data-name="online radio stream live radio stations worldwide">
+      <div class="feature-icon MEDIA">📻</div>
+      <div class="feature-info">
+        <div class="feature-name">Online Radio</div>
+        <div class="feature-desc">Stream thousands of live radio stations worldwide</div>
+        <span class="feature-tag MEDIA">Media</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="MEDIA" data-name="ai image generator generate stunning images text prompts pollinations">
+      <div class="feature-icon MEDIA">🎨</div>
+      <div class="feature-info">
+        <div class="feature-name">AI Image Generator</div>
+        <div class="feature-desc">Generate stunning images from text prompts via Pollinations AI</div>
+        <span class="feature-tag MEDIA">Media</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="MEDIA" data-name="iptv live tv stream channels m3u playlists">
+      <div class="feature-icon MEDIA">📺</div>
+      <div class="feature-info">
+        <div class="feature-name">IPTV / Live TV</div>
+        <div class="feature-desc">Stream live TV channels from M3U playlists via ExoPlayer</div>
+        <span class="feature-tag MEDIA">Media</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="MEDIA" data-name="music streaming jio saavn lock-screen controls">
+      <div class="feature-icon MEDIA">🎵</div>
+      <div class="feature-info">
+        <div class="feature-name">Music Streaming</div>
+        <div class="feature-desc">Stream music with lock-screen controls via JioSaavn API</div>
+        <span class="feature-tag MEDIA">Media</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="MEDIA" data-name="smart image editor crop rotate flip adjust images">
+      <div class="feature-icon MEDIA">🖼️</div>
+      <div class="feature-info">
+        <div class="feature-name">Smart Image Editor</div>
+        <div class="feature-desc">Crop, rotate, flip and adjust images on-device</div>
+        <span class="feature-tag MEDIA">Media</span>
+      </div>
+    </div>
+
+    <!-- PRODUCTIVITY -->
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="pdf reader view navigate pdf documents natively">
+      <div class="feature-icon PRODUCTIVITY">📄</div>
+      <div class="feature-info">
+        <div class="feature-name">PDF Reader</div>
+        <div class="feature-desc">View and navigate PDF documents natively with PdfRenderer</div>
+        <span class="feature-tag PRODUCTIVITY">Productivity</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="file manager browse manage device files">
+      <div class="feature-icon PRODUCTIVITY">📁</div>
+      <div class="feature-info">
+        <div class="feature-name">File Manager</div>
+        <div class="feature-desc">Browse and manage your device files</div>
+        <span class="feature-tag PRODUCTIVITY stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="alarm clock smart alarm custom sounds">
+      <div class="feature-icon PRODUCTIVITY">⏰</div>
+      <div class="feature-info">
+        <div class="feature-name">Alarm Clock</div>
+        <div class="feature-desc">Smart alarm with custom sounds</div>
+        <span class="feature-tag PRODUCTIVITY stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="clipboard manager save organise reuse clipboard history">
+      <div class="feature-icon PRODUCTIVITY">📋</div>
+      <div class="feature-info">
+        <div class="feature-name">Clipboard Manager</div>
+        <div class="feature-desc">Save, organise, and reuse clipboard history</div>
+        <span class="feature-tag PRODUCTIVITY stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="json formatter validate minify json offline">
+      <div class="feature-icon PRODUCTIVITY">{ }</div>
+      <div class="feature-info">
+        <div class="feature-name">JSON Formatter</div>
+        <div class="feature-desc">Format, validate and minify JSON — fully offline</div>
+        <span class="feature-tag PRODUCTIVITY">Productivity</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="regex tester test debug regular expressions">
+      <div class="feature-icon PRODUCTIVITY">🔍</div>
+      <div class="feature-info">
+        <div class="feature-name">Regex Tester</div>
+        <div class="feature-desc">Test and debug regular expressions on-device</div>
+        <span class="feature-tag PRODUCTIVITY">Productivity</span>
+      </div>
+    </div>
+
+    <!-- UTILITIES -->
+    <div class="feature-card" data-cat="UTILITIES" data-name="nexus speech engine tts text-to-speech multi-language auto-locale">
+      <div class="feature-icon UTILITIES">🔊</div>
+      <div class="feature-info">
+        <div class="feature-name">Nexus Speech Engine</div>
+        <div class="feature-desc">Multi-language text-to-speech with auto-locale detection</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="currency converter real-time conversion rates">
+      <div class="feature-icon UTILITIES">💱</div>
+      <div class="feature-info">
+        <div class="feature-name">Currency Converter</div>
+        <div class="feature-desc">Real-time currency conversion rates</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="unit converter length weight volume">
+      <div class="feature-icon UTILITIES">📐</div>
+      <div class="feature-info">
+        <div class="feature-name">Unit Converter</div>
+        <div class="feature-desc">Convert length, weight, volume, and more</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="calculator scientific standard">
+      <div class="feature-icon UTILITIES">🧮</div>
+      <div class="feature-info">
+        <div class="feature-name">Calculator</div>
+        <div class="feature-desc">Scientific and standard calculator</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="stopwatch precision lap tracking timer">
+      <div class="feature-icon UTILITIES">⏱️</div>
+      <div class="feature-info">
+        <div class="feature-name">Stopwatch</div>
+        <div class="feature-desc">Precision stopwatch with lap tracking</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="world clock time zones globe">
+      <div class="feature-icon UTILITIES">🌍</div>
+      <div class="feature-info">
+        <div class="feature-name">World Clock</div>
+        <div class="feature-desc">Track time zones across the globe</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="text translator on-device translation 50 languages mlkit">
+      <div class="feature-icon UTILITIES">🌐</div>
+      <div class="feature-info">
+        <div class="feature-name">Text Translator</div>
+        <div class="feature-desc">On-device translation — 50+ languages via MLKit, no internet</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="morse code encode decode audio playback">
+      <div class="feature-icon UTILITIES">📡</div>
+      <div class="feature-info">
+        <div class="feature-name">Morse Code</div>
+        <div class="feature-desc">Encode and decode Morse code with audio playback</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="number system converter binary octal decimal hexadecimal">
+      <div class="feature-icon UTILITIES">🔢</div>
+      <div class="feature-info">
+        <div class="feature-name">Number System Converter</div>
+        <div class="feature-desc">Binary, Octal, Decimal and Hexadecimal converter</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="translation engine instant offline online translate">
+      <div class="feature-icon UTILITIES">🗣️</div>
+      <div class="feature-info">
+        <div class="feature-name">Translation Engine</div>
+        <div class="feature-desc">Instant offline and online translation</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="weather live forecasts alerts">
+      <div class="feature-icon UTILITIES">🌤️</div>
+      <div class="feature-info">
+        <div class="feature-name">Weather</div>
+        <div class="feature-desc">Live weather forecasts and alerts</div>
+        <span class="feature-tag UTILITIES stub">Coming Soon</span>
+      </div>
+    </div>
+
+    <!-- TOOLS -->
+    <div class="feature-card" data-cat="TOOLS" data-name="qr scanner scan generate qr codes camera">
+      <div class="feature-icon TOOLS">📷</div>
+      <div class="feature-info">
+        <div class="feature-name">QR Scanner</div>
+        <div class="feature-desc">Scan and generate QR codes with camera</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="flashlight torch control strobe modes">
+      <div class="feature-icon TOOLS">🔦</div>
+      <div class="feature-info">
+        <div class="feature-name">Flashlight</div>
+        <div class="feature-desc">Instant torch control and strobe modes</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="compass magnetic tilt calibration direction">
+      <div class="feature-icon TOOLS">🧭</div>
+      <div class="feature-info">
+        <div class="feature-name">Compass</div>
+        <div class="feature-desc">Magnetic compass with tilt calibration</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="speedometer gps speed tracker">
+      <div class="feature-icon TOOLS">🏎️</div>
+      <div class="feature-info">
+        <div class="feature-name">Speedometer</div>
+        <div class="feature-desc">GPS-powered speed tracker</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="voice recorder audio recording waveform high-quality">
+      <div class="feature-icon TOOLS">🎙️</div>
+      <div class="feature-info">
+        <div class="feature-name">Voice Recorder</div>
+        <div class="feature-desc">High-quality audio recording with waveform</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="wifi analyzer scan nearby networks">
+      <div class="feature-icon TOOLS">📶</div>
+      <div class="feature-info">
+        <div class="feature-name">Wi-Fi Analyzer</div>
+        <div class="feature-desc">Scan and analyze nearby Wi-Fi networks</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="battery monitor real-time health usage stats">
+      <div class="feature-icon TOOLS">🔋</div>
+      <div class="feature-info">
+        <div class="feature-name">Battery Monitor</div>
+        <div class="feature-desc">Real-time battery health and usage stats</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="storage analyzer visualise free up device storage">
+      <div class="feature-icon TOOLS">💾</div>
+      <div class="feature-info">
+        <div class="feature-name">Storage Analyzer</div>
+        <div class="feature-desc">Visualise and free up device storage</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="object detector real-time on-device mlkit camera">
+      <div class="feature-icon TOOLS">🔭</div>
+      <div class="feature-info">
+        <div class="feature-name">Object Detector</div>
+        <div class="feature-desc">Real-time on-device object detection via MLKit camera</div>
+        <span class="feature-tag TOOLS">Smart Tools</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="colour detector identify color camera hex code name">
+      <div class="feature-icon TOOLS">🎨</div>
+      <div class="feature-info">
+        <div class="feature-name">Colour Detector</div>
+        <div class="feature-desc">Identify any colour from camera with name and hex code</div>
+        <span class="feature-tag TOOLS">Smart Tools</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="barcode generator multiple formats">
+      <div class="feature-icon TOOLS">🔳</div>
+      <div class="feature-info">
+        <div class="feature-name">Barcode Generator</div>
+        <div class="feature-desc">Generate barcodes in multiple formats</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="task manager monitor manage running processes">
+      <div class="feature-icon TOOLS">📊</div>
+      <div class="feature-info">
+        <div class="feature-name">Task Manager</div>
+        <div class="feature-desc">Monitor and manage running processes</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="screen recorder record screen audio overlay">
+      <div class="feature-icon TOOLS">🖥️</div>
+      <div class="feature-info">
+        <div class="feature-name">Screen Recorder</div>
+        <div class="feature-desc">Record your screen with audio overlay</div>
+        <span class="feature-tag TOOLS stub">Coming Soon</span>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="feature-card" data-cat="SECURITY" data-name="encrypted notes aes-256 private personal notes">
+      <div class="feature-icon SECURITY">📝</div>
+      <div class="feature-info">
+        <div class="feature-name">Encrypted Notes</div>
+        <div class="feature-desc">Private, AES-256 encrypted personal notes</div>
+        <span class="feature-tag SECURITY stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="text encryptor aes-256 encrypt decrypt on-device">
+      <div class="feature-icon SECURITY">🔐</div>
+      <div class="feature-info">
+        <div class="feature-name">Text Encryptor</div>
+        <div class="feature-desc">AES-256 encrypt and decrypt any text on-device</div>
+        <span class="feature-tag SECURITY">Security</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="hash generator md5 sha-1 sha-256 sha-512 hashes">
+      <div class="feature-icon SECURITY">🔑</div>
+      <div class="feature-info">
+        <div class="feature-name">Hash Generator</div>
+        <div class="feature-desc">Generate MD5, SHA-1, SHA-256, SHA-512 hashes</div>
+        <span class="feature-tag SECURITY">Security</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="password generator strong customisable passwords instantly">
+      <div class="feature-icon SECURITY">🗝️</div>
+      <div class="feature-info">
+        <div class="feature-name">Password Generator</div>
+        <div class="feature-desc">Create strong, customisable passwords instantly</div>
+        <span class="feature-tag SECURITY">Security</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="base64 tool encode decode base64 strings">
+      <div class="feature-icon SECURITY">⚙️</div>
+      <div class="feature-info">
+        <div class="feature-name">Base64 Tool</div>
+        <div class="feature-desc">Encode and decode Base64 strings on-device</div>
+        <span class="feature-tag SECURITY">Security</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="app locker protect apps biometric authentication">
+      <div class="feature-icon SECURITY">🛡️</div>
+      <div class="feature-info">
+        <div class="feature-name">App Locker</div>
+        <div class="feature-desc">Protect apps with biometric authentication</div>
+        <span class="feature-tag SECURITY stub">Coming Soon</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="contact backup restore contacts securely">
+      <div class="feature-icon SECURITY">👤</div>
+      <div class="feature-info">
+        <div class="feature-name">Contact Backup</div>
+        <div class="feature-desc">Backup and restore your contacts securely</div>
+        <span class="feature-tag SECURITY stub">Coming Soon</span>
+      </div>
+    </div>
+
+    <div class="no-results" id="no-results">No features match your search.</div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="tech-section">
+    <h2>⚙️ Technical Stack</h2>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <div class="tech-item-name">Kotlin 2.0</div>
+        <div class="tech-item-desc">Primary language with coroutines &amp; Flow</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Jetpack Compose</div>
+        <div class="tech-item-desc">Modern declarative UI with Material 3</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Koin DI</div>
+        <div class="tech-item-desc">Lightweight dependency injection</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Media3 / ExoPlayer</div>
+        <div class="tech-item-desc">Radio, IPTV, and music playback</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Retrofit + OkHttp</div>
+        <div class="tech-item-desc">Type-safe HTTP networking</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Coil</div>
+        <div class="tech-item-desc">Kotlin-first async image loading</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">MLKit</div>
+        <div class="tech-item-desc">On-device translation &amp; object detection</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Pollinations AI</div>
+        <div class="tech-item-desc">Free AI image generation API</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Gradle Kotlin DSL</div>
+        <div class="tech-item-desc">Build system with version catalogs</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 <strong>Nexus Wave Technologies</strong> · Nexus Plus v1.1.0 ·
+  Built with Kotlin &amp; Jetpack Compose ·
+  <a href="NexusPlus/README.md">README</a>
+</footer>
+
+<script>
+  const cards = document.querySelectorAll('.feature-card');
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const searchInput = document.getElementById('search');
+  const noResults = document.getElementById('no-results');
+  let activeFilter = 'ALL';
+
+  function applyFilters() {
+    const q = searchInput.value.toLowerCase().trim();
+    let visible = 0;
+    cards.forEach(card => {
+      const cat = card.dataset.cat;
+      const name = card.dataset.name || '';
+      const matchesCat = activeFilter === 'ALL' || cat === activeFilter;
+      const matchesSearch = !q || name.includes(q) ||
+        card.querySelector('.feature-name').textContent.toLowerCase().includes(q) ||
+        card.querySelector('.feature-desc').textContent.toLowerCase().includes(q);
+      if (matchesCat && matchesSearch) {
+        card.classList.remove('hidden');
+        visible++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFilter = btn.dataset.filter;
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', applyFilters);
+</script>
+
+</body>
+</html>
