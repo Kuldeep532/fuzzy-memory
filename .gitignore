@@ -44,6 +44,31 @@ Thumbs.db
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
-# Replit
+# Replit — platform infrastructure (must NEVER be pushed to GitHub)
 .cache/
 .local/
+.agents/
+.replit
+.replitignore
+.npmrc
+replit.md
+
+# pnpm workspace (Replit internal — not part of Android project)
+node_modules/
+pnpm-lock.yaml
+pnpm-workspace.yaml
+package.json
+package-lock.json
+
+# TypeScript root configs (Replit workspace only)
+tsconfig.json
+tsconfig.base.json
+*.tsbuildinfo
+
+# Replit artifact directories (React/Node/TS — not Android)
+artifacts/
+lib/
+scripts/
+
+# Attached assets / prompts
+attached_assets/
