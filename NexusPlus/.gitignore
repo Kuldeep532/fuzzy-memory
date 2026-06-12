@@ -1,0 +1,74 @@
+# ============================================================
+#  Nexus Plus — Android .gitignore
+#  KEYSTORE FILES ARE NEVER COMMITTED — use GitHub Secrets
+# ============================================================
+
+# ── Keystore / Signing (MUST NEVER be committed) ─────────────
+*.jks
+*.keystore
+*.p12
+*.pfx
+keystore.properties
+signing.properties
+release-keystore.*
+upload-keystore.*
+play-store-keystore.*
+
+# ── Android build outputs ────────────────────────────────────
+/app/build/
+/build/
+*.apk
+*.aab
+*.ap_
+
+# ── Gradle ──────────────────────────────────────────────────
+.gradle/
+local.properties
+**/*.tsbuildinfo
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!gradlew
+!gradlew.bat
+
+# ── IntelliJ / Android Studio ───────────────────────────────
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ── OS artefacts ─────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Temp / log files ─────────────────────────────────────────
+*.tmp
+*.temp
+*.log
+*.bak
+*.orig
+*.swp
+*.swo
+~$*
+
+# ── Google Services (Firebase) — add your own, do not commit shared keys ──
+# google-services.json    ← uncomment if you want to exclude; safe to include if it's not sensitive
+
+# ── ProGuard mappings ─────────────────────────────────────────
+/app/release/
+/app/proguard/
+
+# ── Test results ─────────────────────────────────────────────
+/app/src/test/
+/app/src/androidTest/
+*.xml.result

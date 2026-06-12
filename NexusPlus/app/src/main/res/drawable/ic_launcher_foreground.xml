@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nexus Plus launcher icon — foreground layer.
+  Replace with your branded artwork before shipping to the Play Store.
+  Recommended tool: Android Studio → File → New → Image Asset
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer glow ring -->
+    <path
+        android:fillColor="#1AFFFFFF"
+        android:pathData="M54,18 A36,36 0 1,1 53.99,18 Z"/>
+
+    <!-- Main "N" letter mark for Nexus -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M34,30 L34,78 L44,78 L44,52 L64,78 L74,78 L74,30 L64,30
+            L64,56 L44,30 Z"/>
+
+    <!-- Accent dot — bottom right -->
+    <circle
+        android:fillColor="#9C6FFF"
+        android:cx="72"
+        android:cy="72"
+        android:r="6"/>
+
+</vector>

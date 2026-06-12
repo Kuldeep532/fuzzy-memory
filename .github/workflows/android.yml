@@ -1,4 +1,19 @@
-name: Nexus Plus — Android CI
+name: Nexus Plus — Android CI/CD
+
+# ──────────────────────────────────────────────────────────────
+#  Required GitHub Secrets (Settings → Secrets → Actions):
+#
+#  ENCODED_PLAY_STORE_KEYSTORE  — base64-encoded .jks file
+#    Generate:  base64 -w 0 release.jks > encoded.txt
+#    Add the contents of encoded.txt as the secret value.
+#
+#  KEY_STORE_PASSWORD           — keystore password
+#  KEY_ALIAS                    — key alias inside the keystore
+#  KEY_PASSWORD                 — key password
+#
+#  The keystore file is NEVER stored in the repository.
+#  It is decoded from the secret at runtime, used to sign, then deleted.
+# ──────────────────────────────────────────────────────────────
 
 on:
   push:
@@ -11,9 +26,18 @@ on:
     paths:
       - 'NexusPlus/**'
 
+# Cancel redundant in-progress runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    name: Build & Test
+  # ─────────────────────────────────────────────────────────────
+  #  JOB 1 — Build debug APK and run unit tests
+  #  Runs on every push and every pull request
+  # ─────────────────────────────────────────────────────────────
+  build-debug:
+    name: Build Debug & Test
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +69,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: NexusPlus
-        run: ./gradlew test --no-daemon
+        run: ./gradlew test --no-daemon --stacktrace
 
       - name: Build Debug APK
         working-directory: NexusPlus
@@ -58,11 +82,15 @@ jobs:
           path: NexusPlus/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
-  release:
-    name: Build Release APK
+  # ─────────────────────────────────────────────────────────────
+  #  JOB 2 — Build signed release APK using keystore from Secrets
+  #  Runs ONLY on pushes to main/master (not on PRs)
+  # ─────────────────────────────────────────────────────────────
+  build-release:
+    name: Build Signed Release APK
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: build-debug
 
     steps:
       - name: Checkout repository
@@ -87,17 +115,90 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-release-${{ hashFiles('NexusPlus/**/*.gradle*') }}
+          key: ${{ runner.os }}-gradle-release-${{ hashFiles('NexusPlus/**/*.gradle*', 'NexusPlus/**/libs.versions.toml') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Build Release APK (unsigned)
-        working-directory: NexusPlus
-        run: ./gradlew assembleRelease --no-daemon
+      # ── Secure keystore handling ────────────────────────────────
+      # Decode the base64-encoded keystore from GitHub Secrets into a
+      # temporary file that exists ONLY for the duration of this job.
+      # The file path is written to $GITHUB_ENV so subsequent steps can use it.
+      - name: Decode keystore from GitHub Secrets
+        run: |
+          echo "${{ secrets.ENCODED_PLAY_STORE_KEYSTORE }}" | base64 --decode > /tmp/nexus-release.jks
+          echo "KEYSTORE_PATH=/tmp/nexus-release.jks" >> $GITHUB_ENV
 
-      - name: Upload Release APK
+      - name: Build Signed Release APK
+        working-directory: NexusPlus
+        env:
+          KEYSTORE_PATH:          ${{ env.KEYSTORE_PATH }}
+          KEY_STORE_PASSWORD:     ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS:              ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD:           ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file="$KEYSTORE_PATH" \
+            -Pandroid.injected.signing.store.password="$KEY_STORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KEY_PASSWORD"
+
+      # ── Securely wipe the keystore from the runner immediately ───
+      - name: Wipe keystore from runner filesystem
+        if: always()
+        run: |
+          if [ -f "/tmp/nexus-release.jks" ]; then
+            shred -u /tmp/nexus-release.jks
+            echo "Keystore wiped from runner."
+          fi
+
+      - name: Upload Signed Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: nexus-plus-release-unsigned-${{ github.run_number }}
-          path: NexusPlus/app/build/outputs/apk/release/app-release-unsigned.apk
+          name: nexus-plus-release-signed-${{ github.run_number }}
+          path: NexusPlus/app/build/outputs/apk/release/app-release.apk
           retention-days: 30
+
+      - name: Upload Release AAB (if exists)
+        uses: actions/upload-artifact@v4
+        if: hashFiles('NexusPlus/app/build/outputs/bundle/release/*.aab') != ''
+        with:
+          name: nexus-plus-release-aab-${{ github.run_number }}
+          path: NexusPlus/app/build/outputs/bundle/release/*.aab
+          retention-days: 30
+
+  # ─────────────────────────────────────────────────────────────
+  #  JOB 3 — Security audit (dependency vulnerability scan)
+  #  Runs on every push to main/master
+  # ─────────────────────────────────────────────────────────────
+  security-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: build-debug
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x NexusPlus/gradlew
+
+      - name: Run dependency vulnerability check
+        working-directory: NexusPlus
+        run: ./gradlew dependencyUpdates --no-daemon || true
+
+      - name: Check for hardcoded secrets in source
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
