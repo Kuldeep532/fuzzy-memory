@@ -14,9 +14,18 @@ android {
         applicationId = "com.nexuswavetech.nexusplus"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("SIGNING_STORE_FILE") ?: "nexusplus.keystore")
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: ""
+        }
     }
 
     buildTypes {
@@ -26,6 +35,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
         debug {
             isMinifyEnabled = false
@@ -43,6 +53,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -66,6 +77,12 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.palette)
+
+    // Biometric authentication
+    implementation(libs.androidx.biometric)
+
+    // WorkManager for reminders & background tasks
+    implementation(libs.androidx.work.runtime)
 
     // CameraX
     implementation(libs.androidx.camera.core)
@@ -102,6 +119,9 @@ dependencies {
 
     // Accompanist — runtime permission helpers
     implementation(libs.accompanist.permissions)
+
+    // ZXing — QR code & barcode generation (core only, no UI)
+    implementation(libs.zxing.core)
 
     // Firebase (uncomment when ready):
     // implementation(platform(libs.firebase.bom))

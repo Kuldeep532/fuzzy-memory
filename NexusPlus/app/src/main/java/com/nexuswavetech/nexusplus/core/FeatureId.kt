@@ -1,49 +1,65 @@
 package com.nexuswavetech.nexusplus.core
 
 enum class FeatureId {
-    // ── Original 30 ──────────────────────────────────────────────────────────
+    // ── Media & Entertainment ─────────────────────────────────────────────────
     RADIO_PLAYER,
-    PDF_READER,
     AI_IMAGE_GENERATOR,
-    NEXUS_TTS,
     IPTV_PLAYER,
     MUSIC_STREAMING,
+    SMART_IMAGE_EDITOR,
+
+    // ── Productivity ──────────────────────────────────────────────────────────
+    PDF_SUITE,
     FILE_MANAGER,
+    ALARM_CLOCK,
+    CLIPBOARD_MANAGER,
+    JSON_FORMATTER,
+    REGEX_TESTER,
+
+    // ── Utilities ─────────────────────────────────────────────────────────────
+    NEXUS_TTS,
     CURRENCY_CONVERTER,
-    ENCRYPTED_NOTES,
-    QR_SCANNER,
-    WEATHER,
     UNIT_CONVERTER,
-    CALCULATOR,
+    CALCULATOR_CENTER,
+    STOPWATCH,
+    WORLD_CLOCK,
+    TEXT_TRANSLATOR,
+    MORSE_CODE,
+    NUMBER_SYSTEM,
+    TRANSLATION_ENGINE,
+    WEATHER,
+    VOICE_TYPER,
+
+    // ── Smart Tools ───────────────────────────────────────────────────────────
+    QR_GENERATOR,
     FLASHLIGHT,
     COMPASS,
     SPEEDOMETER,
-    ALARM_CLOCK,
-    STOPWATCH,
-    WORLD_CLOCK,
-    CONTACT_BACKUP,
     VOICE_RECORDER,
-    SCREEN_RECORDER,
-    APP_LOCKER,
     WIFI_ANALYZER,
     BATTERY_MONITOR,
     STORAGE_ANALYZER,
-    TASK_MANAGER,
-    CLIPBOARD_MANAGER,
-    TRANSLATION_ENGINE,
-    BARCODE_GENERATOR,
-
-    // ── New Advanced Features (v1.1) ─────────────────────────────────────────
-    TEXT_ENCRYPTOR,
-    TEXT_TRANSLATOR,
     OBJECT_DETECTOR,
     COLOR_DETECTOR,
-    SMART_IMAGE_EDITOR,
+    BARCODE_GENERATOR,
+    TASK_MANAGER,
+    SCREEN_RECORDER,
+    DOC_HUB,
+
+    // ── Security & Privacy ────────────────────────────────────────────────────
+    ENCRYPTED_NOTES,
+    ENCRYPTER_DECRYPTER,
     HASH_GENERATOR,
     PASSWORD_GENERATOR,
     BASE64_TOOL,
-    MORSE_CODE,
-    NUMBER_SYSTEM,
-    JSON_FORMATTER,
-    REGEX_TESTER
+    APP_LOCKER,
+    CONTACT_BACKUP,
+    BIOMETRIC_VAULT,
+    MY_REMINDER,
+
+    // Legacy alias kept for backwards-compat with DataStore favorite entries
+    PDF_READER,
+    TEXT_ENCRYPTOR,
+    QR_SCANNER,
+    CALCULATOR,
 }

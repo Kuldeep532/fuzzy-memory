@@ -5,7 +5,11 @@ import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,25 +28,42 @@ data class SocialLink(
     val contentDesc: String
 )
 
-// Centralised social media handles for Nexus Wave Technologies
 val nexusSocialLinks = listOf(
+    SocialLink(
+        label = "Instagram",
+        handle = "@nexuswave_technologies",
+        url = "https://www.instagram.com/nexuswave_technologies?igsh=MTBia3ZxODcwOTFrNg==",
+        contentDesc = "Instagram page of Nexus Wave Technologies. Opens in browser."
+    ),
+    SocialLink(
+        label = "Facebook",
+        handle = "Nexus Wave Technologies",
+        url = "https://www.facebook.com/profile.php?id=61590971301245",
+        contentDesc = "Facebook page of Nexus Wave Technologies. Opens in browser."
+    ),
+    SocialLink(
+        label = "Telegram",
+        handle = "NexusWaveTechnologies27",
+        url = "https://t.me/NexusWaveTechnologies27",
+        contentDesc = "Telegram channel of Nexus Wave Technologies. Opens in browser."
+    ),
+    SocialLink(
+        label = "WhatsApp Channel",
+        handle = "Nexus Wave Technologies",
+        url = "https://whatsapp.com/channel/0029VbDI2cL42Dcc9m6nfm3T",
+        contentDesc = "WhatsApp channel of Nexus Wave Technologies. Opens in browser."
+    ),
+    SocialLink(
+        label = "Discord",
+        handle = "Nexus Wave Community",
+        url = "https://discord.gg/3yp8MMwJe",
+        contentDesc = "Discord server of Nexus Wave Technologies. Opens in browser."
+    ),
     SocialLink(
         label = "GitHub",
         handle = "@NexusWaveTech",
         url = "https://github.com/NexusWaveTechnologies",
         contentDesc = "GitHub profile of Nexus Wave Technologies. Opens in browser."
-    ),
-    SocialLink(
-        label = "LinkedIn",
-        handle = "Nexus Wave Technologies",
-        url = "https://linkedin.com/company/nexuswavetech",
-        contentDesc = "LinkedIn page of Nexus Wave Technologies. Opens in browser."
-    ),
-    SocialLink(
-        label = "X / Twitter",
-        handle = "@NexusWaveTech",
-        url = "https://twitter.com/NexusWaveTech",
-        contentDesc = "X Twitter profile of Nexus Wave Technologies. Opens in browser."
     ),
     SocialLink(
         label = "Official Website",
@@ -86,9 +107,14 @@ fun SocialMediaLinksSection(modifier: Modifier = Modifier) {
                 ) {
                     Icon(
                         imageVector = when (link.label) {
-                            "GitHub" -> Icons.Filled.Code
-                            "Official Website" -> Icons.Filled.Language
-                            else -> Icons.Filled.Share
+                            "Instagram"       -> Icons.Filled.PhotoCamera
+                            "Facebook"        -> Icons.Filled.People
+                            "Telegram"        -> Icons.Filled.Message
+                            "WhatsApp Channel"-> Icons.Filled.Forum
+                            "Discord"         -> Icons.Filled.Forum
+                            "GitHub"          -> Icons.Filled.Code
+                            "Official Website"-> Icons.Filled.Language
+                            else              -> Icons.Filled.Share
                         },
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,

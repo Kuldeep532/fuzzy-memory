@@ -3,6 +3,7 @@ package com.nexuswavetech.nexusplus.features.iptv
 import android.view.ViewGroup
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.koin.androidx.compose.koinViewModel
-import java.net.URLDecoder
 
 data class IptvChannel(
     val name: String,
@@ -44,8 +44,19 @@ data class IptvUiState(
     val channels: List<IptvChannel> = emptyList(),
     val currentChannel: IptvChannel? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val selectedRegion: IptvRegion = IptvRegion.INDIA
 )
+
+enum class IptvRegion(val label: String, val m3uUrl: String) {
+    INDIA("🇮🇳 India",
+        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in.m3u"),
+    HINDI_NEWS("📺 Hindi News",
+        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in.m3u"),
+    GLOBAL("🌍 Global (Top)",
+        "https://raw.githubusercontent.com/iptv-org/iptv/master/index.nsfw.m3u"),
+    CUSTOM("🔗 Custom URL", "")
+}
 
 class IptvViewModel : ViewModel() {
 
@@ -54,11 +65,12 @@ class IptvViewModel : ViewModel() {
 
     private val client = OkHttpClient()
 
-    /** Default free IPTV playlist from iptv-org GitHub */
-    private val defaultPlaylistUrl =
-        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/us.m3u"
+    init { loadPlaylist(IptvRegion.INDIA.m3uUrl) }
 
-    init { loadPlaylist(defaultPlaylistUrl) }
+    fun onRegionSelected(region: IptvRegion) {
+        _uiState.update { it.copy(selectedRegion = region) }
+        if (region != IptvRegion.CUSTOM) loadPlaylist(region.m3uUrl)
+    }
 
     fun onUrlChanged(url: String) = _uiState.update { it.copy(playlistUrl = url) }
 
@@ -66,7 +78,8 @@ class IptvViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val request = Request.Builder().url(url.ifBlank { defaultPlaylistUrl }).build()
+                val finalUrl = url.ifBlank { _uiState.value.selectedRegion.m3uUrl }
+                val request = Request.Builder().url(finalUrl).build()
                 val body = client.newCall(request).execute().body?.string() ?: ""
                 val channels = parseM3u(body)
                 _uiState.update { it.copy(channels = channels, isLoading = false) }
@@ -101,10 +114,11 @@ class IptvViewModel : ViewModel() {
                 }
             }
         }
-        return channels.take(200) // cap for performance
+        return channels.take(300)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun IptvPlayerScreen(
     onBack: () -> Unit,
@@ -114,11 +128,11 @@ fun IptvPlayerScreen(
     val context = LocalContext.current
     val view = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    var showCustomUrl by remember { mutableStateOf(false) }
+    var groupFilter by remember { mutableStateOf<String?>(null) }
 
     val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            playWhenReady = true
-        }
+        ExoPlayer.Builder(context).build().apply { playWhenReady = true }
     }
 
     LaunchedEffect(uiState.currentChannel) {
@@ -126,7 +140,7 @@ fun IptvPlayerScreen(
             exoPlayer.setMediaItem(MediaItem.fromUri(channel.url))
             exoPlayer.prepare()
             exoPlayer.play()
-            view.announceForAccessibility("Playing channel: ${channel.name}")
+            view.announceForAccessibility("Playing: ${channel.name}")
         }
     }
 
@@ -134,88 +148,159 @@ fun IptvPlayerScreen(
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_PAUSE  -> exoPlayer.pause()
-                Lifecycle.Event.ON_RESUME -> exoPlayer.play()
+                Lifecycle.Event.ON_RESUME -> if (uiState.currentChannel != null) exoPlayer.play()
                 else -> {}
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-            exoPlayer.release()
-        }
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer); exoPlayer.release() }
+    }
+
+    val groups = remember(uiState.channels) { uiState.channels.map { it.group }.distinct().filter { it.isNotBlank() } }
+    val filteredChannels = remember(uiState.channels, groupFilter) {
+        if (groupFilter == null) uiState.channels else uiState.channels.filter { it.group == groupFilter }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "IPTV / Live TV", onBack = onBack)
+
+        // Region selector
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.semantics { contentDescription = "Region selection. Swipe to browse." }
+        ) {
+            items(IptvRegion.values().toList()) { region ->
+                FilterChip(
+                    selected = uiState.selectedRegion == region,
+                    onClick = {
+                        if (region == IptvRegion.CUSTOM) showCustomUrl = true
+                        else viewModel.onRegionSelected(region)
+                    },
+                    label = { Text(region.label, style = MaterialTheme.typography.labelSmall) }
+                )
+            }
+        }
+
+        // Custom URL dialog
+        if (showCustomUrl) {
+            AlertDialog(
+                onDismissRequest = { showCustomUrl = false },
+                title = { Text("Custom M3U URL") },
+                text = {
+                    OutlinedTextField(
+                        value = uiState.playlistUrl,
+                        onValueChange = viewModel::onUrlChanged,
+                        label = { Text("Playlist URL (.m3u / .m3u8)") },
+                        singleLine = true, modifier = Modifier.fillMaxWidth()
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.loadPlaylist(); showCustomUrl = false }) { Text("Load") }
+                },
+                dismissButton = { TextButton(onClick = { showCustomUrl = false }) { Text("Cancel") } }
+            )
+        }
 
         // Video player
         AndroidView(
             factory = { ctx ->
                 PlayerView(ctx).apply {
                     player = exoPlayer
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                    contentDescription = "Video player. ${uiState.currentChannel?.name ?: "No channel selected"}. " +
-                        "Use player controls below the video."
+                    layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    contentDescription = "Video player. ${uiState.currentChannel?.name ?: "No channel selected"}"
                 }
             },
             update = { it.player = exoPlayer },
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(16f / 9f)
+            modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f)
         )
 
-        // Channel list
-        if (uiState.isLoading) {
-            Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    modifier = Modifier.semantics { contentDescription = "Loading channel list." }
-                )
+        // Now playing
+        uiState.currentChannel?.let { ch ->
+            Surface(color = MaterialTheme.colorScheme.primaryContainer) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.LiveTv, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(ch.name, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer, maxLines = 1, modifier = Modifier.weight(1f))
+                    if (ch.group.isNotBlank()) Text(ch.group, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f))
+                }
             }
-        } else {
-            LazyColumn(
+        }
+
+        // Group filter chips
+        if (groups.isNotEmpty()) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                item {
+                    FilterChip(selected = groupFilter == null, onClick = { groupFilter = null }, label = { Text("All") })
+                }
+                items(groups.take(15)) { group ->
+                    FilterChip(
+                        selected = groupFilter == group,
+                        onClick = { groupFilter = if (groupFilter == group) null else group },
+                        label = { Text(group, style = MaterialTheme.typography.labelSmall) }
+                    )
+                }
+            }
+        }
+
+        // Channel list
+        when {
+            uiState.isLoading -> Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CircularProgressIndicator(modifier = Modifier.semantics { contentDescription = "Loading channels." })
+                    Text("Loading channels…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            else -> LazyColumn(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                if (uiState.channels.isEmpty()) {
+                if (filteredChannels.isEmpty()) {
                     item {
                         Text(
                             uiState.error ?: "No channels found.",
-                            color = MaterialTheme.colorScheme.error,
+                            color = if (uiState.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(16.dp)
                         )
                     }
                 } else {
-                    items(uiState.channels, key = { it.url }) { channel ->
+                    item {
+                        Text(
+                            "${filteredChannels.size} channel${if (filteredChannels.size != 1) "s" else ""}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    }
+                    items(filteredChannels, key = { it.url }) { channel ->
                         val isActive = uiState.currentChannel?.url == channel.url
                         ListItem(
-                            headlineContent = {
-                                Text(
-                                    text = channel.name,
-                                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            supportingContent = { if (channel.group.isNotBlank()) Text(channel.group) },
+                            headlineContent = { Text(channel.name, fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal) },
+                            supportingContent = { if (channel.group.isNotBlank()) Text(channel.group, style = MaterialTheme.typography.labelSmall) },
                             leadingContent = {
                                 Icon(
                                     if (isActive) Icons.Filled.PlayCircle else Icons.Filled.LiveTv,
                                     contentDescription = null,
-                                    tint = if (isActive) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .semantics {
-                                    contentDescription = "${channel.name} channel." +
+                                .semantics(mergeDescendants = true) {
+                                    contentDescription = "${channel.name}${if (channel.group.isNotBlank()) ", ${channel.group}" else ""}." +
                                         if (isActive) " Currently playing." else " Double tap to play."
+                                    customActions = listOf(
+                                        CustomAccessibilityAction("Play ${channel.name}") { viewModel.onChannelSelected(channel); true }
+                                    )
                                 },
-                            colors = if (isActive) ListItemDefaults.colors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            ) else ListItemDefaults.colors()
+                            colors = if (isActive) ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer) else ListItemDefaults.colors()
                         )
                         HorizontalDivider(thickness = 0.5.dp)
                     }

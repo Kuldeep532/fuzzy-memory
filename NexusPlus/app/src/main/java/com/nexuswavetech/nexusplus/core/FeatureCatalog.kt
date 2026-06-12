@@ -7,6 +7,7 @@ import com.nexuswavetech.nexusplus.navigation.Screen
 object FeatureCatalog {
 
     val allFeatures: List<FeatureItem> = listOf(
+
         // ── Media & Entertainment ────────────────────────────────────────────
         FeatureItem(
             id = FeatureId.RADIO_PLAYER,
@@ -27,15 +28,15 @@ object FeatureCatalog {
         FeatureItem(
             id = FeatureId.IPTV_PLAYER,
             name = "IPTV / Live TV",
-            description = "Stream live TV channels from M3U playlists",
+            description = "Stream live Indian TV channels and global M3U playlists",
             icon = Icons.Filled.LiveTv,
             route = Screen.IptvPlayer.route,
             category = FeatureCategory.MEDIA
         ),
         FeatureItem(
             id = FeatureId.MUSIC_STREAMING,
-            name = "Music Streaming",
-            description = "Stream music with lock-screen controls",
+            name = "Music Player",
+            description = "Stream online music or play local audio files on-device",
             icon = Icons.Filled.MusicNote,
             route = Screen.MusicStreaming.route,
             category = FeatureCategory.MEDIA
@@ -51,11 +52,11 @@ object FeatureCatalog {
 
         // ── Productivity ─────────────────────────────────────────────────────
         FeatureItem(
-            id = FeatureId.PDF_READER,
-            name = "PDF Reader",
-            description = "View and navigate PDF documents natively",
+            id = FeatureId.PDF_SUITE,
+            name = "PDF Suite",
+            description = "Read, create, merge, split and reorder PDF documents",
             icon = Icons.Filled.PictureAsPdf,
-            route = Screen.PdfReader.route,
+            route = Screen.PdfSuite.route,
             category = FeatureCategory.PRODUCTIVITY
         ),
         FeatureItem(
@@ -98,6 +99,14 @@ object FeatureCatalog {
             route = Screen.RegexTester.route,
             category = FeatureCategory.PRODUCTIVITY
         ),
+        FeatureItem(
+            id = FeatureId.DOC_HUB,
+            name = "Doc Hub",
+            description = "Quick access storage and organisation for your documents",
+            icon = Icons.Filled.Description,
+            route = Screen.DocHub.route,
+            category = FeatureCategory.PRODUCTIVITY
+        ),
 
         // ── Utilities ────────────────────────────────────────────────────────
         FeatureItem(
@@ -106,6 +115,14 @@ object FeatureCatalog {
             description = "Multi-language text-to-speech with auto-locale detection",
             icon = Icons.Filled.RecordVoiceOver,
             route = Screen.NexusTts.route,
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.VOICE_TYPER,
+            name = "Voice Typer",
+            description = "Type using your voice via native speech-to-text",
+            icon = Icons.Filled.Mic,
+            route = Screen.VoiceTyper.route,
             category = FeatureCategory.UTILITIES
         ),
         FeatureItem(
@@ -125,11 +142,11 @@ object FeatureCatalog {
             category = FeatureCategory.UTILITIES
         ),
         FeatureItem(
-            id = FeatureId.CALCULATOR,
-            name = "Calculator",
-            description = "Scientific and standard calculator",
+            id = FeatureId.CALCULATOR_CENTER,
+            name = "Calculator Center",
+            description = "Standard math calculator and age calculator in one place",
             icon = Icons.Filled.Calculate,
-            route = Screen.Stub.route + "/calculator",
+            route = Screen.CalculatorCenter.route,
             category = FeatureCategory.UTILITIES
         ),
         FeatureItem(
@@ -172,14 +189,30 @@ object FeatureCatalog {
             route = Screen.NumberSystem.route,
             category = FeatureCategory.UTILITIES
         ),
+        FeatureItem(
+            id = FeatureId.WEATHER,
+            name = "Weather",
+            description = "Live weather forecasts and alerts",
+            icon = Icons.Filled.WbSunny,
+            route = Screen.Stub.route + "/weather",
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.MY_REMINDER,
+            name = "My Reminder",
+            description = "Set custom local reminders and notifications",
+            icon = Icons.Filled.NotificationsActive,
+            route = Screen.MyReminder.route,
+            category = FeatureCategory.UTILITIES
+        ),
 
         // ── Smart Tools ──────────────────────────────────────────────────────
         FeatureItem(
-            id = FeatureId.QR_SCANNER,
-            name = "QR Scanner",
-            description = "Scan and generate QR codes with camera",
-            icon = Icons.Filled.QrCodeScanner,
-            route = Screen.Stub.route + "/qr",
+            id = FeatureId.QR_GENERATOR,
+            name = "QR Code Generator",
+            description = "Generate QR codes for text, URLs and UPI payments",
+            icon = Icons.Filled.QrCode,
+            route = Screen.QrCode.route,
             category = FeatureCategory.TOOLS
         ),
         FeatureItem(
@@ -210,7 +243,7 @@ object FeatureCatalog {
             id = FeatureId.VOICE_RECORDER,
             name = "Voice Recorder",
             description = "High-quality audio recording with waveform",
-            icon = Icons.Filled.Mic,
+            icon = Icons.Filled.GraphicEq,
             route = Screen.Stub.route + "/recorder",
             category = FeatureCategory.TOOLS
         ),
@@ -258,33 +291,49 @@ object FeatureCatalog {
             id = FeatureId.BARCODE_GENERATOR,
             name = "Barcode Generator",
             description = "Generate barcodes in multiple formats",
-            icon = Icons.Filled.QrCode,
+            icon = Icons.Filled.QrCodeScanner,
             route = Screen.Stub.route + "/barcode",
+            category = FeatureCategory.TOOLS
+        ),
+        FeatureItem(
+            id = FeatureId.TASK_MANAGER,
+            name = "Task Manager",
+            description = "Monitor and manage running processes",
+            icon = Icons.Filled.Dashboard,
+            route = Screen.Stub.route + "/tasks",
+            category = FeatureCategory.TOOLS
+        ),
+        FeatureItem(
+            id = FeatureId.SCREEN_RECORDER,
+            name = "Screen Recorder",
+            description = "Record your screen with audio overlay",
+            icon = Icons.Filled.ScreenShare,
+            route = Screen.Stub.route + "/screenrecorder",
             category = FeatureCategory.TOOLS
         ),
 
         // ── Security & Privacy ───────────────────────────────────────────────
         FeatureItem(
-            id = FeatureId.ENCRYPTED_NOTES,
-            name = "Encrypted Notes",
-            description = "Private, AES-256 encrypted personal notes",
-            icon = Icons.Filled.Lock,
-            route = Screen.Stub.route + "/notes",
+            id = FeatureId.BIOMETRIC_VAULT,
+            name = "Biometric Vault",
+            description = "Securely store passwords, notes, cards and documents — biometric protected",
+            icon = Icons.Filled.Fingerprint,
+            route = Screen.BiometricVault.route,
             category = FeatureCategory.SECURITY
         ),
         FeatureItem(
-            id = FeatureId.TEXT_ENCRYPTOR,
-            name = "Text Encryptor",
-            description = "AES-256 encrypt and decrypt any text on-device",
+            id = FeatureId.ENCRYPTER_DECRYPTER,
+            name = "Encrypter and Decrypter",
+            description = "AES-256 encrypt/decrypt text, images and files on-device",
             icon = Icons.Filled.EnhancedEncryption,
-            route = Screen.TextEncryptor.route,
+            route = Screen.EncrypterDecrypter.route,
             category = FeatureCategory.SECURITY
         ),
         FeatureItem(
             id = FeatureId.HASH_GENERATOR,
             name = "Hash Generator",
             description = "Generate MD5, SHA-1, SHA-256, SHA-512 hashes",
-            icon = Icons.Filled.Fingerprint,
+            icon = Icons.Filled.Tag,
             route = Screen.HashGenerator.route,
             category = FeatureCategory.SECURITY
         ),
@@ -305,6 +354,14 @@ object FeatureCatalog {
             category = FeatureCategory.SECURITY
         ),
         FeatureItem(
+            id = FeatureId.ENCRYPTED_NOTES,
+            name = "Encrypted Notes",
+            description = "Private, AES-256 encrypted personal notes",
+            icon = Icons.Filled.Lock,
+            route = Screen.Stub.route + "/notes",
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
             id = FeatureId.APP_LOCKER,
             name = "App Locker",
             description = "Protect apps with biometric authentication",
@@ -319,38 +376,6 @@ object FeatureCatalog {
             icon = Icons.Filled.Contacts,
             route = Screen.Stub.route + "/contacts",
             category = FeatureCategory.SECURITY
-        ),
-        FeatureItem(
-            id = FeatureId.TASK_MANAGER,
-            name = "Task Manager",
-            description = "Monitor and manage running processes",
-            icon = Icons.Filled.Dashboard,
-            route = Screen.Stub.route + "/tasks",
-            category = FeatureCategory.TOOLS
-        ),
-        FeatureItem(
-            id = FeatureId.TRANSLATION_ENGINE,
-            name = "Translation Engine",
-            description = "Instant offline and online translation",
-            icon = Icons.Filled.GTranslate,
-            route = Screen.Stub.route + "/translate",
-            category = FeatureCategory.UTILITIES
-        ),
-        FeatureItem(
-            id = FeatureId.SCREEN_RECORDER,
-            name = "Screen Recorder",
-            description = "Record your screen with audio overlay",
-            icon = Icons.Filled.ScreenShare,
-            route = Screen.Stub.route + "/screenrecorder",
-            category = FeatureCategory.TOOLS
-        ),
-        FeatureItem(
-            id = FeatureId.WEATHER,
-            name = "Weather",
-            description = "Live weather forecasts and alerts",
-            icon = Icons.Filled.WbSunny,
-            route = Screen.Stub.route + "/weather",
-            category = FeatureCategory.UTILITIES
         )
     )
 }

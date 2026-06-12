@@ -20,7 +20,9 @@ mlkitObjectDetection = "17.0.1"
 mlkitImageLabeling = "17.0.8"
 palette = "1.0.0"
 cameraX = "1.3.4"
-accompanist = "0.34.0"
+biometric = "1.1.0"
+workmanager = "2.9.0"
+zxing = "3.5.3"
 # Firebase (add when ready to activate):
 # firebaseBom = "33.1.0"
 # googleServices = "4.4.2"
@@ -47,6 +49,8 @@ androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", 
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "cameraX" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "cameraX" }
 androidx-camera-mlkit = { group = "androidx.camera", name = "camera-mlkit-vision", version.ref = "cameraX" }
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
+androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workmanager" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koinCompose" }
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
@@ -62,6 +66,7 @@ mlkit-translate = { group = "com.google.mlkit", name = "translate", version.ref 
 mlkit-object-detection = { group = "com.google.mlkit", name = "object-detection", version.ref = "mlkitObjectDetection" }
 mlkit-image-labeling = { group = "com.google.mlkit", name = "image-labeling", version.ref = "mlkitImageLabeling" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 # Firebase (uncomment when ready):
 # firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 # firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }

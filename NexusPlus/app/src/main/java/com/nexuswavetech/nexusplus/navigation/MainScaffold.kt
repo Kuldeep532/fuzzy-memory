@@ -3,11 +3,11 @@ package com.nexuswavetech.nexusplus.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -20,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesScreen
-import com.nexuswavetech.nexusplus.features.favorites.FavoritesScreen
+import com.nexuswavetech.nexusplus.features.home.HomeScreen
 import com.nexuswavetech.nexusplus.features.more.MoreScreen
 
 private data class NavTabItem(
@@ -33,18 +33,18 @@ private data class NavTabItem(
 
 private val tabs = listOf(
     NavTabItem(
-        tab = BottomTab.Favorites,
-        label = "Favorites",
-        selectedIcon = Icons.Filled.Star,
-        unselectedIcon = Icons.Outlined.StarBorder,
-        contentDescription = "Favorites tab. Shows your bookmarked features."
+        tab = BottomTab.Home,
+        label = "Home",
+        selectedIcon = Icons.Filled.Home,
+        unselectedIcon = Icons.Outlined.Home,
+        contentDescription = "Home tab. Shows your pinned features."
     ),
     NavTabItem(
         tab = BottomTab.AllFeatures,
         label = "All Features",
         selectedIcon = Icons.Filled.Apps,
         unselectedIcon = Icons.Outlined.Apps,
-        contentDescription = "All Features tab. Browse all 30 available features."
+        contentDescription = "All Features tab. Browse all available features."
     ),
     NavTabItem(
         tab = BottomTab.More,
@@ -73,7 +73,7 @@ fun MainScaffold(rootNavController: NavController) {
                         onClick = {
                             if (currentRoute != item.tab.route) {
                                 tabNavController.navigate(item.tab.route) {
-                                    popUpTo(BottomTab.Favorites.route) { saveState = true }
+                                    popUpTo(BottomTab.Home.route) { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }
@@ -100,8 +100,8 @@ fun MainScaffold(rootNavController: NavController) {
             startDestination = BottomTab.AllFeatures.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(BottomTab.Favorites.route) {
-                FavoritesScreen(rootNavController = rootNavController)
+            composable(BottomTab.Home.route) {
+                HomeScreen(rootNavController = rootNavController)
             }
             composable(BottomTab.AllFeatures.route) {
                 AllFeaturesScreen(rootNavController = rootNavController)

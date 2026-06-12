@@ -1,0 +1,1 @@
+- [Nexus Plus v1.2.0 architecture](nexus-plus-arch.md) — Package, DI, nav, and feature patterns for this project.

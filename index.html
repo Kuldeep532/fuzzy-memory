@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nexus Plus — Multi-Utility Android App</title>
+  <title>Nexus Plus — Multi-Utility Android Super-App</title>
   <style>
     :root {
       --bg: #0f0f13;
@@ -178,6 +178,21 @@
       width: 10px; height: 10px; border-radius: 50%;
     }
 
+    /* NEW badge */
+    .new-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #7c5cfc, #a78bfa);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
     /* GRID */
     .features-grid {
       display: grid;
@@ -283,6 +298,38 @@
     .tech-item-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
     .tech-item-desc { font-size: 0.78rem; color: var(--muted); }
 
+    /* SOCIAL LINKS */
+    .social-section {
+      margin-top: 48px;
+      padding: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      text-align: center;
+    }
+    .social-section h2 { font-size: 1.1rem; font-weight: 700; color: var(--accent2); margin-bottom: 20px; }
+    .social-links {
+      display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+    }
+    .social-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .social-link:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(124,92,252,0.2);
+      color: var(--accent2);
+    }
+    .social-icon { font-size: 1.1rem; }
+
     /* FOOTER */
     footer {
       text-align: center;
@@ -299,14 +346,15 @@
 <header>
   <div class="logo">⚡</div>
   <h1>Nexus Plus</h1>
-  <p class="tagline">The all-in-one Android super-app — 42 powerful utilities in one place</p>
+  <p class="tagline">The all-in-one Android super-app — 49 powerful utilities in one place</p>
   <div class="badges">
-    <div class="badge">Version <span>1.1.0</span></div>
+    <div class="badge">Version <span>1.2.0</span></div>
     <div class="badge">Min SDK <span>26</span> (Android 8.0)</div>
     <div class="badge">Target SDK <span>35</span> (Android 15)</div>
-    <div class="badge">Language <span>Kotlin</span></div>
-    <div class="badge">UI <span>Jetpack Compose</span></div>
+    <div class="badge">Language <span>Kotlin 2.0</span></div>
+    <div class="badge">UI <span>Jetpack Compose + Material 3</span></div>
     <div class="badge">Architecture <span>MVVM + Koin</span></div>
+    <div class="badge">CI/CD <span>GitHub Actions</span></div>
   </div>
   <div class="notice">
     📱 This is a native Android app — open <code>NexusPlus/</code> in Android Studio to build &amp; run
@@ -314,27 +362,32 @@
 </header>
 
 <div class="stats">
-  <div class="stat"><div class="stat-num">42</div><div class="stat-label">Features</div></div>
+  <div class="stat"><div class="stat-num">49</div><div class="stat-label">Features</div></div>
   <div class="stat"><div class="stat-num">5</div><div class="stat-label">Categories</div></div>
   <div class="stat"><div class="stat-num">API 26+</div><div class="stat-label">Min Android</div></div>
-  <div class="stat"><div class="stat-num">0</div><div class="stat-label">API Keys Needed</div></div>
+  <div class="stat"><div class="stat-num">7</div><div class="stat-label">New in v1.2</div></div>
   <div class="stat"><div class="stat-num">Material 3</div><div class="stat-label">Design System</div></div>
 </div>
 
 <main>
   <div class="filter-bar">
     <input class="search-box" id="search" type="text" placeholder="Search features…" />
-    <button class="filter-btn active" data-filter="ALL">All (42)</button>
+    <button class="filter-btn active" data-filter="ALL">All (49)</button>
     <button class="filter-btn cat-media" data-filter="MEDIA">🎬 Media (5)</button>
-    <button class="filter-btn cat-productivity" data-filter="PRODUCTIVITY">💼 Productivity (6)</button>
-    <button class="filter-btn cat-utilities" data-filter="UTILITIES">🔧 Utilities (9)</button>
-    <button class="filter-btn cat-tools" data-filter="TOOLS">🛠 Smart Tools (13)</button>
-    <button class="filter-btn cat-security" data-filter="SECURITY">🔒 Security (9)</button>
+    <button class="filter-btn cat-productivity" data-filter="PRODUCTIVITY">💼 Productivity (7)</button>
+    <button class="filter-btn cat-utilities" data-filter="UTILITIES">🔧 Utilities (11)</button>
+    <button class="filter-btn cat-tools" data-filter="TOOLS">🛠 Smart Tools (14)</button>
+    <button class="filter-btn cat-security" data-filter="SECURITY">🔒 Security (12)</button>
   </div>
 
   <div class="features-grid" id="grid">
 
-    <!-- MEDIA -->
+    <!-- MEDIA (5) -->
+    <div class="section-header" style="grid-column:1/-1">
+      <div class="section-dot" style="background:var(--media)"></div>
+      🎬 Media &amp; Entertainment
+    </div>
+
     <div class="feature-card" data-cat="MEDIA" data-name="online radio stream live radio stations worldwide">
       <div class="feature-icon MEDIA">📻</div>
       <div class="feature-info">
@@ -351,23 +404,23 @@
         <span class="feature-tag MEDIA">Media</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="MEDIA" data-name="iptv live tv stream channels m3u playlists">
+    <div class="feature-card" data-cat="MEDIA" data-name="iptv live tv stream india channels m3u playlists exoplayer">
       <div class="feature-icon MEDIA">📺</div>
       <div class="feature-info">
         <div class="feature-name">IPTV / Live TV</div>
-        <div class="feature-desc">Stream live TV channels from M3U playlists via ExoPlayer</div>
+        <div class="feature-desc">Stream live Indian TV channels &amp; global M3U playlists via ExoPlayer</div>
         <span class="feature-tag MEDIA">Media</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="MEDIA" data-name="music streaming jio saavn lock-screen controls">
+    <div class="feature-card" data-cat="MEDIA" data-name="music player offline online jio saavn lock-screen controls local audio">
       <div class="feature-icon MEDIA">🎵</div>
       <div class="feature-info">
-        <div class="feature-name">Music Streaming</div>
-        <div class="feature-desc">Stream music with lock-screen controls via JioSaavn API</div>
+        <div class="feature-name">Music Player</div>
+        <div class="feature-desc">Offline device music + online streaming via JioSaavn API with lock-screen controls</div>
         <span class="feature-tag MEDIA">Media</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="MEDIA" data-name="smart image editor crop rotate flip adjust images">
+    <div class="feature-card" data-cat="MEDIA" data-name="smart image editor crop rotate flip adjust images on-device">
       <div class="feature-icon MEDIA">🖼️</div>
       <div class="feature-info">
         <div class="feature-name">Smart Image Editor</div>
@@ -376,12 +429,41 @@
       </div>
     </div>
 
-    <!-- PRODUCTIVITY -->
-    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="pdf reader view navigate pdf documents natively">
+    <!-- PRODUCTIVITY (7) -->
+    <div class="section-header" style="grid-column:1/-1">
+      <div class="section-dot" style="background:var(--productivity)"></div>
+      💼 Productivity
+    </div>
+
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="pdf suite read create merge split reorder pdf documents">
       <div class="feature-icon PRODUCTIVITY">📄</div>
       <div class="feature-info">
-        <div class="feature-name">PDF Reader</div>
-        <div class="feature-desc">View and navigate PDF documents natively with PdfRenderer</div>
+        <div class="feature-name">PDF Suite <span class="new-badge">New</span></div>
+        <div class="feature-desc">Read, create from text/images, split, reorder PDF pages — all on-device</div>
+        <span class="feature-tag PRODUCTIVITY">Productivity</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="doc hub document quick access storage organisation">
+      <div class="feature-icon PRODUCTIVITY">📂</div>
+      <div class="feature-info">
+        <div class="feature-name">Doc Hub <span class="new-badge">New</span></div>
+        <div class="feature-desc">Quick-access storage and organisation hub for your documents</div>
+        <span class="feature-tag PRODUCTIVITY">Productivity</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="json formatter validate minify json offline">
+      <div class="feature-icon PRODUCTIVITY">{ }</div>
+      <div class="feature-info">
+        <div class="feature-name">JSON Formatter</div>
+        <div class="feature-desc">Format, validate and minify JSON — fully offline</div>
+        <span class="feature-tag PRODUCTIVITY">Productivity</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="regex tester test debug regular expressions on-device">
+      <div class="feature-icon PRODUCTIVITY">.*</div>
+      <div class="feature-info">
+        <div class="feature-name">Regex Tester</div>
+        <div class="feature-desc">Test and debug regular expressions on-device</div>
         <span class="feature-tag PRODUCTIVITY">Productivity</span>
       </div>
     </div>
@@ -409,29 +491,66 @@
         <span class="feature-tag PRODUCTIVITY stub">Coming Soon</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="json formatter validate minify json offline">
-      <div class="feature-icon PRODUCTIVITY">{ }</div>
-      <div class="feature-info">
-        <div class="feature-name">JSON Formatter</div>
-        <div class="feature-desc">Format, validate and minify JSON — fully offline</div>
-        <span class="feature-tag PRODUCTIVITY">Productivity</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="PRODUCTIVITY" data-name="regex tester test debug regular expressions">
-      <div class="feature-icon PRODUCTIVITY">🔍</div>
-      <div class="feature-info">
-        <div class="feature-name">Regex Tester</div>
-        <div class="feature-desc">Test and debug regular expressions on-device</div>
-        <span class="feature-tag PRODUCTIVITY">Productivity</span>
-      </div>
+
+    <!-- UTILITIES (11) -->
+    <div class="section-header" style="grid-column:1/-1">
+      <div class="section-dot" style="background:var(--utilities)"></div>
+      🔧 Utilities
     </div>
 
-    <!-- UTILITIES -->
-    <div class="feature-card" data-cat="UTILITIES" data-name="nexus speech engine tts text-to-speech multi-language auto-locale">
-      <div class="feature-icon UTILITIES">🔊</div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="nexus speech engine text to speech multi-language tts">
+      <div class="feature-icon UTILITIES">🗣️</div>
       <div class="feature-info">
         <div class="feature-name">Nexus Speech Engine</div>
         <div class="feature-desc">Multi-language text-to-speech with auto-locale detection</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="voice typer speech to text voice input multi-language india">
+      <div class="feature-icon UTILITIES">🎤</div>
+      <div class="feature-info">
+        <div class="feature-name">Voice Typer <span class="new-badge">New</span></div>
+        <div class="feature-desc">Type using your voice — 11 Indian &amp; global languages supported</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="my reminder custom local reminders notifications workmanager">
+      <div class="feature-icon UTILITIES">🔔</div>
+      <div class="feature-info">
+        <div class="feature-name">My Reminder <span class="new-badge">New</span></div>
+        <div class="feature-desc">Set custom local reminders that fire as notifications via WorkManager</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="calculator center standard math age calculator">
+      <div class="feature-icon UTILITIES">🧮</div>
+      <div class="feature-info">
+        <div class="feature-name">Calculator Center <span class="new-badge">New</span></div>
+        <div class="feature-desc">Standard math calculator + age calculator with birthday input</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="text translator on-device translation 50 languages no internet mlkit">
+      <div class="feature-icon UTILITIES">🌐</div>
+      <div class="feature-info">
+        <div class="feature-name">Text Translator</div>
+        <div class="feature-desc">On-device translation — 50+ languages, no internet needed (MLKit)</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="morse code encode decode audio playback vibration">
+      <div class="feature-icon UTILITIES">•—•</div>
+      <div class="feature-info">
+        <div class="feature-name">Morse Code</div>
+        <div class="feature-desc">Encode and decode Morse code with audio and vibration playback</div>
+        <span class="feature-tag UTILITIES">Utilities</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="UTILITIES" data-name="number system converter binary octal decimal hexadecimal">
+      <div class="feature-icon UTILITIES">#</div>
+      <div class="feature-info">
+        <div class="feature-name">Number System Converter</div>
+        <div class="feature-desc">Binary, Octal, Decimal and Hexadecimal converter</div>
         <span class="feature-tag UTILITIES">Utilities</span>
       </div>
     </div>
@@ -444,22 +563,14 @@
       </div>
     </div>
     <div class="feature-card" data-cat="UTILITIES" data-name="unit converter length weight volume">
-      <div class="feature-icon UTILITIES">📐</div>
+      <div class="feature-icon UTILITIES">⚖️</div>
       <div class="feature-info">
         <div class="feature-name">Unit Converter</div>
         <div class="feature-desc">Convert length, weight, volume, and more</div>
         <span class="feature-tag UTILITIES stub">Coming Soon</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="calculator scientific standard">
-      <div class="feature-icon UTILITIES">🧮</div>
-      <div class="feature-info">
-        <div class="feature-name">Calculator</div>
-        <div class="feature-desc">Scientific and standard calculator</div>
-        <span class="feature-tag UTILITIES stub">Coming Soon</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="stopwatch precision lap tracking timer">
+    <div class="feature-card" data-cat="UTILITIES" data-name="stopwatch precision lap tracking">
       <div class="feature-icon UTILITIES">⏱️</div>
       <div class="feature-info">
         <div class="feature-name">Stopwatch</div>
@@ -475,57 +586,38 @@
         <span class="feature-tag UTILITIES stub">Coming Soon</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="text translator on-device translation 50 languages mlkit">
-      <div class="feature-icon UTILITIES">🌐</div>
-      <div class="feature-info">
-        <div class="feature-name">Text Translator</div>
-        <div class="feature-desc">On-device translation — 50+ languages via MLKit, no internet</div>
-        <span class="feature-tag UTILITIES">Utilities</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="morse code encode decode audio playback">
-      <div class="feature-icon UTILITIES">📡</div>
-      <div class="feature-info">
-        <div class="feature-name">Morse Code</div>
-        <div class="feature-desc">Encode and decode Morse code with audio playback</div>
-        <span class="feature-tag UTILITIES">Utilities</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="number system converter binary octal decimal hexadecimal">
-      <div class="feature-icon UTILITIES">🔢</div>
-      <div class="feature-info">
-        <div class="feature-name">Number System Converter</div>
-        <div class="feature-desc">Binary, Octal, Decimal and Hexadecimal converter</div>
-        <span class="feature-tag UTILITIES">Utilities</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="translation engine instant offline online translate">
-      <div class="feature-icon UTILITIES">🗣️</div>
-      <div class="feature-info">
-        <div class="feature-name">Translation Engine</div>
-        <div class="feature-desc">Instant offline and online translation</div>
-        <span class="feature-tag UTILITIES stub">Coming Soon</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="UTILITIES" data-name="weather live forecasts alerts">
-      <div class="feature-icon UTILITIES">🌤️</div>
-      <div class="feature-info">
-        <div class="feature-name">Weather</div>
-        <div class="feature-desc">Live weather forecasts and alerts</div>
-        <span class="feature-tag UTILITIES stub">Coming Soon</span>
-      </div>
+
+    <!-- SMART TOOLS (14) -->
+    <div class="section-header" style="grid-column:1/-1">
+      <div class="section-dot" style="background:var(--tools)"></div>
+      🛠 Smart Tools
     </div>
 
-    <!-- TOOLS -->
-    <div class="feature-card" data-cat="TOOLS" data-name="qr scanner scan generate qr codes camera">
-      <div class="feature-icon TOOLS">📷</div>
+    <div class="feature-card" data-cat="TOOLS" data-name="qr code generator text url upi payment zxing">
+      <div class="feature-icon TOOLS">▦</div>
       <div class="feature-info">
-        <div class="feature-name">QR Scanner</div>
-        <div class="feature-desc">Scan and generate QR codes with camera</div>
-        <span class="feature-tag TOOLS stub">Coming Soon</span>
+        <div class="feature-name">QR Code Generator <span class="new-badge">New</span></div>
+        <div class="feature-desc">Generate QR codes for text, URLs and UPI payment collection</div>
+        <span class="feature-tag TOOLS">Tools</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="TOOLS" data-name="flashlight torch control strobe modes">
+    <div class="feature-card" data-cat="TOOLS" data-name="object detector real-time on-device camera mlkit">
+      <div class="feature-icon TOOLS">🔍</div>
+      <div class="feature-info">
+        <div class="feature-name">Object Detector</div>
+        <div class="feature-desc">Real-time on-device object detection via camera (MLKit)</div>
+        <span class="feature-tag TOOLS">Tools</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="colour detector identify color camera hex code name">
+      <div class="feature-icon TOOLS">🎨</div>
+      <div class="feature-info">
+        <div class="feature-name">Colour Detector</div>
+        <div class="feature-desc">Identify any colour from camera with name and hex code</div>
+        <span class="feature-tag TOOLS">Tools</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="TOOLS" data-name="flashlight torch strobe modes instant">
       <div class="feature-icon TOOLS">🔦</div>
       <div class="feature-info">
         <div class="feature-name">Flashlight</div>
@@ -533,7 +625,7 @@
         <span class="feature-tag TOOLS stub">Coming Soon</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="TOOLS" data-name="compass magnetic tilt calibration direction">
+    <div class="feature-card" data-cat="TOOLS" data-name="compass magnetic tilt calibration">
       <div class="feature-icon TOOLS">🧭</div>
       <div class="feature-info">
         <div class="feature-name">Compass</div>
@@ -542,18 +634,18 @@
       </div>
     </div>
     <div class="feature-card" data-cat="TOOLS" data-name="speedometer gps speed tracker">
-      <div class="feature-icon TOOLS">🏎️</div>
+      <div class="feature-icon TOOLS">🚀</div>
       <div class="feature-info">
         <div class="feature-name">Speedometer</div>
         <div class="feature-desc">GPS-powered speed tracker</div>
         <span class="feature-tag TOOLS stub">Coming Soon</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="TOOLS" data-name="voice recorder audio recording waveform high-quality">
+    <div class="feature-card" data-cat="TOOLS" data-name="voice recorder high quality audio waveform">
       <div class="feature-icon TOOLS">🎙️</div>
       <div class="feature-info">
         <div class="feature-name">Voice Recorder</div>
-        <div class="feature-desc">High-quality audio recording with waveform</div>
+        <div class="feature-desc">High-quality audio recording with waveform display</div>
         <span class="feature-tag TOOLS stub">Coming Soon</span>
       </div>
     </div>
@@ -581,22 +673,6 @@
         <span class="feature-tag TOOLS stub">Coming Soon</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="TOOLS" data-name="object detector real-time on-device mlkit camera">
-      <div class="feature-icon TOOLS">🔭</div>
-      <div class="feature-info">
-        <div class="feature-name">Object Detector</div>
-        <div class="feature-desc">Real-time on-device object detection via MLKit camera</div>
-        <span class="feature-tag TOOLS">Smart Tools</span>
-      </div>
-    </div>
-    <div class="feature-card" data-cat="TOOLS" data-name="colour detector identify color camera hex code name">
-      <div class="feature-icon TOOLS">🎨</div>
-      <div class="feature-info">
-        <div class="feature-name">Colour Detector</div>
-        <div class="feature-desc">Identify any colour from camera with name and hex code</div>
-        <span class="feature-tag TOOLS">Smart Tools</span>
-      </div>
-    </div>
     <div class="feature-card" data-cat="TOOLS" data-name="barcode generator multiple formats">
       <div class="feature-icon TOOLS">🔳</div>
       <div class="feature-info">
@@ -622,20 +698,25 @@
       </div>
     </div>
 
-    <!-- SECURITY -->
-    <div class="feature-card" data-cat="SECURITY" data-name="encrypted notes aes-256 private personal notes">
-      <div class="feature-icon SECURITY">📝</div>
+    <!-- SECURITY (12) -->
+    <div class="section-header" style="grid-column:1/-1">
+      <div class="section-dot" style="background:var(--security)"></div>
+      🔒 Security &amp; Privacy
+    </div>
+
+    <div class="feature-card" data-cat="SECURITY" data-name="biometric vault secure password notes cards documents fingerprint">
+      <div class="feature-icon SECURITY">🔒</div>
       <div class="feature-info">
-        <div class="feature-name">Encrypted Notes</div>
-        <div class="feature-desc">Private, AES-256 encrypted personal notes</div>
-        <span class="feature-tag SECURITY stub">Coming Soon</span>
+        <div class="feature-name">Biometric Vault <span class="new-badge">New</span></div>
+        <div class="feature-desc">Store passwords, notes, cards &amp; docs — protected by fingerprint/PIN</div>
+        <span class="feature-tag SECURITY">Security</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="SECURITY" data-name="text encryptor aes-256 encrypt decrypt on-device">
+    <div class="feature-card" data-cat="SECURITY" data-name="encrypter decrypter aes-256 encrypt decrypt text image file on-device">
       <div class="feature-icon SECURITY">🔐</div>
       <div class="feature-info">
-        <div class="feature-name">Text Encryptor</div>
-        <div class="feature-desc">AES-256 encrypt and decrypt any text on-device</div>
+        <div class="feature-name">Encrypter and Decrypter <span class="new-badge">Updated</span></div>
+        <div class="feature-desc">AES-256 encrypt/decrypt text, images &amp; files on-device — no data leaves your phone</div>
         <span class="feature-tag SECURITY">Security</span>
       </div>
     </div>
@@ -655,12 +736,20 @@
         <span class="feature-tag SECURITY">Security</span>
       </div>
     </div>
-    <div class="feature-card" data-cat="SECURITY" data-name="base64 tool encode decode base64 strings">
+    <div class="feature-card" data-cat="SECURITY" data-name="base64 tool encode decode base64 strings on-device">
       <div class="feature-icon SECURITY">⚙️</div>
       <div class="feature-info">
         <div class="feature-name">Base64 Tool</div>
         <div class="feature-desc">Encode and decode Base64 strings on-device</div>
         <span class="feature-tag SECURITY">Security</span>
+      </div>
+    </div>
+    <div class="feature-card" data-cat="SECURITY" data-name="encrypted notes aes-256 private personal notes">
+      <div class="feature-icon SECURITY">📝</div>
+      <div class="feature-info">
+        <div class="feature-name">Encrypted Notes</div>
+        <div class="feature-desc">Private, AES-256 encrypted personal notes</div>
+        <span class="feature-tag SECURITY stub">Coming Soon</span>
       </div>
     </div>
     <div class="feature-card" data-cat="SECURITY" data-name="app locker protect apps biometric authentication">
@@ -704,6 +793,18 @@
         <div class="tech-item-desc">Radio, IPTV, and music playback</div>
       </div>
       <div class="tech-item">
+        <div class="tech-item-name">WorkManager</div>
+        <div class="tech-item-desc">Background tasks &amp; reminder scheduling</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">Biometric API</div>
+        <div class="tech-item-desc">Fingerprint &amp; device-credential vault auth</div>
+      </div>
+      <div class="tech-item">
+        <div class="tech-item-name">ZXing Core</div>
+        <div class="tech-item-desc">On-device QR code generation</div>
+      </div>
+      <div class="tech-item">
         <div class="tech-item-name">Retrofit + OkHttp</div>
         <div class="tech-item-desc">Type-safe HTTP networking</div>
       </div>
@@ -716,20 +817,49 @@
         <div class="tech-item-desc">On-device translation &amp; object detection</div>
       </div>
       <div class="tech-item">
-        <div class="tech-item-name">Pollinations AI</div>
-        <div class="tech-item-desc">Free AI image generation API</div>
+        <div class="tech-item-name">DataStore</div>
+        <div class="tech-item-desc">Preferences &amp; encrypted vault storage</div>
       </div>
       <div class="tech-item">
-        <div class="tech-item-name">Gradle Kotlin DSL</div>
-        <div class="tech-item-desc">Build system with version catalogs</div>
+        <div class="tech-item-name">GitHub Actions CI/CD</div>
+        <div class="tech-item-desc">Automated build, sign &amp; artifact upload</div>
       </div>
     </div>
   </div>
+
+  <!-- SOCIAL LINKS -->
+  <div class="social-section">
+    <h2>🌐 Connect with Nexus Wave Technologies</h2>
+    <div class="social-links">
+      <a class="social-link" href="https://www.instagram.com/nexuswave_technologies" target="_blank" rel="noopener">
+        <span class="social-icon">📸</span> Instagram
+      </a>
+      <a class="social-link" href="https://www.facebook.com/profile.php?id=61590971301245" target="_blank" rel="noopener">
+        <span class="social-icon">👥</span> Facebook
+      </a>
+      <a class="social-link" href="https://t.me/NexusWaveTechnologies27" target="_blank" rel="noopener">
+        <span class="social-icon">💬</span> Telegram
+      </a>
+      <a class="social-link" href="https://whatsapp.com/channel/0029VbDI2cL42Dcc9m6nfm3T" target="_blank" rel="noopener">
+        <span class="social-icon">💬</span> WhatsApp Channel
+      </a>
+      <a class="social-link" href="https://discord.gg/3yp8MMwJe" target="_blank" rel="noopener">
+        <span class="social-icon">🎮</span> Discord
+      </a>
+      <a class="social-link" href="https://github.com/NexusWaveTechnologies" target="_blank" rel="noopener">
+        <span class="social-icon">⌨️</span> GitHub
+      </a>
+      <a class="social-link" href="https://nexuswavetech.com" target="_blank" rel="noopener">
+        <span class="social-icon">🌐</span> Official Website
+      </a>
+    </div>
+  </div>
+
 </main>
 
 <footer>
-  &copy; 2025 <strong>Nexus Wave Technologies</strong> · Nexus Plus v1.1.0 ·
-  Built with Kotlin &amp; Jetpack Compose ·
+  &copy; 2025 <strong>Nexus Wave Technologies</strong> &middot; Nexus Plus v1.2.0 &middot;
+  Built with Kotlin &amp; Jetpack Compose &middot;
   <a href="NexusPlus/README.md">README</a>
 </footer>
 

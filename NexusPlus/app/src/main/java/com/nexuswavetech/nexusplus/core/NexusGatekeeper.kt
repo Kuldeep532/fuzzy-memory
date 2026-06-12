@@ -10,16 +10,19 @@ object NexusGatekeeper {
     }
 
     private val featureAccessMap: Map<FeatureId, FeatureAccess> = mapOf(
-        // Public features — available to all users including guests
+        // ── Public — available to all users including guests ──────────────────
         FeatureId.RADIO_PLAYER         to FeatureAccess.PUBLIC,
         FeatureId.PDF_READER           to FeatureAccess.PUBLIC,
+        FeatureId.PDF_SUITE            to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_TTS            to FeatureAccess.PUBLIC,
         FeatureId.FILE_MANAGER         to FeatureAccess.PUBLIC,
         FeatureId.CURRENCY_CONVERTER   to FeatureAccess.PUBLIC,
         FeatureId.QR_SCANNER           to FeatureAccess.PUBLIC,
+        FeatureId.QR_GENERATOR         to FeatureAccess.PUBLIC,
         FeatureId.WEATHER              to FeatureAccess.PUBLIC,
         FeatureId.UNIT_CONVERTER       to FeatureAccess.PUBLIC,
         FeatureId.CALCULATOR           to FeatureAccess.PUBLIC,
+        FeatureId.CALCULATOR_CENTER    to FeatureAccess.PUBLIC,
         FeatureId.FLASHLIGHT           to FeatureAccess.PUBLIC,
         FeatureId.COMPASS              to FeatureAccess.PUBLIC,
         FeatureId.SPEEDOMETER          to FeatureAccess.PUBLIC,
@@ -34,8 +37,8 @@ object NexusGatekeeper {
         FeatureId.CLIPBOARD_MANAGER    to FeatureAccess.PUBLIC,
         FeatureId.TRANSLATION_ENGINE   to FeatureAccess.PUBLIC,
         FeatureId.BARCODE_GENERATOR    to FeatureAccess.PUBLIC,
-        // New v1.1 — all public (on-device, no auth needed)
         FeatureId.TEXT_ENCRYPTOR       to FeatureAccess.PUBLIC,
+        FeatureId.ENCRYPTER_DECRYPTER  to FeatureAccess.PUBLIC,
         FeatureId.TEXT_TRANSLATOR      to FeatureAccess.PUBLIC,
         FeatureId.OBJECT_DETECTOR      to FeatureAccess.PUBLIC,
         FeatureId.COLOR_DETECTOR       to FeatureAccess.PUBLIC,
@@ -47,15 +50,19 @@ object NexusGatekeeper {
         FeatureId.NUMBER_SYSTEM        to FeatureAccess.PUBLIC,
         FeatureId.JSON_FORMATTER       to FeatureAccess.PUBLIC,
         FeatureId.REGEX_TESTER         to FeatureAccess.PUBLIC,
+        FeatureId.VOICE_TYPER          to FeatureAccess.PUBLIC,
+        FeatureId.DOC_HUB              to FeatureAccess.PUBLIC,
+        FeatureId.MY_REMINDER          to FeatureAccess.PUBLIC,
 
-        // Premium / authenticated-only features
+        // ── Authenticated only ────────────────────────────────────────────────
         FeatureId.AI_IMAGE_GENERATOR   to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.IPTV_PLAYER          to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.MUSIC_STREAMING      to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.ENCRYPTED_NOTES      to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.CONTACT_BACKUP       to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.SCREEN_RECORDER      to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.APP_LOCKER           to FeatureAccess.AUTHENTICATED_ONLY
+        FeatureId.APP_LOCKER           to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.BIOMETRIC_VAULT      to FeatureAccess.AUTHENTICATED_ONLY
     )
 
     fun checkAccess(featureId: FeatureId, session: UserSession, featureName: String): AccessResult {

@@ -36,7 +36,6 @@ fun MoreScreen(rootNavController: NavController) {
         contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         item {
-            // User profile card
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -70,9 +69,7 @@ fun MoreScreen(rootNavController: NavController) {
             }
         }
 
-        item {
-            SectionHeader("Legal & Information")
-        }
+        item { SectionHeader("Legal & Information") }
 
         item {
             MoreMenuItem(
@@ -104,25 +101,21 @@ fun MoreScreen(rootNavController: NavController) {
             )
         }
 
-        item {
-            SectionHeader("Developer")
-        }
+        item { SectionHeader("Connect with Nexus Wave") }
 
         item {
             SocialMediaLinksSection(modifier = Modifier.fillMaxWidth())
         }
 
-        item {
-            SectionHeader("App")
-        }
+        item { SectionHeader("App") }
 
         item {
             MoreMenuItem(
                 icon = Icons.Filled.NewReleases,
                 title = "App Version",
-                subtitle = "Nexus Plus v1.0.0",
+                subtitle = "Nexus Plus v1.2.0",
                 onClick = {},
-                contentDesc = "App version: Nexus Plus version 1.0.0"
+                contentDesc = "App version: Nexus Plus version 1.2.0"
             )
         }
 
