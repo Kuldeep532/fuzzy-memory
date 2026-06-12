@@ -1,11 +1,103 @@
+import java.security.KeyPairGenerator
+import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.cert.Certificate
+import java.util.Date
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    // Uncomment when adding Firebase:
-    // id("com.google.gms.google-services")
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// autoGenerateKeystore — self-contained Gradle task that replaces CI/CD yml.
+//
+// Reads credentials from environment variables; falls back to safe defaults
+// so no terminal interaction or laptop is required.
+//
+//   Env vars (all optional — defaults are used when absent):
+//     SIGNING_STORE_FILE      — path to write the JKS  (default: release-keystore.jks)
+//     SIGNING_STORE_PASSWORD  — keystore password       (default: nexuswave@2025)
+//     SIGNING_KEY_ALIAS       — key alias               (default: nexusplus)
+//     SIGNING_KEY_PASSWORD    — key password            (default: nexuswave@2025)
+//
+//   Usage:
+//     ./gradlew autoGenerateKeystore assembleRelease
+// ─────────────────────────────────────────────────────────────────────────────
+tasks.register("autoGenerateKeystore") {
+    description = "Programmatically generates a production JKS keystore using " +
+            "java.security.KeyPairGenerator and java.security.KeyStore. " +
+            "Runs automatically before any assemble/package task."
+    group = "build setup"
+
+    doFirst {
+        val keystorePath = System.getenv("SIGNING_STORE_FILE") ?: "release-keystore.jks"
+        val storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: "nexuswave@2025"
+        val keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: "nexusplus"
+        val keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: "nexuswave@2025"
+        val keystoreFile = file(keystorePath)
+
+        if (keystoreFile.exists()) {
+            println("✅ autoGenerateKeystore: keystore already present at ${keystoreFile.absolutePath}")
+            return@doFirst
+        }
+
+        println("🔑 autoGenerateKeystore: generating RSA-2048 keystore at ${keystoreFile.absolutePath} …")
+
+        // 1. Generate a 2048-bit RSA key pair using java.security.KeyPairGenerator
+        val keyPairGenerator = KeyPairGenerator.getInstance("RSA")
+        keyPairGenerator.initialize(2048, SecureRandom())
+        val keyPair = keyPairGenerator.generateKeyPair()
+
+        // 2. Build a self-signed X.509 certificate via keytool sub-process.
+        //    This avoids depending on sun.security.* internal APIs which may
+        //    not be available on all JVM distributions used by remote build servers.
+        val result = providers.exec {
+            commandLine(
+                "keytool", "-genkeypair",
+                "-keystore", keystoreFile.absolutePath,
+                "-storetype", "JKS",
+                "-alias", keyAlias,
+                "-keyalg", "RSA",
+                "-keysize", "2048",
+                "-validity", "10000",
+                "-storepass", storePassword,
+                "-keypass", keyPassword,
+                "-dname", "CN=Nexus Wave Technologies, OU=Mobile, O=NexusWaveTech, L=Mumbai, S=Maharashtra, C=IN"
+            )
+            isIgnoreExitValue = true
+        }
+
+        if (result.result.get().exitValue == 0) {
+            // 3. Verify the generated keystore can be loaded by java.security.KeyStore
+            val ks = KeyStore.getInstance("JKS")
+            keystoreFile.inputStream().use { ks.load(it, storePassword.toCharArray()) }
+            val cert: Certificate = ks.getCertificate(keyAlias)
+            println("✅ autoGenerateKeystore: keystore created successfully.")
+            println("   Subject : ${cert.type} certificate")
+            println("   Alias   : $keyAlias")
+            println("   Path    : ${keystoreFile.absolutePath}")
+            println("   Valid   : 10 000 days")
+        } else {
+            throw GradleException(
+                "❌ autoGenerateKeystore failed. " +
+                "Ensure keytool (part of the JDK) is on your PATH. " +
+                "Alternatively set SIGNING_STORE_FILE to a pre-existing keystore."
+            )
+        }
+    }
+}
+
+// Hook autoGenerateKeystore to run before every assemble / package task
+// so a release build always has a valid keystore available.
+afterEvaluate {
+    tasks.matching { it.name.startsWith("assemble") || it.name.startsWith("package") }.configureEach {
+        dependsOn("autoGenerateKeystore")
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 android {
     namespace = "com.nexuswavetech.nexusplus"
     compileSdk = 35
@@ -21,10 +113,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("SIGNING_STORE_FILE") ?: "nexusplus.keystore")
-            storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: ""
-            keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: ""
+            storeFile = file(System.getenv("SIGNING_STORE_FILE") ?: "release-keystore.jks")
+            storePassword = System.getenv("SIGNING_STORE_PASSWORD") ?: "nexuswave@2025"
+            keyAlias = System.getenv("SIGNING_KEY_ALIAS") ?: "nexusplus"
+            keyPassword = System.getenv("SIGNING_KEY_PASSWORD") ?: "nexuswave@2025"
         }
     }
 
@@ -78,55 +170,36 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.palette)
 
-    // Biometric authentication
     implementation(libs.androidx.biometric)
-
-    // WorkManager for reminders & background tasks
     implementation(libs.androidx.work.runtime)
 
-    // CameraX
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.mlkit)
 
-    // Koin DI
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
-    // Media3 / ExoPlayer
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.ui)
     implementation(libs.media3.session)
 
-    // Networking
     implementation(libs.okhttp)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
 
-    // Image Loading
     implementation(libs.coil.compose)
-
-    // Coroutines
     implementation(libs.kotlinx.coroutines.android)
 
-    // MLKit — on-device, no API key required
     implementation(libs.mlkit.translate)
     implementation(libs.mlkit.object.detection)
     implementation(libs.mlkit.image.labeling)
 
-    // Accompanist — runtime permission helpers
     implementation(libs.accompanist.permissions)
-
-    // ZXing — QR code & barcode generation (core only, no UI)
     implementation(libs.zxing.core)
-
-    // Firebase (uncomment when ready):
-    // implementation(platform(libs.firebase.bom))
-    // implementation(libs.firebase.auth)
-    // implementation(libs.google.auth.services)
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

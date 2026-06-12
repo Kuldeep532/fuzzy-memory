@@ -57,6 +57,9 @@ enum class FeatureId {
     BIOMETRIC_VAULT,
     MY_REMINDER,
 
+    // ── Forms ─────────────────────────────────────────────────────────────────
+    FORM_X,
+
     // Legacy alias kept for backwards-compat with DataStore favorite entries
     PDF_READER,
     TEXT_ENCRYPTOR,

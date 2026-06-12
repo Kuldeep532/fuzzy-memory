@@ -376,6 +376,16 @@ object FeatureCatalog {
             icon = Icons.Filled.Contacts,
             route = Screen.Stub.route + "/contacts",
             category = FeatureCategory.SECURITY
+        ),
+
+        // ── Forms ─────────────────────────────────────────────────────────────
+        FeatureItem(
+            id = FeatureId.FORM_X,
+            name = "Form X",
+            description = "Universal reactive form with auto-validation — email, password strength, and spec data",
+            icon = Icons.Filled.Assignment,
+            route = Screen.FormX.route,
+            category = FeatureCategory.UTILITIES
         )
     )
 }

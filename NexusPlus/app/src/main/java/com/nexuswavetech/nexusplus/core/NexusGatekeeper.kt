@@ -53,6 +53,7 @@ object NexusGatekeeper {
         FeatureId.VOICE_TYPER          to FeatureAccess.PUBLIC,
         FeatureId.DOC_HUB              to FeatureAccess.PUBLIC,
         FeatureId.MY_REMINDER          to FeatureAccess.PUBLIC,
+        FeatureId.FORM_X               to FeatureAccess.PUBLIC,
 
         // ── Authenticated only ────────────────────────────────────────────────
         FeatureId.AI_IMAGE_GENERATOR   to FeatureAccess.AUTHENTICATED_ONLY,

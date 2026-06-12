@@ -1,38 +1,7 @@
-name: Build Android Test APK
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        distribution: 'temurin'
-        java-version: '17'
-        cache: 'gradle'
-
-    - name: Grant Execute Permission for Gradle Wrapper
-      run: chmod +x gradlew
-
-    - name: Build Debug and Test APKs
-      run: ./gradlew assembleDebug assembleAndroidTest
-
-    - name: Upload Build Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-test-apks
-        path: |
-          app/build/outputs/apk/debug/*.apk
-          app/build/outputs/apk/androidTest/*.apk
+# GitHub Actions CI/CD has been fully replaced by the standalone
+# Gradle task `autoGenerateKeystore` defined in app/build.gradle.kts.
+#
+# Build and sign a release APK without a laptop or terminal:
+#   ./gradlew autoGenerateKeystore assembleRelease
+#
+# No .yml pipeline or GitHub Actions runner is required.

@@ -43,6 +43,9 @@ sealed class Screen(val route: String) {
     object QrCode           : Screen("feature/qr_code")
     object DocHub           : Screen("feature/doc_hub")
 
+    // ── Forms ────────────────────────────────────────────────────────────────
+    object FormX            : Screen("feature/form_x")
+
     // ── Legal screens ────────────────────────────────────────────────────────
     object AboutUs          : Screen("legal/about")
     object PrivacyPolicy    : Screen("legal/privacy")

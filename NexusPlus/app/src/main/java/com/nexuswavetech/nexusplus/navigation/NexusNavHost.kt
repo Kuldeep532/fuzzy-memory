@@ -31,6 +31,7 @@ import com.nexuswavetech.nexusplus.features.qrcode.QrCodeScreen
 import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterScreen
 import com.nexuswavetech.nexusplus.features.dochub.DocHubScreen
 import com.nexuswavetech.nexusplus.features.voicetyper.VoiceTyperScreen
+import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
@@ -88,6 +89,9 @@ fun NexusNavHost() {
         composable(Screen.ColorDetector.route)    { ColorDetectorScreen    (onBack = { navController.popBackStack() }) }
         composable(Screen.QrCode.route)           { QrCodeScreen           (onBack = { navController.popBackStack() }) }
         composable(Screen.DocHub.route)           { DocHubScreen           (onBack = { navController.popBackStack() }) }
+
+        // ── Forms ────────────────────────────────────────────────────────────
+        composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }
 
         // ── Legal ────────────────────────────────────────────────────────────
         composable(Screen.AboutUs.route)         { AboutUsScreen         (onBack = { navController.popBackStack() }) }
