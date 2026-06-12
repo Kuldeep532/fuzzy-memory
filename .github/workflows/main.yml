@@ -1,7 +1,0 @@
-# GitHub Actions CI/CD has been fully replaced by the standalone
-# Gradle task `autoGenerateKeystore` defined in app/build.gradle.kts.
-#
-# Build and sign a release APK without a laptop or terminal:
-#   ./gradlew autoGenerateKeystore assembleRelease
-#
-# No .yml pipeline or GitHub Actions runner is required.
