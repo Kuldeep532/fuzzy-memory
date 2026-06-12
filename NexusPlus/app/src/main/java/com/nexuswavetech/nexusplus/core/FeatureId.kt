@@ -1,10 +1,7 @@
 package com.nexuswavetech.nexusplus.core
 
-/**
- * Canonical identifiers for every feature in Nexus Plus.
- * These IDs drive navigation, gatekeeper checks, and favourites storage.
- */
 enum class FeatureId {
+    // ── Original 30 ──────────────────────────────────────────────────────────
     RADIO_PLAYER,
     PDF_READER,
     AI_IMAGE_GENERATOR,
@@ -34,5 +31,19 @@ enum class FeatureId {
     TASK_MANAGER,
     CLIPBOARD_MANAGER,
     TRANSLATION_ENGINE,
-    BARCODE_GENERATOR
+    BARCODE_GENERATOR,
+
+    // ── New Advanced Features (v1.1) ─────────────────────────────────────────
+    TEXT_ENCRYPTOR,
+    TEXT_TRANSLATOR,
+    OBJECT_DETECTOR,
+    COLOR_DETECTOR,
+    SMART_IMAGE_EDITOR,
+    HASH_GENERATOR,
+    PASSWORD_GENERATOR,
+    BASE64_TOOL,
+    MORSE_CODE,
+    NUMBER_SYSTEM,
+    JSON_FORMATTER,
+    REGEX_TESTER
 }

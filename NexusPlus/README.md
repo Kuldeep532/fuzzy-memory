@@ -1,7 +1,7 @@
 # Nexus Plus — Android Source Code
 
 **Developer:** Nexus Wave Technologies  
-**Version:** 1.0.0  
+**Version:** 1.1.0 (42 features)  
 **Min SDK:** 26 (Android 8.0) | **Target SDK:** 35 (Android 15)
 
 ---

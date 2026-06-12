@@ -14,8 +14,8 @@ android {
         applicationId = "com.nexuswavetech.nexusplus"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -44,6 +44,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 dependencies {
@@ -59,6 +65,14 @@ dependencies {
     implementation(libs.androidx.material.icons)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.palette)
+
+    // CameraX
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.mlkit)
 
     // Koin DI
     implementation(libs.koin.android)
@@ -80,6 +94,14 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
+    // MLKit — on-device, no API key required
+    implementation(libs.mlkit.translate)
+    implementation(libs.mlkit.object.detection)
+    implementation(libs.mlkit.image.labeling)
+
+    // Accompanist — runtime permission helpers
+    implementation(libs.accompanist.permissions)
 
     // Firebase (uncomment when ready):
     // implementation(platform(libs.firebase.bom))

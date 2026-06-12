@@ -4,13 +4,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 
-/**
- * Single source of truth for all 30 feature entries.
- * Icons, names, routes, and categories are all declared here.
- */
 object FeatureCatalog {
 
     val allFeatures: List<FeatureItem> = listOf(
+        // ── Media & Entertainment ────────────────────────────────────────────
         FeatureItem(
             id = FeatureId.RADIO_PLAYER,
             name = "Online Radio",
@@ -20,28 +17,12 @@ object FeatureCatalog {
             category = FeatureCategory.MEDIA
         ),
         FeatureItem(
-            id = FeatureId.PDF_READER,
-            name = "PDF Reader",
-            description = "View and navigate PDF documents natively",
-            icon = Icons.Filled.PictureAsPdf,
-            route = Screen.PdfReader.route,
-            category = FeatureCategory.PRODUCTIVITY
-        ),
-        FeatureItem(
             id = FeatureId.AI_IMAGE_GENERATOR,
             name = "AI Image Generator",
             description = "Generate stunning images from text prompts",
             icon = Icons.Filled.AutoAwesome,
             route = Screen.AiImageGenerator.route,
             category = FeatureCategory.MEDIA
-        ),
-        FeatureItem(
-            id = FeatureId.NEXUS_TTS,
-            name = "Nexus Speech Engine",
-            description = "Advanced multi-language text-to-speech synthesis",
-            icon = Icons.Filled.RecordVoiceOver,
-            route = Screen.NexusTts.route,
-            category = FeatureCategory.UTILITIES
         ),
         FeatureItem(
             id = FeatureId.IPTV_PLAYER,
@@ -60,6 +41,24 @@ object FeatureCatalog {
             category = FeatureCategory.MEDIA
         ),
         FeatureItem(
+            id = FeatureId.SMART_IMAGE_EDITOR,
+            name = "Smart Image Editor",
+            description = "Crop, rotate, flip and adjust images on-device",
+            icon = Icons.Filled.PhotoFilter,
+            route = Screen.SmartImageEditor.route,
+            category = FeatureCategory.MEDIA
+        ),
+
+        // ── Productivity ─────────────────────────────────────────────────────
+        FeatureItem(
+            id = FeatureId.PDF_READER,
+            name = "PDF Reader",
+            description = "View and navigate PDF documents natively",
+            icon = Icons.Filled.PictureAsPdf,
+            route = Screen.PdfReader.route,
+            category = FeatureCategory.PRODUCTIVITY
+        ),
+        FeatureItem(
             id = FeatureId.FILE_MANAGER,
             name = "File Manager",
             description = "Browse and manage your device files",
@@ -68,35 +67,53 @@ object FeatureCatalog {
             category = FeatureCategory.PRODUCTIVITY
         ),
         FeatureItem(
+            id = FeatureId.ALARM_CLOCK,
+            name = "Alarm Clock",
+            description = "Smart alarm with custom sounds",
+            icon = Icons.Filled.Alarm,
+            route = Screen.Stub.route + "/alarm",
+            category = FeatureCategory.PRODUCTIVITY
+        ),
+        FeatureItem(
+            id = FeatureId.CLIPBOARD_MANAGER,
+            name = "Clipboard Manager",
+            description = "Save, organise, and reuse clipboard history",
+            icon = Icons.Filled.ContentPaste,
+            route = Screen.Stub.route + "/clipboard",
+            category = FeatureCategory.PRODUCTIVITY
+        ),
+        FeatureItem(
+            id = FeatureId.JSON_FORMATTER,
+            name = "JSON Formatter",
+            description = "Format, validate and minify JSON — fully offline",
+            icon = Icons.Filled.DataObject,
+            route = Screen.JsonFormatter.route,
+            category = FeatureCategory.PRODUCTIVITY
+        ),
+        FeatureItem(
+            id = FeatureId.REGEX_TESTER,
+            name = "Regex Tester",
+            description = "Test and debug regular expressions on-device",
+            icon = Icons.Filled.Code,
+            route = Screen.RegexTester.route,
+            category = FeatureCategory.PRODUCTIVITY
+        ),
+
+        // ── Utilities ────────────────────────────────────────────────────────
+        FeatureItem(
+            id = FeatureId.NEXUS_TTS,
+            name = "Nexus Speech Engine",
+            description = "Multi-language text-to-speech with auto-locale detection",
+            icon = Icons.Filled.RecordVoiceOver,
+            route = Screen.NexusTts.route,
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
             id = FeatureId.CURRENCY_CONVERTER,
             name = "Currency Converter",
             description = "Real-time currency conversion rates",
             icon = Icons.Filled.CurrencyExchange,
             route = Screen.Stub.route + "/currency",
-            category = FeatureCategory.UTILITIES
-        ),
-        FeatureItem(
-            id = FeatureId.ENCRYPTED_NOTES,
-            name = "Encrypted Notes",
-            description = "Private, AES-encrypted personal notes",
-            icon = Icons.Filled.Lock,
-            route = Screen.Stub.route + "/notes",
-            category = FeatureCategory.SECURITY
-        ),
-        FeatureItem(
-            id = FeatureId.QR_SCANNER,
-            name = "QR Scanner",
-            description = "Scan and generate QR codes with camera",
-            icon = Icons.Filled.QrCodeScanner,
-            route = Screen.Stub.route + "/qr",
-            category = FeatureCategory.TOOLS
-        ),
-        FeatureItem(
-            id = FeatureId.WEATHER,
-            name = "Weather",
-            description = "Live weather forecasts and alerts",
-            icon = Icons.Filled.WbSunny,
-            route = Screen.Stub.route + "/weather",
             category = FeatureCategory.UTILITIES
         ),
         FeatureItem(
@@ -114,6 +131,56 @@ object FeatureCatalog {
             icon = Icons.Filled.Calculate,
             route = Screen.Stub.route + "/calculator",
             category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.STOPWATCH,
+            name = "Stopwatch",
+            description = "Precision stopwatch with lap tracking",
+            icon = Icons.Filled.Timer,
+            route = Screen.Stub.route + "/stopwatch",
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.WORLD_CLOCK,
+            name = "World Clock",
+            description = "Track time zones across the globe",
+            icon = Icons.Filled.Language,
+            route = Screen.Stub.route + "/worldclock",
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.TEXT_TRANSLATOR,
+            name = "Text Translator",
+            description = "On-device translation — 50+ languages, no internet needed",
+            icon = Icons.Filled.Translate,
+            route = Screen.TextTranslator.route,
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.MORSE_CODE,
+            name = "Morse Code",
+            description = "Encode and decode Morse code with audio playback",
+            icon = Icons.Filled.Keyboard,
+            route = Screen.MorseCode.route,
+            category = FeatureCategory.UTILITIES
+        ),
+        FeatureItem(
+            id = FeatureId.NUMBER_SYSTEM,
+            name = "Number System Converter",
+            description = "Binary, Octal, Decimal and Hexadecimal converter",
+            icon = Icons.Filled.Tag,
+            route = Screen.NumberSystem.route,
+            category = FeatureCategory.UTILITIES
+        ),
+
+        // ── Smart Tools ──────────────────────────────────────────────────────
+        FeatureItem(
+            id = FeatureId.QR_SCANNER,
+            name = "QR Scanner",
+            description = "Scan and generate QR codes with camera",
+            icon = Icons.Filled.QrCodeScanner,
+            route = Screen.Stub.route + "/qr",
+            category = FeatureCategory.TOOLS
         ),
         FeatureItem(
             id = FeatureId.FLASHLIGHT,
@@ -140,60 +207,12 @@ object FeatureCatalog {
             category = FeatureCategory.TOOLS
         ),
         FeatureItem(
-            id = FeatureId.ALARM_CLOCK,
-            name = "Alarm Clock",
-            description = "Smart alarm with custom sounds",
-            icon = Icons.Filled.Alarm,
-            route = Screen.Stub.route + "/alarm",
-            category = FeatureCategory.PRODUCTIVITY
-        ),
-        FeatureItem(
-            id = FeatureId.STOPWATCH,
-            name = "Stopwatch",
-            description = "Precision stopwatch with lap tracking",
-            icon = Icons.Filled.Timer,
-            route = Screen.Stub.route + "/stopwatch",
-            category = FeatureCategory.UTILITIES
-        ),
-        FeatureItem(
-            id = FeatureId.WORLD_CLOCK,
-            name = "World Clock",
-            description = "Track time zones across the globe",
-            icon = Icons.Filled.Language,
-            route = Screen.Stub.route + "/worldclock",
-            category = FeatureCategory.UTILITIES
-        ),
-        FeatureItem(
-            id = FeatureId.CONTACT_BACKUP,
-            name = "Contact Backup",
-            description = "Backup and restore your contacts securely",
-            icon = Icons.Filled.Contacts,
-            route = Screen.Stub.route + "/contacts",
-            category = FeatureCategory.SECURITY
-        ),
-        FeatureItem(
             id = FeatureId.VOICE_RECORDER,
             name = "Voice Recorder",
             description = "High-quality audio recording with waveform",
             icon = Icons.Filled.Mic,
             route = Screen.Stub.route + "/recorder",
             category = FeatureCategory.TOOLS
-        ),
-        FeatureItem(
-            id = FeatureId.SCREEN_RECORDER,
-            name = "Screen Recorder",
-            description = "Record your screen with audio overlay",
-            icon = Icons.Filled.ScreenShare,
-            route = Screen.Stub.route + "/screenrecorder",
-            category = FeatureCategory.TOOLS
-        ),
-        FeatureItem(
-            id = FeatureId.APP_LOCKER,
-            name = "App Locker",
-            description = "Protect apps with biometric authentication",
-            icon = Icons.Filled.Security,
-            route = Screen.Stub.route + "/applocker",
-            category = FeatureCategory.SECURITY
         ),
         FeatureItem(
             id = FeatureId.WIFI_ANALYZER,
@@ -214,10 +233,92 @@ object FeatureCatalog {
         FeatureItem(
             id = FeatureId.STORAGE_ANALYZER,
             name = "Storage Analyzer",
-            description = "Visualize and free up device storage",
+            description = "Visualise and free up device storage",
             icon = Icons.Filled.Storage,
             route = Screen.Stub.route + "/storage",
             category = FeatureCategory.TOOLS
+        ),
+        FeatureItem(
+            id = FeatureId.OBJECT_DETECTOR,
+            name = "Object Detector",
+            description = "Real-time on-device object detection via camera",
+            icon = Icons.Filled.CenterFocusStrong,
+            route = Screen.ObjectDetector.route,
+            category = FeatureCategory.TOOLS
+        ),
+        FeatureItem(
+            id = FeatureId.COLOR_DETECTOR,
+            name = "Colour Detector",
+            description = "Identify any colour from camera with name and hex code",
+            icon = Icons.Filled.Colorize,
+            route = Screen.ColorDetector.route,
+            category = FeatureCategory.TOOLS
+        ),
+        FeatureItem(
+            id = FeatureId.BARCODE_GENERATOR,
+            name = "Barcode Generator",
+            description = "Generate barcodes in multiple formats",
+            icon = Icons.Filled.QrCode,
+            route = Screen.Stub.route + "/barcode",
+            category = FeatureCategory.TOOLS
+        ),
+
+        // ── Security & Privacy ───────────────────────────────────────────────
+        FeatureItem(
+            id = FeatureId.ENCRYPTED_NOTES,
+            name = "Encrypted Notes",
+            description = "Private, AES-256 encrypted personal notes",
+            icon = Icons.Filled.Lock,
+            route = Screen.Stub.route + "/notes",
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
+            id = FeatureId.TEXT_ENCRYPTOR,
+            name = "Text Encryptor",
+            description = "AES-256 encrypt and decrypt any text on-device",
+            icon = Icons.Filled.EnhancedEncryption,
+            route = Screen.TextEncryptor.route,
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
+            id = FeatureId.HASH_GENERATOR,
+            name = "Hash Generator",
+            description = "Generate MD5, SHA-1, SHA-256, SHA-512 hashes",
+            icon = Icons.Filled.Fingerprint,
+            route = Screen.HashGenerator.route,
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
+            id = FeatureId.PASSWORD_GENERATOR,
+            name = "Password Generator",
+            description = "Create strong, customisable passwords instantly",
+            icon = Icons.Filled.Key,
+            route = Screen.PasswordGenerator.route,
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
+            id = FeatureId.BASE64_TOOL,
+            name = "Base64 Tool",
+            description = "Encode and decode Base64 strings on-device",
+            icon = Icons.Filled.SwapVert,
+            route = Screen.Base64Tool.route,
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
+            id = FeatureId.APP_LOCKER,
+            name = "App Locker",
+            description = "Protect apps with biometric authentication",
+            icon = Icons.Filled.Security,
+            route = Screen.Stub.route + "/applocker",
+            category = FeatureCategory.SECURITY
+        ),
+        FeatureItem(
+            id = FeatureId.CONTACT_BACKUP,
+            name = "Contact Backup",
+            description = "Backup and restore your contacts securely",
+            icon = Icons.Filled.Contacts,
+            route = Screen.Stub.route + "/contacts",
+            category = FeatureCategory.SECURITY
         ),
         FeatureItem(
             id = FeatureId.TASK_MANAGER,
@@ -228,28 +329,28 @@ object FeatureCatalog {
             category = FeatureCategory.TOOLS
         ),
         FeatureItem(
-            id = FeatureId.CLIPBOARD_MANAGER,
-            name = "Clipboard Manager",
-            description = "Save, organise, and reuse clipboard history",
-            icon = Icons.Filled.ContentPaste,
-            route = Screen.Stub.route + "/clipboard",
-            category = FeatureCategory.PRODUCTIVITY
-        ),
-        FeatureItem(
             id = FeatureId.TRANSLATION_ENGINE,
             name = "Translation Engine",
             description = "Instant offline and online translation",
-            icon = Icons.Filled.Translate,
+            icon = Icons.Filled.GTranslate,
             route = Screen.Stub.route + "/translate",
             category = FeatureCategory.UTILITIES
         ),
         FeatureItem(
-            id = FeatureId.BARCODE_GENERATOR,
-            name = "Barcode Generator",
-            description = "Generate barcodes in multiple formats",
-            icon = Icons.Filled.QrCode,
-            route = Screen.Stub.route + "/barcode",
+            id = FeatureId.SCREEN_RECORDER,
+            name = "Screen Recorder",
+            description = "Record your screen with audio overlay",
+            icon = Icons.Filled.ScreenShare,
+            route = Screen.Stub.route + "/screenrecorder",
             category = FeatureCategory.TOOLS
+        ),
+        FeatureItem(
+            id = FeatureId.WEATHER,
+            name = "Weather",
+            description = "Live weather forecasts and alerts",
+            icon = Icons.Filled.WbSunny,
+            route = Screen.Stub.route + "/weather",
+            category = FeatureCategory.UTILITIES
         )
     )
 }
