@@ -24,13 +24,19 @@ jobs:
     - name: Grant Execute Permission for Gradlew
       run: chmod +x NexusPlus/gradlew
 
+    # Humne yahan env joda hai taaki purana galat variable bypass ho jaye
     - name: Compile and Build Debug APK (Unsigned)
-      run: ./NexusPlus/gradlew assembleDebug --stacktrace
+      working-directory: ./NexusPlus
+      env:
+        GRADLE_OPTS: ""
+      run: ./gradlew assembleDebug -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" --stacktrace
       
     - name: Run Unit Tests
-      run: ./NexusPlus/gradlew testDebugUnitTest --stacktrace
+      working-directory: ./NexusPlus
+      env:
+        GRADLE_OPTS: ""
+      run: ./gradlew testDebugUnitTest -Dorg.gradle.jvmargs="-Xmx2048m" --stacktrace
 
-    # Nayi step: Isse APK seedhe GitHub par upload ho jayega download karne ke liye
     - name: Upload Debug APK for Testing
       uses: actions/upload-artifact@v4
       with:
