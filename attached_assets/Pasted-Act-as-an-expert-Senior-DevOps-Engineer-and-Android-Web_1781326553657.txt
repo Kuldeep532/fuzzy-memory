@@ -1,0 +1,25 @@
+Act as an expert Senior DevOps Engineer and Android/Web Automation specialist. 
+
+CRITICAL CONTEXT & PRE-REQUISITES:
+1. I am building a fully automated CI/CD pipeline using GitHub Actions.
+2. I have already taken a complete and secure backup of all my important files and data. You have explicit permission to delete, overwrite, or restructure any files in the current workspace that are causing compilation errors or obstructing a clean architectural design.
+3. DO NOT just give me instructions or placeholders for the GitHub Actions configuration. You must provide the COMPLETE, production-ready source code of the YAML file directly in the chat response. Do not generate a downloadable file; print the full YAML source code in a markdown block so I can easily copy and paste it.
+
+YOUR TASKS:
+
+1. WORKSPACE CLEANUP & BUG FIXING:
+   - Identify and resolve all compilation, dependency mismatch, and Gradle configuration issues in the codebase.
+   - Delete any redundant, deprecated, or corrupted build artifacts, cache configurations, or broken modules that prevent a successful build.
+
+2. ADVANCED GITHUB ACTIONS (.YML) ARCHITECTURE:
+   - Provide the complete source code for `.github/workflows/main.yml`.
+   - The pipeline must safely inject all sensitive credentials at runtime using GitHub Repository Secrets. NO hardcoded values are allowed.
+   - You must handle the binary Keystore decoding seamlessly by reading from a ${{ secrets.KEYSTORE_BASE64 }} string and reconstructing it securely during the runner execution.
+
+3. COMPREHENSIVE SECRETS CONFIGURATION:
+   Ensure the YAML script includes proper environment variables (env) and secret mappings for the following critical integrations:
+   - Keystore Credentials: KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD
+   - Firebase Services & Auth: FIREBASE_TOKEN, FIREBASE_APP_ID, Google Services JSON/Plists (encoded or dynamically generated via secrets).
+   - Core API Integrations: All third-party REST API keys, database URLs, and server authentication tokens needed for a successful compilation and deployment.
+
+Please output the complete, unfetched, and fully-coded YAML block along with a breakdown of which exact secret keys I need to add to my GitHub Repository Settings.
