@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Nexus Plus</string>
     <string name="developer_name">Nexus Wave Technologies</string>
-    <string name="app_version">Version 1.0.0</string>
+    <string name="app_version">Version 1.2.0</string>
 
     <!-- Welcome Screen -->
     <string name="welcome_title">Welcome to Nexus Plus</string>
@@ -34,4 +34,29 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="terms_conditions">Terms &amp; Conditions</string>
     <string name="developed_by">Developed and Maintained by Nexus Wave Technologies</string>
+
+    <!-- Nexus Speech Engine (NSE 2.0) -->
+    <string name="nse_title">Nexus Speech Engine</string>
+    <string name="nse_input_label">Enter text to speak\u2026</string>
+    <string name="nse_input_placeholder">Type or paste text in any language</string>
+    <string name="nse_mode_auto">Auto</string>
+    <string name="nse_mode_single">Single Voice</string>
+    <string name="nse_mode_mix">Mix</string>
+    <string name="nse_btn_speak">Speak</string>
+    <string name="nse_btn_stop">Stop</string>
+    <string name="nse_btn_clear">Clear</string>
+    <string name="nse_initialising">Nexus Speech Engine initialising\u2026</string>
+    <string name="nse_detected_language">Auto-detected: %1$s</string>
+    <string name="nse_voices_count">%1$d voices available on this device</string>
+    <string name="nse_voice_picker_title">Choose a Voice</string>
+    <string name="nse_voice_auto_option">Auto \u2014 detect language automatically</string>
+    <string name="cd_nse_speak">Speak. Activates Nexus Speech Engine synthesis.</string>
+    <string name="cd_nse_stop">Stop speech playback.</string>
+    <string name="cd_nse_clear">Clear text input.</string>
+    <string name="cd_nse_input">Text input for speech synthesis. Language is detected automatically from your input.</string>
+    <string name="cd_nse_detected">Language auto-detected as %1$s</string>
+
+    <!-- Sacred greeting — screen-reader optimised -->
+    <string name="jai_shri_krishna">Jai Shri Krishna</string>
+    <string name="cd_jai_shri_krishna">Jai Shri Krishna</string>
 </resources>

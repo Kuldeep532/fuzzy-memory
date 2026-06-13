@@ -1,1 +1,2 @@
 - [Nexus Plus v1.2.0 architecture](nexus-plus-arch.md) — Package, DI, nav, and feature patterns for this project.
+- [NSE 2.0 architecture](nse-architecture.md) — Nexus Speech Engine 2.0 design decisions and layer contracts.

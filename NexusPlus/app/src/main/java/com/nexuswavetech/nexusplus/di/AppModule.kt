@@ -21,32 +21,44 @@ import com.nexuswavetech.nexusplus.features.regextester.RegexTesterViewModel
 import com.nexuswavetech.nexusplus.features.reminder.MyReminderViewModel
 import com.nexuswavetech.nexusplus.features.qrcode.QrCodeViewModel
 import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterViewModel
+import com.nexuswavetech.nexusplus.features.tts.NseAndroidEngine
+import com.nexuswavetech.nexusplus.features.tts.NseAudioFocusManager
+import com.nexuswavetech.nexusplus.features.tts.NseRepository
+import com.nexuswavetech.nexusplus.features.tts.NseViewModel
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
 
-    // ── Singletons ───────────────────────────────────────────────────────────
+    // ── Singletons ────────────────────────────────────────────────────────
     single<SessionManager>      { SessionManager() }
     single<FavoritesRepository> { FavoritesRepository(get()) }
     single<AuthRepository>      { StubFirebaseAuthRepository() }
 
-    // ── ViewModels ───────────────────────────────────────────────────────────
+    // ── NSE 2.0 — Nexus Speech Engine ─────────────────────────────────────
+    // Each screen instance gets its own engine + repository so that
+    // audio focus and engine lifecycle are tied to the composable lifetime.
+    factory { NseAudioFocusManager(androidContext()) }
+    factory { NseAndroidEngine(androidContext(), get()) }
+    factory { NseRepository(get()) }
+
+    // ── ViewModels ────────────────────────────────────────────────────────
     viewModel { WelcomeViewModel(authRepository = get(), sessionManager = get()) }
     viewModel { AllFeaturesViewModel(sessionManager = get(), favoritesRepository = get()) }
 
-    // Original feature ViewModels
+    // Media
     viewModel { RadioViewModel() }
     viewModel { AiImageViewModel() }
     viewModel { IptvViewModel() }
     viewModel { MusicViewModel() }
 
-    // Security ViewModels
+    // Security
     viewModel { EncrypterDecrypterViewModel() }
     viewModel { HashGeneratorViewModel() }
     viewModel { PasswordGeneratorViewModel() }
 
-    // Utilities ViewModels
+    // Utilities
     viewModel { TextTranslatorViewModel() }
     viewModel { MorseCodeViewModel() }
     viewModel { NumberSystemViewModel() }
@@ -55,6 +67,9 @@ val appModule = module {
     viewModel { MyReminderViewModel() }
     viewModel { QrCodeViewModel() }
     viewModel { CalculatorCenterViewModel() }
+
+    // NSE ViewModel — uses factory-scoped engine + repository
+    viewModel { NseViewModel(get()) }
 
     // Camera/sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
     // BiometricVault, DocHub, VoiceTyper — state managed locally in composables
