@@ -5,7 +5,10 @@ import com.nexuswavetech.nexusplus.auth.ConsentRepository
 import com.nexuswavetech.nexusplus.auth.StubFirebaseAuthRepository
 import com.nexuswavetech.nexusplus.auth.WelcomeViewModel
 import com.nexuswavetech.nexusplus.core.FavoritesRepository
+import com.nexuswavetech.nexusplus.core.RecentActivityRepository
+import com.nexuswavetech.nexusplus.core.SearchManager
 import com.nexuswavetech.nexusplus.core.SessionManager
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesViewModel
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageViewModel
 import com.nexuswavetech.nexusplus.features.iptv.IptvViewModel
@@ -32,18 +35,19 @@ import org.koin.dsl.module
 
 val appModule = module {
 
-    // ── Singletons ────────────────────────────────────────────────────────
-    single<SessionManager>      { SessionManager() }
-    single<FavoritesRepository> { FavoritesRepository(get()) }
-    single<AuthRepository>      { StubFirebaseAuthRepository() }
+    // ── Core singletons ───────────────────────────────────────────────────
+    single<SessionManager>        { SessionManager() }
+    single<FavoritesRepository>   { FavoritesRepository(androidContext()) }
+    single<AuthRepository>        { StubFirebaseAuthRepository() }
+    single<SearchManager>         { SearchManager() }
+    single<RecentActivityRepository> { RecentActivityRepository(androidContext()) }
+    single<SettingsRepository>    { SettingsRepository(androidContext()) }
 
-    // ConsentRepository is a singleton — persists legal consent across the
-    // app session; backed by DataStore which is process-scoped anyway.
+    // ConsentRepository — process-scoped, DataStore-backed legal consent gate.
     single { ConsentRepository(androidContext()) }
 
     // ── NSE 2.0 — Nexus Speech Engine ─────────────────────────────────────
-    // factory scope: each screen instance owns its engine + audio focus
-    // so lifecycle and audio focus are tied to the composable lifetime.
+    // factory scope: lifecycle + audio focus are tied to the composable lifetime.
     factory { NseAudioFocusManager(androidContext()) }
     factory { NseAndroidEngine(androidContext(), get()) }
     factory { NseRepository(get()) }
@@ -56,6 +60,7 @@ val appModule = module {
             consentRepository = get(),
         )
     }
+
     viewModel { AllFeaturesViewModel(sessionManager = get(), favoritesRepository = get()) }
 
     // Media
@@ -82,6 +87,6 @@ val appModule = module {
     // NSE — factory-scoped engine + repository wired through Koin
     viewModel { NseViewModel(get()) }
 
-    // Camera/sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
-    // BiometricVault, DocHub, VoiceTyper — state managed locally in composables
+    // Camera / sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
+    // BiometricVault, DocHub, VoiceTyper — state managed locally in composables.
 }

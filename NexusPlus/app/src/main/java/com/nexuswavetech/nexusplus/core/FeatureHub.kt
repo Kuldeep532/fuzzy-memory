@@ -1,0 +1,54 @@
+package com.nexuswavetech.nexusplus.core
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+
+enum class FeatureHub(
+    val displayName: String,
+    val description: String,
+    val icon: ImageVector,
+    val route: String,
+    val color: Color,
+) {
+    SECURITY(
+        displayName = "Security",
+        description = "Encryption, hashing, passwords & secure vault",
+        icon        = Icons.Filled.Security,
+        route       = "hub/security",
+        color       = Color(0xFFFF6B6B),
+    ),
+    DOCUMENTS(
+        displayName = "Documents",
+        description = "PDF reader, merger, editor & document hub",
+        icon        = Icons.Filled.Description,
+        route       = "hub/documents",
+        color       = Color(0xFF00BCD4),
+    ),
+    AI(
+        displayName = "AI & Voice",
+        description = "AI image generation, translation, TTS & object detection",
+        icon        = Icons.Filled.AutoAwesome,
+        route       = "hub/ai",
+        color       = Color(0xFFAB47BC),
+    ),
+    MEDIA(
+        displayName = "Media",
+        description = "Radio, music streaming & live TV",
+        icon        = Icons.Filled.PlayCircle,
+        route       = "hub/media",
+        color       = Color(0xFF26A69A),
+    ),
+    UTILITIES(
+        displayName = "Utilities",
+        description = "Calculator, QR, converters & developer tools",
+        icon        = Icons.Filled.Build,
+        route       = "hub/utilities",
+        color       = Color(0xFFFF9800),
+    ),
+}

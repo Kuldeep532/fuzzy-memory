@@ -5,6 +5,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.nexuswavetech.nexusplus.auth.WelcomeScreen
+import com.nexuswavetech.nexusplus.features.hub.AIHubScreen
+import com.nexuswavetech.nexusplus.features.hub.DocumentsHubScreen
+import com.nexuswavetech.nexusplus.features.hub.MediaHubScreen
+import com.nexuswavetech.nexusplus.features.hub.SecurityHubScreen
+import com.nexuswavetech.nexusplus.features.hub.UtilitiesHubScreen
 import com.nexuswavetech.nexusplus.features.radio.RadioPlayerScreen
 import com.nexuswavetech.nexusplus.features.pdfsuite.PdfSuiteScreen
 import com.nexuswavetech.nexusplus.features.pdf.PdfReaderScreen
@@ -32,6 +37,7 @@ import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterScreen
 import com.nexuswavetech.nexusplus.features.dochub.DocHubScreen
 import com.nexuswavetech.nexusplus.features.voicetyper.VoiceTyperScreen
 import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
+import com.nexuswavetech.nexusplus.features.settings.SettingsScreen
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
@@ -43,66 +49,78 @@ fun NexusNavHost() {
     NavHost(navController = navController, startDestination = Screen.Welcome.route) {
 
         composable(Screen.Welcome.route) {
-            WelcomeScreen(onNavigateToMain = {
-                navController.navigate(Screen.Main.route) {
-                    popUpTo(Screen.Welcome.route) { inclusive = true }
+            WelcomeScreen(
+                onNavigateToMain = {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
                 }
-            })
+            )
         }
 
         composable(Screen.Main.route) {
             MainScaffold(rootNavController = navController)
         }
 
-        // ── Media ────────────────────────────────────────────────────────────
-        composable(Screen.RadioPlayer.route)      { RadioPlayerScreen      (onBack = { navController.popBackStack() }) }
-        composable(Screen.AiImageGenerator.route) { AiImageGeneratorScreen (onBack = { navController.popBackStack() }) }
-        composable(Screen.NexusTts.route)         { NexusTtsScreen         (onBack = { navController.popBackStack() }) }
-        composable(Screen.IptvPlayer.route)       { IptvPlayerScreen       (onBack = { navController.popBackStack() }) }
-        composable(Screen.MusicStreaming.route)   { MusicStreamingScreen   (onBack = { navController.popBackStack() }) }
-        composable(Screen.SmartImageEditor.route) { SmartImageEditorScreen (onBack = { navController.popBackStack() }) }
+        // ── Hub destinations ──────────────────────────────────────────────
+        composable(Screen.SecurityHub.route)  { SecurityHubScreen (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
+        composable(Screen.DocumentsHub.route) { DocumentsHubScreen(onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
+        composable(Screen.AIHub.route)        { AIHubScreen       (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
+        composable(Screen.MediaHub.route)     { MediaHubScreen    (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
+        composable(Screen.UtilitiesHub.route) { UtilitiesHubScreen(onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
 
-        // ── PDF Suite (new) + legacy PdfReader route ─────────────────────────
-        composable(Screen.PdfSuite.route)         { PdfSuiteScreen         (onBack = { navController.popBackStack() }) }
-        composable(Screen.PdfReader.route)        { PdfReaderScreen        (onBack = { navController.popBackStack() }) }
+        // ── Settings ──────────────────────────────────────────────────────
+        composable(Screen.Settings.route) { SettingsScreen(onBack = { navController.popBackStack() }) }
 
-        // ── Security ─────────────────────────────────────────────────────────
+        // ── Media ─────────────────────────────────────────────────────────
+        composable(Screen.RadioPlayer.route)      { RadioPlayerScreen     (onBack = { navController.popBackStack() }) }
+        composable(Screen.AiImageGenerator.route) { AiImageGeneratorScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.NexusTts.route)         { NexusTtsScreen        (onBack = { navController.popBackStack() }) }
+        composable(Screen.IptvPlayer.route)       { IptvPlayerScreen      (onBack = { navController.popBackStack() }) }
+        composable(Screen.MusicStreaming.route)   { MusicStreamingScreen  (onBack = { navController.popBackStack() }) }
+        composable(Screen.SmartImageEditor.route) { SmartImageEditorScreen(onBack = { navController.popBackStack() }) }
+
+        // ── Documents ─────────────────────────────────────────────────────
+        composable(Screen.PdfSuite.route)  { PdfSuiteScreen (onBack = { navController.popBackStack() }) }
+        composable(Screen.PdfReader.route) { PdfReaderScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.DocHub.route)    { DocHubScreen   (onBack = { navController.popBackStack() }) }
+
+        // ── Security ──────────────────────────────────────────────────────
         composable(Screen.EncrypterDecrypter.route) { EncrypterDecrypterScreen(onBack = { navController.popBackStack() }) }
-        composable(Screen.TextEncryptor.route)    { EncrypterDecrypterScreen(onBack = { navController.popBackStack() }) }
-        composable(Screen.HashGenerator.route)    { HashGeneratorScreen    (onBack = { navController.popBackStack() }) }
-        composable(Screen.PasswordGenerator.route){ PasswordGeneratorScreen(onBack = { navController.popBackStack() }) }
-        composable(Screen.Base64Tool.route)       { Base64ToolScreen       (onBack = { navController.popBackStack() }) }
-        composable(Screen.BiometricVault.route)   { BiometricVaultScreen   (onBack = { navController.popBackStack() }) }
+        composable(Screen.TextEncryptor.route)      { EncrypterDecrypterScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.HashGenerator.route)      { HashGeneratorScreen    (onBack = { navController.popBackStack() }) }
+        composable(Screen.PasswordGenerator.route)  { PasswordGeneratorScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.Base64Tool.route)         { Base64ToolScreen       (onBack = { navController.popBackStack() }) }
+        composable(Screen.BiometricVault.route)     { BiometricVaultScreen   (onBack = { navController.popBackStack() }) }
 
-        // ── Utilities ────────────────────────────────────────────────────────
-        composable(Screen.TextTranslator.route)   { TextTranslatorScreen   (onBack = { navController.popBackStack() }) }
-        composable(Screen.MorseCode.route)        { MorseCodeScreen        (onBack = { navController.popBackStack() }) }
-        composable(Screen.NumberSystem.route)     { NumberSystemScreen     (onBack = { navController.popBackStack() }) }
-        composable(Screen.JsonFormatter.route)    { JsonFormatterScreen    (onBack = { navController.popBackStack() }) }
-        composable(Screen.RegexTester.route)      { RegexTesterScreen      (onBack = { navController.popBackStack() }) }
-        composable(Screen.CalculatorCenter.route) { CalculatorCenterScreen (onBack = { navController.popBackStack() }) }
-        composable(Screen.VoiceTyper.route)       { VoiceTyperScreen       (onBack = { navController.popBackStack() }) }
-        composable(Screen.MyReminder.route)       { MyReminderScreen       (onBack = { navController.popBackStack() }) }
+        // ── Utilities ─────────────────────────────────────────────────────
+        composable(Screen.TextTranslator.route)   { TextTranslatorScreen  (onBack = { navController.popBackStack() }) }
+        composable(Screen.MorseCode.route)        { MorseCodeScreen       (onBack = { navController.popBackStack() }) }
+        composable(Screen.NumberSystem.route)     { NumberSystemScreen    (onBack = { navController.popBackStack() }) }
+        composable(Screen.JsonFormatter.route)    { JsonFormatterScreen   (onBack = { navController.popBackStack() }) }
+        composable(Screen.RegexTester.route)      { RegexTesterScreen     (onBack = { navController.popBackStack() }) }
+        composable(Screen.CalculatorCenter.route) { CalculatorCenterScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.VoiceTyper.route)       { VoiceTyperScreen      (onBack = { navController.popBackStack() }) }
+        composable(Screen.MyReminder.route)       { MyReminderScreen      (onBack = { navController.popBackStack() }) }
+        composable(Screen.QrCode.route)           { QrCodeScreen          (onBack = { navController.popBackStack() }) }
 
-        // ── Smart Tools ───────────────────────────────────────────────────────
-        composable(Screen.ObjectDetector.route)   { ObjectDetectorScreen   (onBack = { navController.popBackStack() }) }
-        composable(Screen.ColorDetector.route)    { ColorDetectorScreen    (onBack = { navController.popBackStack() }) }
-        composable(Screen.QrCode.route)           { QrCodeScreen           (onBack = { navController.popBackStack() }) }
-        composable(Screen.DocHub.route)           { DocHubScreen           (onBack = { navController.popBackStack() }) }
+        // ── AI / Smart Tools ──────────────────────────────────────────────
+        composable(Screen.ObjectDetector.route) { ObjectDetectorScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.ColorDetector.route)  { ColorDetectorScreen (onBack = { navController.popBackStack() }) }
 
-        // ── Forms ────────────────────────────────────────────────────────────
+        // ── Forms ─────────────────────────────────────────────────────────
         composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }
 
-        // ── Legal ────────────────────────────────────────────────────────────
-        composable(Screen.AboutUs.route)         { AboutUsScreen         (onBack = { navController.popBackStack() }) }
-        composable(Screen.PrivacyPolicy.route)   { PrivacyPolicyScreen   (onBack = { navController.popBackStack() }) }
-        composable(Screen.TermsConditions.route) { TermsConditionsScreen (onBack = { navController.popBackStack() }) }
+        // ── Legal ─────────────────────────────────────────────────────────
+        composable(Screen.AboutUs.route)         { AboutUsScreen        (onBack = { navController.popBackStack() }) }
+        composable(Screen.PrivacyPolicy.route)   { PrivacyPolicyScreen  (onBack = { navController.popBackStack() }) }
+        composable(Screen.TermsConditions.route) { TermsConditionsScreen(onBack = { navController.popBackStack() }) }
 
-        // ── Stub catch-all ───────────────────────────────────────────────────
+        // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->
             StubFeatureScreen(
                 featureKey = backStack.arguments?.getString("feature_key") ?: "unknown",
-                onBack = { navController.popBackStack() }
+                onBack     = { navController.popBackStack() },
             )
         }
     }

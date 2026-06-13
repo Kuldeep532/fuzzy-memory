@@ -3,3 +3,4 @@
 - [Compliance gate pattern](compliance-gate.md) — Auth blocked behind Privacy+T&C consent via ConsentRepository + DataStore.
 - [KMP foundation layout](kmp-foundation.md) — Shared module setup, what's in commonMain vs androidMain, platform expect/actual.
 - [Visual system rules](visual-system.md) — Programmatic logo (Canvas), NseVectorIcon (ImageVector), NexusShapes tokens, no raster assets.
+- [Hub refactor architecture](hub-refactor.md) — 5-hub navigation layer added on top of existing feature screens; navigation-level consolidation only.
