@@ -10,19 +10,19 @@ object NexusGatekeeper {
     }
 
     private val featureAccessMap: Map<FeatureId, FeatureAccess> = mapOf(
-        // ── Public — available to all users including guests ──────────────────
+        // ── Public ────────────────────────────────────────────────────────────
         FeatureId.RADIO_PLAYER         to FeatureAccess.PUBLIC,
-        FeatureId.PDF_READER           to FeatureAccess.PUBLIC,
         FeatureId.PDF_SUITE            to FeatureAccess.PUBLIC,
+        FeatureId.PDF_READER           to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_TTS            to FeatureAccess.PUBLIC,
         FeatureId.FILE_MANAGER         to FeatureAccess.PUBLIC,
         FeatureId.CURRENCY_CONVERTER   to FeatureAccess.PUBLIC,
-        FeatureId.QR_SCANNER           to FeatureAccess.PUBLIC,
         FeatureId.QR_GENERATOR         to FeatureAccess.PUBLIC,
+        FeatureId.QR_SCANNER           to FeatureAccess.PUBLIC,
         FeatureId.WEATHER              to FeatureAccess.PUBLIC,
         FeatureId.UNIT_CONVERTER       to FeatureAccess.PUBLIC,
-        FeatureId.CALCULATOR           to FeatureAccess.PUBLIC,
         FeatureId.CALCULATOR_CENTER    to FeatureAccess.PUBLIC,
+        FeatureId.CALCULATOR           to FeatureAccess.PUBLIC,
         FeatureId.FLASHLIGHT           to FeatureAccess.PUBLIC,
         FeatureId.COMPASS              to FeatureAccess.PUBLIC,
         FeatureId.SPEEDOMETER          to FeatureAccess.PUBLIC,
@@ -53,11 +53,6 @@ object NexusGatekeeper {
         FeatureId.DOC_HUB              to FeatureAccess.PUBLIC,
         FeatureId.MY_REMINDER          to FeatureAccess.PUBLIC,
         FeatureId.FORM_X               to FeatureAccess.PUBLIC,
-
-        // ── Platform evolution systems — public ───────────────────────────────
-        FeatureId.NEXUS_INTELLIGENCE   to FeatureAccess.PUBLIC,
-        FeatureId.NEXUS_AUTOMATION     to FeatureAccess.PUBLIC,
-        FeatureId.NEXUS_DEV_KIT        to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_HEALTH_VAULT   to FeatureAccess.PUBLIC,
 
         // ── Authenticated only ────────────────────────────────────────────────

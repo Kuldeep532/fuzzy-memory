@@ -43,7 +43,6 @@ fun AIHubScreen(
         FeatureId.VOICE_TYPER,
         FeatureId.OBJECT_DETECTOR,
         FeatureId.COLOR_DETECTOR,
-        FeatureId.NEXUS_INTELLIGENCE,
     )
 
     val features = remember(favoriteIds, pinnedIds) {
@@ -55,7 +54,7 @@ fun AIHubScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "AI & Voice Hub", onBack = onBack)
 
-        HubHeader(icon = FeatureHub.AI.icon, description = FeatureHub.AI.description, color = FeatureHub.AI.color, count = features.size)
+        HubHeader(title = "AI & Intelligence", icon = FeatureHub.AI.icon, description = FeatureHub.AI.description, color = FeatureHub.AI.color, count = features.size)
 
         Text(
             text     = "AI & Voice Tools",

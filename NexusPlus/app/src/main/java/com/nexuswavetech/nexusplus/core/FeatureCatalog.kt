@@ -437,47 +437,18 @@ object FeatureCatalog {
             keywords    = listOf("contact", "backup", "restore", "sync", "vcf", "secure"),
         ),
 
-        // ── Platform-level Evolution Systems ──────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.NEXUS_INTELLIGENCE,
-            name        = "Nexus Intelligence",
-            description = "AI hub: translation, image gen, vision AI, speech — all on-device",
-            icon        = Icons.Filled.AutoAwesome,
-            route       = Screen.NexusIntelligence.route,
-            category    = FeatureCategory.TOOLS,
-            keywords    = listOf("ai", "intelligence", "ml", "vision", "translate", "speech", "hub"),
-            isNew       = true,
-        ),
-        FeatureItem(
-            id          = FeatureId.NEXUS_AUTOMATION,
-            name        = "Nexus Automation",
-            description = "Productivity hub: reminders, alarms, clipboard, voice tools",
-            icon        = Icons.Filled.Bolt,
-            route       = Screen.NexusAutomation.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("automation", "productivity", "reminder", "alarm", "workflow"),
-            isNew       = true,
-        ),
-        FeatureItem(
-            id          = FeatureId.NEXUS_DEV_KIT,
-            name        = "Nexus DevKit",
-            description = "16 developer tools in one hub — offline, powerful, instant",
-            icon        = Icons.Filled.Build,
-            route       = Screen.NexusDevKit.route,
-            category    = FeatureCategory.TOOLS,
-            keywords    = listOf("developer", "devkit", "tools", "json", "regex", "hash", "encrypt"),
-            isNew       = true,
-        ),
+        // ── Health & Wellbeing ────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEXUS_HEALTH_VAULT,
-            name        = "Nexus Health Vault",
-            description = "Secure offline health records — vitals, meds, lab results",
+            name        = "Health Vault",
+            description = "Secure offline health records — vitals, medications, appointments",
             icon        = Icons.Filled.HealthAndSafety,
             route       = Screen.NexusHealthVault.route,
             category    = FeatureCategory.SECURITY,
-            keywords    = listOf("health", "medical", "vitals", "medication", "records", "vaccine"),
+            keywords    = listOf("health", "vitals", "medical", "medications", "appointments", "vault", "records"),
             isNew       = true,
         ),
+
     )
 
     /** All features grouped by [FeatureHub]. */

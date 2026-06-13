@@ -41,7 +41,7 @@ fun MediaHubScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Media Hub", onBack = onBack)
 
-        HubHeader(icon = FeatureHub.MEDIA.icon, description = FeatureHub.MEDIA.description, color = FeatureHub.MEDIA.color, count = features.size)
+        HubHeader(title = "Media & Entertainment", icon = FeatureHub.MEDIA.icon, description = FeatureHub.MEDIA.description, color = FeatureHub.MEDIA.color, count = features.size)
 
         Text(
             text     = "Media Tools",

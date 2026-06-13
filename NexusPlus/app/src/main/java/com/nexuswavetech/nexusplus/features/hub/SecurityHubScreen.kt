@@ -3,14 +3,13 @@ package com.nexuswavetech.nexusplus.features.hub
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nexuswavetech.nexusplus.core.*
 import com.nexuswavetech.nexusplus.ui.components.FeatureCard
@@ -32,11 +31,21 @@ fun SecurityHubScreen(
 
     val favoriteIds by favoritesRepository.favoriteIds.collectAsState(initial = emptySet())
     val pinnedIds   by favoritesRepository.pinnedIds.collectAsState(initial = emptySet())
+    var searchQuery       by remember { mutableStateOf("") }
     var gatekeeperBlocked by remember { mutableStateOf<String?>(null) }
 
-    val features = remember(favoriteIds, pinnedIds) {
+    val allFeatures = remember(favoriteIds, pinnedIds) {
         FeatureCatalog.forHub(FeatureHub.SECURITY).map {
             it.copy(isFavorite = it.id.name in favoriteIds, isPinned = it.id.name in pinnedIds)
+        }
+    }
+
+    val displayed = remember(allFeatures, searchQuery) {
+        if (searchQuery.isBlank()) allFeatures
+        else allFeatures.filter { f ->
+            f.name.contains(searchQuery, ignoreCase = true) ||
+            f.description.contains(searchQuery, ignoreCase = true) ||
+            f.keywords.any { it.contains(searchQuery, ignoreCase = true) }
         }
     }
 
@@ -44,16 +53,23 @@ fun SecurityHubScreen(
         NexusTopBar(title = "Security Hub", onBack = onBack)
 
         HubHeader(
+            title       = "Security & Privacy",
             icon        = FeatureHub.SECURITY.icon,
             description = FeatureHub.SECURITY.description,
             color       = FeatureHub.SECURITY.color,
-            count       = features.size,
+            count       = allFeatures.size,
         )
 
-        Text(
-            text     = "Security Tools",
-            style    = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).semantics { heading() },
+        OutlinedTextField(
+            value         = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder   = { Text("Search security tools…") },
+            leadingIcon   = { Icon(Icons.Filled.Search, contentDescription = null) },
+            singleLine    = true,
+            modifier      = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .semantics { contentDescription = "Search security tools. Type to filter." },
         )
 
         LazyVerticalGrid(
@@ -62,7 +78,7 @@ fun SecurityHubScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement   = Arrangement.spacedBy(12.dp),
         ) {
-            items(features, key = { it.id.name }) { feature ->
+            items(displayed, key = { it.id.name }) { feature ->
                 FeatureCard(
                     feature          = feature,
                     onTap            = {

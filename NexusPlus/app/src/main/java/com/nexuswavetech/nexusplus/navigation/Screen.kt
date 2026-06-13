@@ -74,11 +74,8 @@ sealed class Screen(val route: String) {
     // ── Forms ───────────────────────────────────────────────────────────────
     object FormX : Screen("feature/form_x")
 
-    // ── Platform-level evolution systems ────────────────────────────────────
-    object NexusIntelligence : Screen("system/intelligence")
-    object NexusAutomation   : Screen("system/automation")
-    object NexusDevKit       : Screen("system/devkit")
-    object NexusHealthVault  : Screen("system/healthvault")
+    // ── Health & Wellbeing ───────────────────────────────────────────────────
+    object NexusHealthVault : Screen("feature/health_vault")
 
     // ── Legal ───────────────────────────────────────────────────────────────
     object AboutUs         : Screen("legal/about")

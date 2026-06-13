@@ -54,9 +54,6 @@ import com.nexuswavetech.nexusplus.features.clipboard.ClipboardManagerScreen
 import com.nexuswavetech.nexusplus.features.filemanager.FileManagerScreen
 import com.nexuswavetech.nexusplus.features.alarm.AlarmClockScreen
 import com.nexuswavetech.nexusplus.features.barcode.BarcodeGeneratorScreen
-import com.nexuswavetech.nexusplus.features.nexusintelligence.NexusIntelligenceScreen
-import com.nexuswavetech.nexusplus.features.nexusautomation.NexusAutomationScreen
-import com.nexuswavetech.nexusplus.features.nexusdevkit.NexusDevKitScreen
 import com.nexuswavetech.nexusplus.features.nexushealthvault.NexusHealthVaultScreen
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
@@ -150,16 +147,7 @@ fun NexusNavHost() {
         // ── Forms ─────────────────────────────────────────────────────────
         composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }
 
-        // ── Platform-level Evolution Systems ──────────────────────────────
-        composable(Screen.NexusIntelligence.route) {
-            NexusIntelligenceScreen(navController = navController, onBack = { navController.popBackStack() })
-        }
-        composable(Screen.NexusAutomation.route) {
-            NexusAutomationScreen(navController = navController, onBack = { navController.popBackStack() })
-        }
-        composable(Screen.NexusDevKit.route) {
-            NexusDevKitScreen(navController = navController, onBack = { navController.popBackStack() })
-        }
+        // ── Health & Wellbeing ────────────────────────────────────────────
         composable(Screen.NexusHealthVault.route) {
             NexusHealthVaultScreen(onBack = { navController.popBackStack() })
         }

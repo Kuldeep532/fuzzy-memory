@@ -5,8 +5,6 @@ package com.nexuswavetech.nexusplus.core
  *
  * Rules:
  *  - One entry per feature, never duplicated.
- *  - TRANSLATION_ENGINE removed: was never in FeatureCatalog; was a dead
- *    Gatekeeper entry with no route, no screen, no FeatureItem.
  *  - Legacy backward-compat aliases grouped at the bottom — do NOT remove
  *    them until a DataStore migration canonicalises old saved key names.
  */
@@ -67,11 +65,6 @@ enum class FeatureId {
     ENCRYPTED_NOTES,
     APP_LOCKER,
     CONTACT_BACKUP,
-
-    // ── Platform-level Evolution Systems ─────────────────────────────────
-    NEXUS_INTELLIGENCE,
-    NEXUS_AUTOMATION,
-    NEXUS_DEV_KIT,
     NEXUS_HEALTH_VAULT,
 
     // ── Legacy backward-compat aliases ────────────────────────────────────

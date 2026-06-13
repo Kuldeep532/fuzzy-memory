@@ -102,46 +102,16 @@ fun MoreScreen(rootNavController: NavController) {
             )
         }
 
-        // ── Platform Systems ──────────────────────────────────────────────
-        item { SectionHeader("Platform Systems") }
-
-        item {
-            MoreMenuItem(
-                icon        = Icons.Filled.AutoAwesome,
-                title       = "Nexus Intelligence",
-                subtitle    = "AI, ML, vision & speech hub",
-                onClick     = { rootNavController.navigate(Screen.NexusIntelligence.route) },
-                contentDesc = "Nexus Intelligence. AI and machine learning hub.",
-            )
-        }
-
-        item {
-            MoreMenuItem(
-                icon        = Icons.Filled.Bolt,
-                title       = "Nexus Automation",
-                subtitle    = "Productivity & automation tools",
-                onClick     = { rootNavController.navigate(Screen.NexusAutomation.route) },
-                contentDesc = "Nexus Automation. Productivity and automation tools.",
-            )
-        }
-
-        item {
-            MoreMenuItem(
-                icon        = Icons.Filled.Build,
-                title       = "Nexus DevKit",
-                subtitle    = "16 developer tools in one hub",
-                onClick     = { rootNavController.navigate(Screen.NexusDevKit.route) },
-                contentDesc = "Nexus DevKit. Developer tools hub.",
-            )
-        }
+        // ── Health & Wellbeing ────────────────────────────────────────────
+        item { SectionHeader("Health & Wellbeing") }
 
         item {
             MoreMenuItem(
                 icon        = Icons.Filled.HealthAndSafety,
-                title       = "Nexus Health Vault",
-                subtitle    = "Offline health records & vitals",
+                title       = "Health Vault",
+                subtitle    = "Secure offline health records & vitals",
                 onClick     = { rootNavController.navigate(Screen.NexusHealthVault.route) },
-                contentDesc = "Nexus Health Vault. Secure offline health records.",
+                contentDesc = "Health Vault. Secure offline health records and vitals tracker.",
             )
         }
 
