@@ -35,7 +35,6 @@ object NexusGatekeeper {
         FeatureId.STORAGE_ANALYZER     to FeatureAccess.PUBLIC,
         FeatureId.TASK_MANAGER         to FeatureAccess.PUBLIC,
         FeatureId.CLIPBOARD_MANAGER    to FeatureAccess.PUBLIC,
-        FeatureId.TRANSLATION_ENGINE   to FeatureAccess.PUBLIC,
         FeatureId.BARCODE_GENERATOR    to FeatureAccess.PUBLIC,
         FeatureId.TEXT_ENCRYPTOR       to FeatureAccess.PUBLIC,
         FeatureId.ENCRYPTER_DECRYPTER  to FeatureAccess.PUBLIC,

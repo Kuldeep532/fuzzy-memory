@@ -4,44 +4,73 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexuswavetech.nexusplus.core.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class WelcomeUiState(
-    val isLoading: Boolean = false,
+    val isLoading: Boolean           = false,
     val showGuestNameDialog: Boolean = false,
-    val guestName: String = "",
-    val guestNameError: String? = null,
-    val navigateToMain: Boolean = false,
-    val error: String? = null
+    val guestName: String            = "",
+    val guestNameError: String?      = null,
+    val navigateToMain: Boolean      = false,
+    val error: String?               = null,
 )
 
 class WelcomeViewModel(
     private val authRepository: AuthRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val consentRepository: ConsentRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WelcomeUiState())
     val uiState: StateFlow<WelcomeUiState> = _uiState.asStateFlow()
 
+    // ── Legal consent state ─────────────────────────────────────────────────
+
+    val privacyAccepted: StateFlow<Boolean> = consentRepository.privacyAccepted
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val termsAccepted: StateFlow<Boolean> = consentRepository.termsAccepted
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    /**
+     * Auth buttons (Google + Guest) are enabled only when both legal
+     * documents have been accepted — Compliance Gate per security directive.
+     */
+    val legalConsentGranted: StateFlow<Boolean> =
+        combine(privacyAccepted, termsAccepted) { privacy, terms ->
+            privacy && terms
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    fun onPrivacyToggled(accepted: Boolean) {
+        viewModelScope.launch { consentRepository.setPrivacyAccepted(accepted) }
+    }
+
+    fun onTermsToggled(accepted: Boolean) {
+        viewModelScope.launch { consentRepository.setTermsAccepted(accepted) }
+    }
+
     // ── Google Sign-In ──────────────────────────────────────────────────────
 
     /**
-     * Called from the activity/composable after [com.google.android.gms.auth.api.signin.GoogleSignInClient]
-     * returns an idToken. Pass the token here; all auth state is handled in the ViewModel.
-     * When Firebase is wired up this flow works automatically.
+     * Called from the activity/composable after GoogleSignInClient returns an
+     * idToken. When Firebase is wired up this flow works without any changes.
      */
     fun onGoogleSignInTokenReceived(idToken: String) {
+        if (!legalConsentGranted.value) return
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             when (val result = authRepository.signInWithGoogle(idToken)) {
                 is AuthResult.Success -> {
                     sessionManager.setAuthenticatedSession(
-                        uid = result.uid,
-                        name = result.displayName,
-                        email = result.email,
-                        photoUrl = result.photoUrl
+                        uid      = result.uid,
+                        name     = result.displayName,
+                        email    = result.email,
+                        photoUrl = result.photoUrl,
                     )
                     _uiState.value = _uiState.value.copy(isLoading = false, navigateToMain = true)
                 }
@@ -55,6 +84,7 @@ class WelcomeViewModel(
     // ── Guest Flow ──────────────────────────────────────────────────────────
 
     fun onContinueAsGuestClicked() {
+        if (!legalConsentGranted.value) return
         _uiState.value = _uiState.value.copy(showGuestNameDialog = true, guestNameError = null)
     }
 
@@ -69,10 +99,7 @@ class WelcomeViewModel(
             return
         }
         sessionManager.setGuestSession(name)
-        _uiState.value = _uiState.value.copy(
-            showGuestNameDialog = false,
-            navigateToMain = true
-        )
+        _uiState.value = _uiState.value.copy(showGuestNameDialog = false, navigateToMain = true)
     }
 
     fun onGuestDialogDismissed() {

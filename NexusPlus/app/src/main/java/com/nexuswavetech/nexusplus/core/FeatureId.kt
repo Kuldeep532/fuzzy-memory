@@ -1,23 +1,36 @@
 package com.nexuswavetech.nexusplus.core
 
+/**
+ * Canonical identifier for every feature in Nexus Plus.
+ *
+ * Rules:
+ *  - One entry per feature, never duplicated.
+ *  - TRANSLATION_ENGINE removed: was never in FeatureCatalog; was a dead
+ *    Gatekeeper entry with no route, no screen, no FeatureItem.
+ *  - Legacy backward-compat aliases grouped at the bottom — do NOT remove
+ *    them until a DataStore migration canonicalises old saved key names.
+ */
 enum class FeatureId {
-    // ── Media & Entertainment ─────────────────────────────────────────────────
+
+    // ── Media & Entertainment ─────────────────────────────────────────────
     RADIO_PLAYER,
     AI_IMAGE_GENERATOR,
     IPTV_PLAYER,
     MUSIC_STREAMING,
     SMART_IMAGE_EDITOR,
 
-    // ── Productivity ──────────────────────────────────────────────────────────
+    // ── Productivity ──────────────────────────────────────────────────────
     PDF_SUITE,
     FILE_MANAGER,
     ALARM_CLOCK,
     CLIPBOARD_MANAGER,
     JSON_FORMATTER,
     REGEX_TESTER,
+    DOC_HUB,
 
-    // ── Utilities ─────────────────────────────────────────────────────────────
+    // ── Utilities ─────────────────────────────────────────────────────────
     NEXUS_TTS,
+    VOICE_TYPER,
     CURRENCY_CONVERTER,
     UNIT_CONVERTER,
     CALCULATOR_CENTER,
@@ -26,11 +39,11 @@ enum class FeatureId {
     TEXT_TRANSLATOR,
     MORSE_CODE,
     NUMBER_SYSTEM,
-    TRANSLATION_ENGINE,
     WEATHER,
-    VOICE_TYPER,
+    MY_REMINDER,
+    FORM_X,
 
-    // ── Smart Tools ───────────────────────────────────────────────────────────
+    // ── Smart Tools ───────────────────────────────────────────────────────
     QR_GENERATOR,
     FLASHLIGHT,
     COMPASS,
@@ -44,25 +57,20 @@ enum class FeatureId {
     BARCODE_GENERATOR,
     TASK_MANAGER,
     SCREEN_RECORDER,
-    DOC_HUB,
 
-    // ── Security & Privacy ────────────────────────────────────────────────────
-    ENCRYPTED_NOTES,
+    // ── Security & Privacy ────────────────────────────────────────────────
+    BIOMETRIC_VAULT,
     ENCRYPTER_DECRYPTER,
     HASH_GENERATOR,
     PASSWORD_GENERATOR,
     BASE64_TOOL,
+    ENCRYPTED_NOTES,
     APP_LOCKER,
     CONTACT_BACKUP,
-    BIOMETRIC_VAULT,
-    MY_REMINDER,
 
-    // ── Forms ─────────────────────────────────────────────────────────────────
-    FORM_X,
-
-    // Legacy alias kept for backwards-compat with DataStore favorite entries
-    PDF_READER,
-    TEXT_ENCRYPTOR,
-    QR_SCANNER,
-    CALCULATOR,
+    // ── Legacy backward-compat aliases ────────────────────────────────────
+    PDF_READER,      // → PDF_SUITE
+    TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER
+    QR_SCANNER,      // → QR_GENERATOR
+    CALCULATOR,      // → CALCULATOR_CENTER
 }

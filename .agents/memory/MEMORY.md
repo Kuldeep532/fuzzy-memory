@@ -1,2 +1,5 @@
 - [Nexus Plus v1.2.0 architecture](nexus-plus-arch.md) — Package, DI, nav, and feature patterns for this project.
 - [NSE 2.0 architecture](nse-architecture.md) — Nexus Speech Engine 2.0 design decisions and layer contracts.
+- [Compliance gate pattern](compliance-gate.md) — Auth blocked behind Privacy+T&C consent via ConsentRepository + DataStore.
+- [KMP foundation layout](kmp-foundation.md) — Shared module setup, what's in commonMain vs androidMain, platform expect/actual.
+- [Visual system rules](visual-system.md) — Programmatic logo (Canvas), NseVectorIcon (ImageVector), NexusShapes tokens, no raster assets.

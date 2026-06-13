@@ -30,4 +30,4 @@ Auto/Mix modes cover 16 scripts: Devanagari (hi), Bengali (bn), Gujarati (gu), G
 - Short segments (<3 chars) merged into neighbours to avoid voice-switching on punctuation.
 
 ## Sacred greeting
-`strings.xml` has `jai_shri_krishna` and `cd_jai_shri_krishna` entries. Rendered in `JaiShriKrishnaHeader()` composable inside NexusTtsScreen with `semantics { contentDescription = "Jai Shri Krishna" }`.
+`strings.xml` has `jai_shri_krishna` and `cd_jai_shri_krishna` entries. Rendered in `JaiShriKrishnaGreeting()` composable inside both NexusTtsScreen and HomeScreen with `semantics { contentDescription = "Jai Shri Krishna" }`.

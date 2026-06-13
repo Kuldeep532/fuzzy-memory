@@ -1,6 +1,7 @@
 package com.nexuswavetech.nexusplus.di
 
 import com.nexuswavetech.nexusplus.auth.AuthRepository
+import com.nexuswavetech.nexusplus.auth.ConsentRepository
 import com.nexuswavetech.nexusplus.auth.StubFirebaseAuthRepository
 import com.nexuswavetech.nexusplus.auth.WelcomeViewModel
 import com.nexuswavetech.nexusplus.core.FavoritesRepository
@@ -36,15 +37,25 @@ val appModule = module {
     single<FavoritesRepository> { FavoritesRepository(get()) }
     single<AuthRepository>      { StubFirebaseAuthRepository() }
 
+    // ConsentRepository is a singleton — persists legal consent across the
+    // app session; backed by DataStore which is process-scoped anyway.
+    single { ConsentRepository(androidContext()) }
+
     // ── NSE 2.0 — Nexus Speech Engine ─────────────────────────────────────
-    // Each screen instance gets its own engine + repository so that
-    // audio focus and engine lifecycle are tied to the composable lifetime.
+    // factory scope: each screen instance owns its engine + audio focus
+    // so lifecycle and audio focus are tied to the composable lifetime.
     factory { NseAudioFocusManager(androidContext()) }
     factory { NseAndroidEngine(androidContext(), get()) }
     factory { NseRepository(get()) }
 
     // ── ViewModels ────────────────────────────────────────────────────────
-    viewModel { WelcomeViewModel(authRepository = get(), sessionManager = get()) }
+    viewModel {
+        WelcomeViewModel(
+            authRepository    = get(),
+            sessionManager    = get(),
+            consentRepository = get(),
+        )
+    }
     viewModel { AllFeaturesViewModel(sessionManager = get(), favoritesRepository = get()) }
 
     // Media
@@ -68,7 +79,7 @@ val appModule = module {
     viewModel { QrCodeViewModel() }
     viewModel { CalculatorCenterViewModel() }
 
-    // NSE ViewModel — uses factory-scoped engine + repository
+    // NSE — factory-scoped engine + repository wired through Koin
     viewModel { NseViewModel(get()) }
 
     // Camera/sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
