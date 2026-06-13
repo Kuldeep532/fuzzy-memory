@@ -16,6 +16,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.nexuswavetech.nexusplus.core.FeatureCatalog
 import com.nexuswavetech.nexusplus.core.SessionManager
 import com.nexuswavetech.nexusplus.core.displayName
 import com.nexuswavetech.nexusplus.core.isGuest
@@ -202,9 +203,9 @@ fun MoreScreen(rootNavController: NavController) {
             MoreMenuItem(
                 icon        = Icons.Filled.NewReleases,
                 title       = "App Version",
-                subtitle    = "Nexus Plus v1.2.0 · 49 features",
+                subtitle    = "Nexus Plus v1.2.0 · ${FeatureCatalog.allFeatures.size} features",
                 onClick     = {},
-                contentDesc = "App version: Nexus Plus version 1.2.0 with 49 features.",
+                contentDesc = "App version: Nexus Plus version 1.2.0 with ${FeatureCatalog.allFeatures.size} features.",
             )
         }
 

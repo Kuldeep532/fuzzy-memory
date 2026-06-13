@@ -74,7 +74,7 @@ fun SearchScreen(rootNavController: NavController) {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
                 .focusRequester(focusRequester)
-                .semantics { contentDescription = "Search field. Type to search all 49 features." },
+                .semantics { contentDescription = "Search field. Type to search all ${FeatureCatalog.allFeatures.size} features." },
         )
 
         // ── Status ─────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ fun SearchScreen(rootNavController: NavController) {
                 Box(
                     modifier         = Modifier
                         .fillMaxSize()
-                        .semantics { contentDescription = "Type to search across all 49 features, tools and settings." },
+                        .semantics { contentDescription = "Type to search across all ${FeatureCatalog.allFeatures.size} features, tools and settings." },
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(

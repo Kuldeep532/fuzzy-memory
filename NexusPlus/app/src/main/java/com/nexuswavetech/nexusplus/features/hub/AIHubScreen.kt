@@ -43,6 +43,7 @@ fun AIHubScreen(
         FeatureId.VOICE_TYPER,
         FeatureId.OBJECT_DETECTOR,
         FeatureId.COLOR_DETECTOR,
+        FeatureId.NEXUS_INTELLIGENCE,
     )
 
     val features = remember(favoriteIds, pinnedIds) {

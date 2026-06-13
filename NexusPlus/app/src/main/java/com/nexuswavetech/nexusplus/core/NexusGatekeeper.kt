@@ -54,6 +54,12 @@ object NexusGatekeeper {
         FeatureId.MY_REMINDER          to FeatureAccess.PUBLIC,
         FeatureId.FORM_X               to FeatureAccess.PUBLIC,
 
+        // ── Platform evolution systems — public ───────────────────────────────
+        FeatureId.NEXUS_INTELLIGENCE   to FeatureAccess.PUBLIC,
+        FeatureId.NEXUS_AUTOMATION     to FeatureAccess.PUBLIC,
+        FeatureId.NEXUS_DEV_KIT        to FeatureAccess.PUBLIC,
+        FeatureId.NEXUS_HEALTH_VAULT   to FeatureAccess.PUBLIC,
+
         // ── Authenticated only ────────────────────────────────────────────────
         FeatureId.AI_IMAGE_GENERATOR   to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.IPTV_PLAYER          to FeatureAccess.AUTHENTICATED_ONLY,
@@ -62,7 +68,7 @@ object NexusGatekeeper {
         FeatureId.CONTACT_BACKUP       to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.SCREEN_RECORDER      to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.APP_LOCKER           to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.BIOMETRIC_VAULT      to FeatureAccess.AUTHENTICATED_ONLY
+        FeatureId.BIOMETRIC_VAULT      to FeatureAccess.AUTHENTICATED_ONLY,
     )
 
     fun checkAccess(featureId: FeatureId, session: UserSession, featureName: String): AccessResult {

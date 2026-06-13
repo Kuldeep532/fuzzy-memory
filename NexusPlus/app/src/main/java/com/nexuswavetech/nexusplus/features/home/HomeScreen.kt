@@ -157,7 +157,7 @@ fun HomeScreen(rootNavController: NavController) {
                 ) {
                     Icon(Icons.Filled.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
-                        "Search all 49 features…",
+                        "Search all ${FeatureCatalog.allFeatures.size} features…",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
