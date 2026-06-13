@@ -1,56 +1,143 @@
-name: Android CI (Advanced Auto-Fix Build)
+# =============================================================================
+#  NEXUS PLUS — GitHub Actions CI/CD Pipeline
+#  Production-ready | Secrets-driven | Samsung Galaxy Store ready
+#
+#  Triggers:
+#    • workflow_dispatch       → ONLY MANUAL TRIGGER (Starts only when you run it)
+# =============================================================================
+
+name: NexusPlus CI/CD
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  JAVA_VERSION: '17'
+  GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Xmx4g -XX:MaxMetaspaceSize=512m'
+  ANDROID_PROJECT_DIR: NexusPlus
+
 jobs:
   build:
+    name: Build & Sign Release
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
 
-    - name: Clear Gradle Cache & Reset Setup
-      run: |
-        rm -rf NexusPlus/.gradle || true
-        rm -rf NexusPlus/app/build || true
+      - name: Grant Gradle wrapper execute permission
+        run: chmod +x ${{ env.ANDROID_PROJECT_DIR }}/gradlew
 
-    - name: Grant Execute Permission for Gradlew
-      run: chmod +x NexusPlus/gradlew || true
+      - name: Cache Gradle dependencies & build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ${{ env.ANDROID_PROJECT_DIR }}/.gradle
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/libs.versions.toml', '**/build.gradle.kts', '**/settings.gradle.kts', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
 
-    # Forcefully APK assemble karna aur sabhi locks ko bypass karna
-    - name: Compile and Build Debug APK (Auto-Fix Mode)
-      run: |
-        cd NexusPlus
-        ./gradlew clean --no-daemon || echo "Clean skipped."
-        ./gradlew assembleDebug --no-daemon --stacktrace --warning-mode all -Dorg.gradle.debug=false || echo "Build finish event triggered."
-      continue-on-error: true
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode \
+            > ${{ env.ANDROID_PROJECT_DIR }}/app/nexusplus-upload-key.jks
+          echo "✅ Keystore decoded → $(du -sh ${{ env.ANDROID_PROJECT_DIR }}/app/nexusplus-upload-key.jks | cut -f1)"
 
-    - name: Run Unit Tests (Bypass Failure)
-      run: |
-        cd NexusPlus
-        ./gradlew testDebugUnitTest --no-daemon || echo "Tests bypassed."
-      continue-on-error: true
+      - name: Save google-services.json from Normal Text Secret
+        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
+        run: |
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > ${{ env.ANDROID_PROJECT_DIR }}/app/google-services.json
+          echo "✅ google-services.json saved from normal text secret"
 
-    # Safe log monitoring and backup upload
-    - name: Upload Debug APK for Testing
-      uses: actions/upload-artifact@v4
-      with:
-        name: nexusplus-working-debug-apk
-        path: "**/build/outputs/apk/**/*.apk"
-        retention-days: 7
-        if-no-files-found: warn
+      - name: Run Android Lint
+        working-directory: ${{ env.ANDROID_PROJECT_DIR }}
+        run: ./gradlew lintRelease --no-daemon --stacktrace
+        continue-on-error: true
+
+      - name: Upload Lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: ${{ env.ANDROID_PROJECT_DIR }}/app/build/reports/lint-results-release.html
+          if-no-files-found: ignore
+
+      - name: Build Release APK
+        working-directory: ${{ env.ANDROID_PROJECT_DIR }}
+        env:
+          SIGNING_STORE_FILE:     app/nexusplus-upload-key.jks
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS:      ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD:   ${{ secrets.KEY_PASSWORD }}
+          MAPS_API_KEY:           ${{ secrets.MAPS_API_KEY }}
+          BACKEND_BASE_URL:       ${{ secrets.BACKEND_BASE_URL }}
+          BACKEND_AUTH_TOKEN:     ${{ secrets.BACKEND_AUTH_TOKEN }}
+        run: |
+          ./gradlew assembleRelease \
+            --no-daemon \
+            --stacktrace \
+            -Pandroid.testInstrumentationRunnerArguments.disableAnalytics=true
+          echo "✅ Release APK built"
+          ls -lh app/build/outputs/apk/release/
+
+      - name: Extract version info
+        id: version
+        run: |
+          VERSION_NAME=$(grep 'versionName' ${{ env.ANDROID_PROJECT_DIR }}/app/build.gradle.kts | grep -oP '"\K[^"]+')
+          VERSION_CODE=$(grep 'versionCode' ${{ env.ANDROID_PROJECT_DIR }}/app/build.gradle.kts | grep -oP '\d+')
+          echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
+          echo "version_code=${VERSION_CODE}" >> $GITHUB_OUTPUT
+          echo "build_time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "📦 Version: ${VERSION_NAME} (${VERSION_CODE})"
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusPlus-v${{ steps.version.outputs.version_name }}-release.apk
+          path: ${{ env.ANDROID_PROJECT_DIR }}/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload ProGuard mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusPlus-v${{ steps.version.outputs.version_name }}-mapping.txt
+          path: ${{ env.ANDROID_PROJECT_DIR }}/app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: ignore
+          retention-days: 90
+
+      - name: Remove keystore from runner
+        if: always()
+        run: |
+          rm -f ${{ env.ANDROID_PROJECT_DIR }}/app/nexusplus-upload-key.jks
+          rm -f ${{ env.ANDROID_PROJECT_DIR }}/app/google-services.json
+          echo "🔒 Sensitive files removed from runner"
+
+      - name: Write build summary
+        if: always()
+        run: |
+          echo "## 📦 NexusPlus Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Field | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.version_code }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build time** | ${{ steps.version.outputs.build_time }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered by** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
