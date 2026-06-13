@@ -1,4 +1,4 @@
-name: Build Signed APK
+name: Build NexusPlus APK
 
 on:
   workflow_dispatch:
@@ -11,14 +11,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK
+      - name: Show Repository Structure
+        run: |
+          pwd
+          ls -la
+          find . -maxdepth 3 -type d
+
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,30 +32,45 @@ jobs:
 
       - name: Restore google-services.json
         run: |
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+          mkdir -p NexusPlus/app
+          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > NexusPlus/app/google-services.json
 
       - name: Restore Keystore
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > NexusPlus/release.keystore
 
       - name: Create signing.properties
         run: |
-          cat > signing.properties << EOF
-          storeFile=../release.keystore
+          cat > NexusPlus/signing.properties <<EOF
+          storeFile=release.keystore
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           EOF
 
       - name: Grant Gradle Permission
-        run: chmod +x gradlew
+        run: |
+          cd NexusPlus
+          chmod +x gradlew
+
+      - name: Build Debug APK
+        run: |
+          cd NexusPlus
+          ./gradlew assembleDebug
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: |
+          cd NexusPlus
+          ./gradlew assembleRelease
 
-      - name: Upload APK
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: |
-            **/build/outputs/apk/release/*.apk
+          name: NexusPlus-Debug
+          path: NexusPlus/**/build/outputs/apk/debug/*.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusPlus-Release
+          path: NexusPlus/**/build/outputs/apk/release/*.apk
