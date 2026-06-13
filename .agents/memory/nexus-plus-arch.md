@@ -6,32 +6,44 @@ description: Key conventions, patterns, and gotchas for the NexusPlus Android pr
 ## Package & DI
 - App package: `com.nexuswavetech.nexusplus`
 - DI: Koin — singletons in `appModule`, ViewModels via `viewModel { ... }`
-- New ViewModels defined *inside* their Screen.kt file (co-location pattern for newer features)
-- AppModule must import the ViewModel class from its Screen.kt file (e.g., `EncrypterDecrypterViewModel` from `features.encryptor`)
+- AppModule must register new repositories as `single` and new ViewModels as `viewModel`
+- FavoritesRepository now has `clearAll()` (clears both FAVORITES_KEY and PINNED_KEY)
 
 ## Navigation
 - Single-activity NavHost in `NexusNavHost.kt`
-- Three bottom tabs: `Home` (pinned), `All Features`, `More`
-- `BottomTab` sealed class route: `tab/home`, `tab/all_features`, `tab/more`
+- Four bottom tabs: `Home` (pinned), `Explore` (all features), `Favorites`, `More`
+- `BottomTab` sealed class route: `tab/home`, `tab/explore`, `tab/favorites`, `tab/more`
 - `Screen.kt` defines all feature routes; `FeatureId.kt` has all feature IDs
-- Legacy routes (`TextEncryptor`, `PdfReader`) kept in NavHost for backwards-compat with saved favorites
+- Legacy routes (`TextEncryptor`, `PdfReader`) kept in NavHost for backwards-compat
+- Evolution systems use `system/` prefix: `system/intelligence`, `system/automation`, `system/devkit`, `system/healthvault`
 
-## FavoritesRepository
-- Uses DataStore; only suspend function is `toggleFavorite(featureId: FeatureId)`
-- HomeScreen calls it inside `scope.launch {}` (rememberCoroutineScope)
-- `favoriteIds: Flow<Set<String>>` — IDs stored as `FeatureId.name` strings
+## NexusTopBar signature
+```kotlin
+NexusTopBar(title: String, onBack: () -> Unit, actions: @Composable () -> Unit = {})
+```
 
-## Key conventions
-- `NexusGatekeeper.checkAccess()` returns `Allowed` or `Blocked(featureName)`; must add new FeatureIds to the map
-- `FeatureCatalog.allFeatures` is the single source of truth for all feature metadata
+## Feature catalog conventions
+- `FeatureCatalog.allFeatures` — single source of truth for 53 features (v1.2)
 - Stub route pattern: `Screen.Stub.route + "/feature_key"` for unimplemented features
-- `NexusPlaybackService` (Media3 MediaSessionService) handles background audio for Radio, IPTV, Music
+- `isNew = true` shows "New" badge in grid
 
-## New in v1.2.0
-- 7 new features: Biometric Vault, My Reminder (WorkManager), QR Code Generator (ZXing), Calculator Center, Doc Hub, Voice Typer (SpeechRecognizer), PDF Suite (6 tools)
-- Encrypter and Decrypter: extended from text-only to text+image+file (AES-256 CBC)
-- IPTV: India as default region, region picker enum, group filter chips
-- Music: Offline tab (MediaStore scan) + Online tab (JioSaavn saavn.dev API)
-- Favorites tab renamed to Home tab
+## Feature count (v1.2.0)
+- Total: 53 (Media 5, Productivity 7, Utilities 13, Smart Tools 15, Security 13)
+- New in v1.2: 11 features (AI Image, Smart Image Editor, Form X, Colour Detector, Biometric Vault upgraded, Nexus Intelligence, Nexus Automation, Nexus DevKit, Nexus Health Vault + more utility screens)
+
+## Adding a new feature (checklist)
+1. Add `FeatureId` enum entry in `FeatureId.kt`
+2. Add `FeatureItem` in `FeatureCatalog.kt`
+3. Add `Screen` object in `Screen.kt`
+4. Add `composable()` route in `NexusNavHost.kt`
+5. Register repository (single) and ViewModel (viewModel) in `AppModule.kt`
+
+## Key architecture notes
+- `AlarmReceiver` is top-level in `AlarmClockScreen.kt`, registered in Manifest as `.features.alarm.AlarmReceiver` — correct
+- `BiometricVaultRepository` uses AES-256-GCM via Android Keystore; encryption is IV-prepended Base64
+- `FLAG_SECURE` set in `BiometricVaultScreen` to block screenshots; cleared on Dispose
+- `NotificationRepository` seeds 3 default notifications on first run (no stored data)
+- `NexusPlaybackService` (Media3 MediaSessionService) handles background audio for Radio, IPTV, Music
+- Compose BOM 2024.06.00 → Material3 1.2.1 (SwipeToDismiss still valid, not yet deprecated)
 
 **Why:** These notes prevent re-deriving conventions from code during future feature additions.

@@ -1,0 +1,102 @@
+package com.nexuswavetech.nexusplus.features.notifications
+
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import org.json.JSONArray
+import org.json.JSONObject
+
+data class NexusNotification(
+    val id:          String,
+    val title:       String,
+    val body:        String,
+    val timestampMs: Long,
+    val isRead:      Boolean = false,
+    val category:    String  = "system",
+)
+
+class NotificationRepository(private val context: Context) {
+
+    private val Context.notifStore by preferencesDataStore(name = "nexus_notifications")
+    private val NOTIF_KEY = stringPreferencesKey("notifications_json")
+
+    val notifications: Flow<List<NexusNotification>> = context.notifStore.data.map { prefs ->
+        val raw = prefs[NOTIF_KEY] ?: return@map seedNotifications()
+        runCatching {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                NexusNotification(
+                    id          = o.optString("id"),
+                    title       = o.optString("title"),
+                    body        = o.optString("body"),
+                    timestampMs = o.optLong("ts"),
+                    isRead      = o.optBoolean("read", false),
+                    category    = o.optString("category", "system"),
+                )
+            }.sortedByDescending { it.timestampMs }
+        }.getOrElse { seedNotifications() }
+    }
+
+    suspend fun markAsRead(id: String) {
+        context.notifStore.edit { prefs ->
+            val raw = prefs[NOTIF_KEY] ?: return@edit
+            val arr = JSONArray(raw)
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                if (o.optString("id") == id) o.put("read", true)
+            }
+            prefs[NOTIF_KEY] = arr.toString()
+        }
+    }
+
+    suspend fun markAllRead() {
+        context.notifStore.edit { prefs ->
+            val raw = prefs[NOTIF_KEY] ?: return@edit
+            val arr = JSONArray(raw)
+            for (i in 0 until arr.length()) arr.getJSONObject(i).put("read", true)
+            prefs[NOTIF_KEY] = arr.toString()
+        }
+    }
+
+    suspend fun deleteNotification(id: String) {
+        context.notifStore.edit { prefs ->
+            val raw = prefs[NOTIF_KEY] ?: return@edit
+            val arr = JSONArray(raw)
+            val newArr = JSONArray()
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                if (o.optString("id") != id) newArr.put(o)
+            }
+            prefs[NOTIF_KEY] = newArr.toString()
+        }
+    }
+
+    suspend fun addNotification(notif: NexusNotification) {
+        context.notifStore.edit { prefs ->
+            val raw = prefs[NOTIF_KEY] ?: JSONArray().toString()
+            val arr = JSONArray(raw)
+            arr.put(JSONObject().apply {
+                put("id",       notif.id)
+                put("title",    notif.title)
+                put("body",     notif.body)
+                put("ts",       notif.timestampMs)
+                put("read",     notif.isRead)
+                put("category", notif.category)
+            })
+            prefs[NOTIF_KEY] = arr.toString()
+        }
+    }
+
+    private fun seedNotifications(): List<NexusNotification> {
+        val now = System.currentTimeMillis()
+        return listOf(
+            NexusNotification("seed_1", "Welcome to Nexus Plus", "Your 49-feature super-app is ready to use. Explore all hubs!", now - 60_000, false, "system"),
+            NexusNotification("seed_2", "Biometric Vault Upgraded", "Vault now uses AES-256-GCM hardware encryption. Your data is safer than ever.", now - 120_000, false, "security"),
+            NexusNotification("seed_3", "New: Nexus Intelligence Hub", "Explore the new AI-powered platform ecosystem in your home screen.", now - 180_000, false, "update"),
+        )
+    }
+}

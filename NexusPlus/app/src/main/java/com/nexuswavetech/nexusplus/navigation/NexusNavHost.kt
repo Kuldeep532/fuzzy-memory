@@ -38,6 +38,26 @@ import com.nexuswavetech.nexusplus.features.dochub.DocHubScreen
 import com.nexuswavetech.nexusplus.features.voicetyper.VoiceTyperScreen
 import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 import com.nexuswavetech.nexusplus.features.settings.SettingsScreen
+import com.nexuswavetech.nexusplus.features.profile.ProfileScreen
+import com.nexuswavetech.nexusplus.features.notifications.NotificationCenterScreen
+import com.nexuswavetech.nexusplus.features.flashlight.FlashlightScreen
+import com.nexuswavetech.nexusplus.features.stopwatch.StopwatchScreen
+import com.nexuswavetech.nexusplus.features.worldclock.WorldClockScreen
+import com.nexuswavetech.nexusplus.features.units.UnitConverterScreen
+import com.nexuswavetech.nexusplus.features.currency.CurrencyConverterScreen
+import com.nexuswavetech.nexusplus.features.battery.BatteryMonitorScreen
+import com.nexuswavetech.nexusplus.features.storage.StorageAnalyzerScreen
+import com.nexuswavetech.nexusplus.features.compass.CompassScreen
+import com.nexuswavetech.nexusplus.features.wifi.WifiAnalyzerScreen
+import com.nexuswavetech.nexusplus.features.voicerecorder.VoiceRecorderScreen
+import com.nexuswavetech.nexusplus.features.clipboard.ClipboardManagerScreen
+import com.nexuswavetech.nexusplus.features.filemanager.FileManagerScreen
+import com.nexuswavetech.nexusplus.features.alarm.AlarmClockScreen
+import com.nexuswavetech.nexusplus.features.barcode.BarcodeGeneratorScreen
+import com.nexuswavetech.nexusplus.features.nexusintelligence.NexusIntelligenceScreen
+import com.nexuswavetech.nexusplus.features.nexusautomation.NexusAutomationScreen
+import com.nexuswavetech.nexusplus.features.nexusdevkit.NexusDevKitScreen
+import com.nexuswavetech.nexusplus.features.nexushealthvault.NexusHealthVaultScreen
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
@@ -69,8 +89,10 @@ fun NexusNavHost() {
         composable(Screen.MediaHub.route)     { MediaHubScreen    (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
         composable(Screen.UtilitiesHub.route) { UtilitiesHubScreen(onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
 
-        // ── Settings ──────────────────────────────────────────────────────
-        composable(Screen.Settings.route) { SettingsScreen(onBack = { navController.popBackStack() }) }
+        // ── Global screens ────────────────────────────────────────────────
+        composable(Screen.Settings.route)           { SettingsScreen          (onBack = { navController.popBackStack() }) }
+        composable(Screen.Profile.route)            { ProfileScreen            (onBack = { navController.popBackStack() }) }
+        composable(Screen.NotificationCenter.route) { NotificationCenterScreen (onBack = { navController.popBackStack() }) }
 
         // ── Media ─────────────────────────────────────────────────────────
         composable(Screen.RadioPlayer.route)      { RadioPlayerScreen     (onBack = { navController.popBackStack() }) }
@@ -93,7 +115,7 @@ fun NexusNavHost() {
         composable(Screen.Base64Tool.route)         { Base64ToolScreen       (onBack = { navController.popBackStack() }) }
         composable(Screen.BiometricVault.route)     { BiometricVaultScreen   (onBack = { navController.popBackStack() }) }
 
-        // ── Utilities ─────────────────────────────────────────────────────
+        // ── Core Utilities ────────────────────────────────────────────────
         composable(Screen.TextTranslator.route)   { TextTranslatorScreen  (onBack = { navController.popBackStack() }) }
         composable(Screen.MorseCode.route)        { MorseCodeScreen       (onBack = { navController.popBackStack() }) }
         composable(Screen.NumberSystem.route)     { NumberSystemScreen    (onBack = { navController.popBackStack() }) }
@@ -104,12 +126,43 @@ fun NexusNavHost() {
         composable(Screen.MyReminder.route)       { MyReminderScreen      (onBack = { navController.popBackStack() }) }
         composable(Screen.QrCode.route)           { QrCodeScreen          (onBack = { navController.popBackStack() }) }
 
+        // ── New Utility Implementations (previously stubs) ────────────────
+        composable(Screen.Flashlight.route)        { FlashlightScreen       (onBack = { navController.popBackStack() }) }
+        composable(Screen.Stopwatch.route)         { StopwatchScreen        (onBack = { navController.popBackStack() }) }
+        composable(Screen.WorldClock.route)        { WorldClockScreen       (onBack = { navController.popBackStack() }) }
+        composable(Screen.UnitConverter.route)     { UnitConverterScreen    (onBack = { navController.popBackStack() }) }
+        composable(Screen.CurrencyConverter.route) { CurrencyConverterScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.BatteryMonitor.route)    { BatteryMonitorScreen   (onBack = { navController.popBackStack() }) }
+        composable(Screen.StorageAnalyzer.route)   { StorageAnalyzerScreen  (onBack = { navController.popBackStack() }) }
+        composable(Screen.Compass.route)           { CompassScreen          (onBack = { navController.popBackStack() }) }
+        composable(Screen.WifiAnalyzer.route)      { WifiAnalyzerScreen     (onBack = { navController.popBackStack() }) }
+        composable(Screen.VoiceRecorder.route)     { VoiceRecorderScreen    (onBack = { navController.popBackStack() }) }
+        composable(Screen.ClipboardManager.route)  { ClipboardManagerScreen (onBack = { navController.popBackStack() }) }
+        composable(Screen.FileManager.route)       { FileManagerScreen      (onBack = { navController.popBackStack() }) }
+        composable(Screen.AlarmClock.route)        { AlarmClockScreen       (onBack = { navController.popBackStack() }) }
+        composable(Screen.BarcodeGenerator.route)  { BarcodeGeneratorScreen (onBack = { navController.popBackStack() }) }
+        composable(Screen.Weather.route)           { StubFeatureScreen(featureKey = "weather", onBack = { navController.popBackStack() }) }
+
         // ── AI / Smart Tools ──────────────────────────────────────────────
         composable(Screen.ObjectDetector.route) { ObjectDetectorScreen(onBack = { navController.popBackStack() }) }
         composable(Screen.ColorDetector.route)  { ColorDetectorScreen (onBack = { navController.popBackStack() }) }
 
         // ── Forms ─────────────────────────────────────────────────────────
         composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }
+
+        // ── Platform-level Evolution Systems ──────────────────────────────
+        composable(Screen.NexusIntelligence.route) {
+            NexusIntelligenceScreen(navController = navController, onBack = { navController.popBackStack() })
+        }
+        composable(Screen.NexusAutomation.route) {
+            NexusAutomationScreen(navController = navController, onBack = { navController.popBackStack() })
+        }
+        composable(Screen.NexusDevKit.route) {
+            NexusDevKitScreen(navController = navController, onBack = { navController.popBackStack() })
+        }
+        composable(Screen.NexusHealthVault.route) {
+            NexusHealthVaultScreen(onBack = { navController.popBackStack() })
+        }
 
         // ── Legal ─────────────────────────────────────────────────────────
         composable(Screen.AboutUs.route)         { AboutUsScreen        (onBack = { navController.popBackStack() }) }

@@ -68,6 +68,12 @@ enum class FeatureId {
     APP_LOCKER,
     CONTACT_BACKUP,
 
+    // ── Platform-level Evolution Systems ─────────────────────────────────
+    NEXUS_INTELLIGENCE,
+    NEXUS_AUTOMATION,
+    NEXUS_DEV_KIT,
+    NEXUS_HEALTH_VAULT,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
     TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER

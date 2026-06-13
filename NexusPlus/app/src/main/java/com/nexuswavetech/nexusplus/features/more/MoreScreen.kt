@@ -19,15 +19,19 @@ import androidx.navigation.NavController
 import com.nexuswavetech.nexusplus.core.SessionManager
 import com.nexuswavetech.nexusplus.core.displayName
 import com.nexuswavetech.nexusplus.core.isGuest
+import com.nexuswavetech.nexusplus.features.notifications.NotificationRepository
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.SocialMediaLinksSection
 import org.koin.compose.koinInject
 
 @Composable
 fun MoreScreen(rootNavController: NavController) {
-    val context = LocalContext.current
-    val sessionManager: SessionManager = koinInject()
-    val session by sessionManager.session.collectAsState()
+    val context            = LocalContext.current
+    val sessionManager: SessionManager          = koinInject()
+    val notifRepo: NotificationRepository       = koinInject()
+    val session     by sessionManager.session.collectAsState()
+    val notifications by notifRepo.notifications.collectAsState(initial = emptyList())
+    val unreadCount = notifications.count { !it.isRead }
 
     LazyColumn(
         modifier        = Modifier
@@ -39,7 +43,10 @@ fun MoreScreen(rootNavController: NavController) {
         // ── User Card ─────────────────────────────────────────────────────
         item {
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                onClick  = { rootNavController.navigate(Screen.Profile.route) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = "Profile card for ${session.displayName.ifBlank { "Guest User" }}. Tap to view profile." },
                 colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             ) {
                 Row(
@@ -53,20 +60,88 @@ fun MoreScreen(rootNavController: NavController) {
                         modifier           = Modifier.size(48.dp),
                         tint               = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text  = session.displayName.ifBlank { "Guest User" },
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            text  = if (session.isGuest) "Guest Account — Limited Access" else "Authenticated Account",
+                            text  = if (session.isGuest) "Guest Account — Tap to view profile" else "Authenticated · Tap to view profile",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                         )
                     }
+                    Icon(Icons.Filled.ChevronRight, null, tint = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f))
                 }
             }
+        }
+
+        // ── Quick Actions ─────────────────────────────────────────────────
+        item { SectionHeader("Quick Access") }
+
+        item {
+            MoreMenuItem(
+                icon        = Icons.Filled.Person,
+                title       = "My Profile",
+                subtitle    = "View usage stats, manage account",
+                onClick     = { rootNavController.navigate(Screen.Profile.route) },
+                contentDesc = "My Profile. View usage stats and account settings.",
+            )
+        }
+
+        item {
+            MoreMenuItem(
+                icon        = Icons.Filled.Notifications,
+                title       = "Notifications",
+                subtitle    = if (unreadCount > 0) "$unreadCount unread" else "All caught up",
+                onClick     = { rootNavController.navigate(Screen.NotificationCenter.route) },
+                contentDesc = "Notifications. ${if (unreadCount > 0) "$unreadCount unread notifications." else "All caught up."}",
+                badge       = if (unreadCount > 0) unreadCount else null,
+            )
+        }
+
+        // ── Platform Systems ──────────────────────────────────────────────
+        item { SectionHeader("Platform Systems") }
+
+        item {
+            MoreMenuItem(
+                icon        = Icons.Filled.AutoAwesome,
+                title       = "Nexus Intelligence",
+                subtitle    = "AI, ML, vision & speech hub",
+                onClick     = { rootNavController.navigate(Screen.NexusIntelligence.route) },
+                contentDesc = "Nexus Intelligence. AI and machine learning hub.",
+            )
+        }
+
+        item {
+            MoreMenuItem(
+                icon        = Icons.Filled.Bolt,
+                title       = "Nexus Automation",
+                subtitle    = "Productivity & automation tools",
+                onClick     = { rootNavController.navigate(Screen.NexusAutomation.route) },
+                contentDesc = "Nexus Automation. Productivity and automation tools.",
+            )
+        }
+
+        item {
+            MoreMenuItem(
+                icon        = Icons.Filled.Build,
+                title       = "Nexus DevKit",
+                subtitle    = "16 developer tools in one hub",
+                onClick     = { rootNavController.navigate(Screen.NexusDevKit.route) },
+                contentDesc = "Nexus DevKit. Developer tools hub.",
+            )
+        }
+
+        item {
+            MoreMenuItem(
+                icon        = Icons.Filled.HealthAndSafety,
+                title       = "Nexus Health Vault",
+                subtitle    = "Offline health records & vitals",
+                onClick     = { rootNavController.navigate(Screen.NexusHealthVault.route) },
+                contentDesc = "Nexus Health Vault. Secure offline health records.",
+            )
         }
 
         // ── App Preferences ───────────────────────────────────────────────
@@ -127,9 +202,9 @@ fun MoreScreen(rootNavController: NavController) {
             MoreMenuItem(
                 icon        = Icons.Filled.NewReleases,
                 title       = "App Version",
-                subtitle    = "Nexus Plus v1.2.0",
+                subtitle    = "Nexus Plus v1.2.0 · 49 features",
                 onClick     = {},
-                contentDesc = "App version: Nexus Plus version 1.2.0",
+                contentDesc = "App version: Nexus Plus version 1.2.0 with 49 features.",
             )
         }
 
@@ -170,6 +245,7 @@ private fun MoreMenuItem(
     subtitle: String,
     onClick: () -> Unit,
     contentDesc: String,
+    badge: Int? = null,
 ) {
     Card(
         onClick  = onClick,
@@ -190,7 +266,11 @@ private fun MoreMenuItem(
                 Text(title,    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+            if (badge != null && badge > 0) {
+                Badge { Text("$badge") }
+            } else {
+                Icon(imageVector = Icons.Filled.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+            }
         }
     }
 }

@@ -14,7 +14,9 @@ sealed class Screen(val route: String) {
     object UtilitiesHub : Screen("hub/utilities")
 
     // ── Global screens ──────────────────────────────────────────────────────
-    object Settings  : Screen("settings")
+    object Settings           : Screen("settings")
+    object Profile            : Screen("profile")
+    object NotificationCenter : Screen("notifications")
 
     // ── Media feature screens ───────────────────────────────────────────────
     object RadioPlayer      : Screen("feature/radio")
@@ -26,12 +28,12 @@ sealed class Screen(val route: String) {
 
     // ── Document feature screens ────────────────────────────────────────────
     object PdfSuite  : Screen("feature/pdf_suite")
-    object PdfReader : Screen("feature/pdf")        // legacy backward-compat
+    object PdfReader : Screen("feature/pdf")
     object DocHub    : Screen("feature/doc_hub")
 
     // ── Security feature screens ────────────────────────────────────────────
     object EncrypterDecrypter : Screen("feature/encrypter_decrypter")
-    object TextEncryptor      : Screen("feature/text_encryptor")    // legacy alias
+    object TextEncryptor      : Screen("feature/text_encryptor")
     object HashGenerator      : Screen("feature/hash_generator")
     object PasswordGenerator  : Screen("feature/password_generator")
     object Base64Tool         : Screen("feature/base64_tool")
@@ -48,12 +50,35 @@ sealed class Screen(val route: String) {
     object MyReminder       : Screen("feature/my_reminder")
     object QrCode           : Screen("feature/qr_code")
 
+    // ── Utility stub → real implementations ─────────────────────────────────
+    object Flashlight       : Screen("feature/flashlight")
+    object Stopwatch        : Screen("feature/stopwatch")
+    object WorldClock       : Screen("feature/world_clock")
+    object UnitConverter    : Screen("feature/unit_converter")
+    object CurrencyConverter: Screen("feature/currency_converter")
+    object BatteryMonitor   : Screen("feature/battery_monitor")
+    object StorageAnalyzer  : Screen("feature/storage_analyzer")
+    object Compass          : Screen("feature/compass")
+    object WifiAnalyzer     : Screen("feature/wifi_analyzer")
+    object VoiceRecorder    : Screen("feature/voice_recorder")
+    object ClipboardManager : Screen("feature/clipboard_manager")
+    object FileManager      : Screen("feature/file_manager")
+    object AlarmClock       : Screen("feature/alarm_clock")
+    object BarcodeGenerator : Screen("feature/barcode_generator")
+    object Weather          : Screen("feature/weather")
+
     // ── AI / Smart Tools feature screens ────────────────────────────────────
     object ObjectDetector : Screen("feature/object_detector")
     object ColorDetector  : Screen("feature/color_detector")
 
     // ── Forms ───────────────────────────────────────────────────────────────
     object FormX : Screen("feature/form_x")
+
+    // ── Platform-level evolution systems ────────────────────────────────────
+    object NexusIntelligence : Screen("system/intelligence")
+    object NexusAutomation   : Screen("system/automation")
+    object NexusDevKit       : Screen("system/devkit")
+    object NexusHealthVault  : Screen("system/healthvault")
 
     // ── Legal ───────────────────────────────────────────────────────────────
     object AboutUs         : Screen("legal/about")
@@ -65,8 +90,8 @@ sealed class Screen(val route: String) {
 }
 
 sealed class BottomTab(val route: String, val label: String) {
-    object Home     : BottomTab("tab/home",    "Home")
-    object Explore  : BottomTab("tab/explore", "Explore")
-    object Search   : BottomTab("tab/search",  "Search")
-    object More     : BottomTab("tab/more",    "More")
+    object Home      : BottomTab("tab/home",      "Home")
+    object Explore   : BottomTab("tab/explore",   "Explore")
+    object Favorites : BottomTab("tab/favorites", "Favorites")
+    object More      : BottomTab("tab/more",      "More")
 }

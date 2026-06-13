@@ -10,9 +10,12 @@ import com.nexuswavetech.nexusplus.core.SearchManager
 import com.nexuswavetech.nexusplus.core.SessionManager
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesViewModel
+import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultRepository
+import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultViewModel
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageViewModel
 import com.nexuswavetech.nexusplus.features.iptv.IptvViewModel
 import com.nexuswavetech.nexusplus.features.music.MusicViewModel
+import com.nexuswavetech.nexusplus.features.notifications.NotificationRepository
 import com.nexuswavetech.nexusplus.features.radio.RadioViewModel
 import com.nexuswavetech.nexusplus.features.encryptor.EncrypterDecrypterViewModel
 import com.nexuswavetech.nexusplus.features.translator.TextTranslatorViewModel
@@ -36,18 +39,19 @@ import org.koin.dsl.module
 val appModule = module {
 
     // ── Core singletons ───────────────────────────────────────────────────
-    single<SessionManager>        { SessionManager() }
-    single<FavoritesRepository>   { FavoritesRepository(androidContext()) }
-    single<AuthRepository>        { StubFirebaseAuthRepository() }
-    single<SearchManager>         { SearchManager() }
+    single<SessionManager>           { SessionManager() }
+    single<FavoritesRepository>      { FavoritesRepository(androidContext()) }
+    single<AuthRepository>           { StubFirebaseAuthRepository() }
+    single<SearchManager>            { SearchManager() }
     single<RecentActivityRepository> { RecentActivityRepository(androidContext()) }
-    single<SettingsRepository>    { SettingsRepository(androidContext()) }
+    single<SettingsRepository>       { SettingsRepository(androidContext()) }
+    single<NotificationRepository>   { NotificationRepository(androidContext()) }
+    single<BiometricVaultRepository> { BiometricVaultRepository(androidContext()) }
 
     // ConsentRepository — process-scoped, DataStore-backed legal consent gate.
     single { ConsentRepository(androidContext()) }
 
     // ── NSE 2.0 — Nexus Speech Engine ─────────────────────────────────────
-    // factory scope: lifecycle + audio focus are tied to the composable lifetime.
     factory { NseAudioFocusManager(androidContext()) }
     factory { NseAndroidEngine(androidContext(), get()) }
     factory { NseRepository(get()) }
@@ -73,6 +77,7 @@ val appModule = module {
     viewModel { EncrypterDecrypterViewModel() }
     viewModel { HashGeneratorViewModel() }
     viewModel { PasswordGeneratorViewModel() }
+    viewModel { BiometricVaultViewModel(repository = get()) }
 
     // Utilities
     viewModel { TextTranslatorViewModel() }
@@ -88,5 +93,5 @@ val appModule = module {
     viewModel { NseViewModel(get()) }
 
     // Camera / sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
-    // BiometricVault, DocHub, VoiceTyper — state managed locally in composables.
+    // DocHub, VoiceTyper — state managed locally in composables.
 }

@@ -79,4 +79,13 @@ class FavoritesRepository(private val context: Context) {
             prefs[PINNED_KEY] = current - featureId.name
         }
     }
+
+    // ── Clear all ─────────────────────────────────────────────────────────
+
+    suspend fun clearAll() {
+        context.dataStore.edit { prefs ->
+            prefs[FAVORITES_KEY] = emptySet()
+            prefs[PINNED_KEY]    = emptySet()
+        }
+    }
 }

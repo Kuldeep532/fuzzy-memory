@@ -1,15 +1,15 @@
 package com.nexuswavetech.nexusplus.navigation
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Apps
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -22,9 +22,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesScreen
+import com.nexuswavetech.nexusplus.features.favorites.FavoritesScreen
 import com.nexuswavetech.nexusplus.features.home.HomeScreen
 import com.nexuswavetech.nexusplus.features.more.MoreScreen
-import com.nexuswavetech.nexusplus.features.search.SearchScreen
 
 private data class NavTabItem(
     val tab: BottomTab,
@@ -35,28 +35,28 @@ private data class NavTabItem(
 
 private val tabs = listOf(
     NavTabItem(
-        tab           = BottomTab.Home,
-        selectedIcon  = Icons.Filled.Home,
+        tab            = BottomTab.Home,
+        selectedIcon   = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
-        contentDesc   = "Home tab. Dashboard with hub cards and recent activity.",
+        contentDesc    = "Home tab. Dashboard with hub cards and recent activity.",
     ),
     NavTabItem(
-        tab           = BottomTab.Explore,
-        selectedIcon  = Icons.Filled.Apps,
+        tab            = BottomTab.Explore,
+        selectedIcon   = Icons.Filled.Apps,
         unselectedIcon = Icons.Outlined.Apps,
-        contentDesc   = "Explore tab. Browse all 49 features.",
+        contentDesc    = "Explore tab. Browse all features by category.",
     ),
     NavTabItem(
-        tab           = BottomTab.Search,
-        selectedIcon  = Icons.Filled.Search,
-        unselectedIcon = Icons.Outlined.Search,
-        contentDesc   = "Search tab. Find any feature by name or keyword.",
+        tab            = BottomTab.Favorites,
+        selectedIcon   = Icons.Filled.Favorite,
+        unselectedIcon = Icons.Outlined.FavoriteBorder,
+        contentDesc    = "Favorites tab. Your bookmarked and pinned features.",
     ),
     NavTabItem(
-        tab           = BottomTab.More,
-        selectedIcon  = Icons.Filled.MoreHoriz,
+        tab            = BottomTab.More,
+        selectedIcon   = Icons.Filled.MoreHoriz,
         unselectedIcon = Icons.Outlined.MoreHoriz,
-        contentDesc   = "More tab. Settings, legal information, and developer links.",
+        contentDesc    = "More tab. Profile, settings, and app information.",
     ),
 )
 
@@ -109,8 +109,8 @@ fun MainScaffold(rootNavController: NavController) {
             composable(BottomTab.Explore.route) {
                 AllFeaturesScreen(rootNavController = rootNavController)
             }
-            composable(BottomTab.Search.route) {
-                SearchScreen(rootNavController = rootNavController)
+            composable(BottomTab.Favorites.route) {
+                FavoritesScreen(rootNavController = rootNavController)
             }
             composable(BottomTab.More.route) {
                 MoreScreen(rootNavController = rootNavController)

@@ -9,7 +9,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Storage / Media (Smart Image Editor, Offline Music, Doc Hub) -->
+    <!-- Flashlight — uses CAMERA_TORCH via Camera2 API; no extra permission needed -->
+
+    <!-- Storage / Media (Smart Image Editor, Offline Music, Doc Hub, File Manager) -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
@@ -22,9 +24,14 @@
     <!-- Audio recording (Voice Recorder, Voice Typer) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Location (Speedometer, Compass) -->
+    <!-- Location (Speedometer, Compass, Wi-Fi Analyzer) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- Wi-Fi (Wi-Fi Analyzer) -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-feature android:name="android.hardware.wifi" android:required="false" />
 
     <!-- Media playback service -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -37,8 +44,9 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT" />
     <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
 
-    <!-- Exact alarms for My Reminder (API 31+) -->
+    <!-- Exact alarms (My Reminder, Alarm Clock) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -72,6 +80,15 @@
                 <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
+
+        <!-- Alarm Clock BroadcastReceiver -->
+        <receiver
+            android:name=".features.alarm.AlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.nexuswavetech.nexusplus.ALARM_TRIGGER" />
+            </intent-filter>
+        </receiver>
 
         <!-- WorkManager boot receiver for My Reminder -->
         <receiver
