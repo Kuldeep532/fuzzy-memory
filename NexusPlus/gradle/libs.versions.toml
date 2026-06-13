@@ -23,9 +23,8 @@ cameraX = "1.3.4"
 biometric = "1.1.0"
 workmanager = "2.9.0"
 zxing = "3.5.3"
-# Firebase (add when ready to activate):
-# firebaseBom = "33.1.0"
-# googleServices = "4.4.2"
+firebaseBom    = "33.1.0"
+googleServices = "4.4.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -67,10 +66,11 @@ mlkit-object-detection = { group = "com.google.mlkit", name = "object-detection"
 mlkit-image-labeling = { group = "com.google.mlkit", name = "image-labeling", version.ref = "mlkitImageLabeling" }
 accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
-# Firebase (uncomment when ready):
-# firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
-# firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
-# google-auth-services = { group = "com.google.android.gms", name = "play-services-auth", version = "21.2.0" }
+firebase-bom       = { group = "com.google.firebase", name = "firebase-bom",              version.ref = "firebaseBom" }
+firebase-auth      = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging-ktx" }
+google-play-auth   = { group = "com.google.android.gms", name = "play-services-auth", version = "21.2.0" }
 
 [plugins]
 android-application  = { id = "com.android.application",               version.ref = "agp" }
@@ -78,3 +78,4 @@ android-library      = { id = "com.android.library",                   version.r
 kotlin-android       = { id = "org.jetbrains.kotlin.android",          version.ref = "kotlin" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform",    version.ref = "kotlin" }
 kotlin-compose       = { id = "org.jetbrains.kotlin.plugin.compose",   version.ref = "kotlin" }
+google-services      = { id = "com.google.gms.google-services",         version.ref = "googleServices" }

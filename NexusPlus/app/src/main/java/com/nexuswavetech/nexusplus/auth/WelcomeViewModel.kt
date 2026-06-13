@@ -71,6 +71,7 @@ class WelcomeViewModel(
                         name     = result.displayName,
                         email    = result.email,
                         photoUrl = result.photoUrl,
+                        isAdmin  = result.isAdmin,
                     )
                     _uiState.value = _uiState.value.copy(isLoading = false, navigateToMain = true)
                 }
@@ -79,6 +80,10 @@ class WelcomeViewModel(
                 }
             }
         }
+    }
+
+    fun onGoogleSignInError(message: String) {
+        _uiState.value = _uiState.value.copy(isLoading = false, error = message)
     }
 
     // ── Guest Flow ──────────────────────────────────────────────────────────

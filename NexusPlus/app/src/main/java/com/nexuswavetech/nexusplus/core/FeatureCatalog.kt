@@ -449,6 +449,28 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
+        // ── New features ──────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.TOTP_AUTHENTICATOR,
+            name        = "TOTP Authenticator",
+            description = "Generate 2FA one-time passwords (Google Authenticator compatible)",
+            icon        = Icons.Filled.Key,
+            route       = Screen.TotpAuthenticator.route,
+            category    = FeatureCategory.SECURITY,
+            keywords    = listOf("totp", "2fa", "otp", "authenticator", "mfa", "google", "one-time"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.NETWORK_SPEED_TEST,
+            name        = "Speed Test",
+            description = "Test internet download, upload speed and ping latency",
+            icon        = Icons.Filled.Speed,
+            route       = Screen.NetworkSpeedTest.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("speed", "internet", "download", "upload", "ping", "mbps", "network", "wifi"),
+            isNew       = true,
+        ),
+
     )
 
     /** All features grouped by [FeatureHub]. */

@@ -16,7 +16,8 @@ sealed class AuthResult {
         val uid: String,
         val displayName: String,
         val email: String,
-        val photoUrl: String?
+        val photoUrl: String?,
+        val isAdmin: Boolean = false,
     ) : AuthResult()
 
     data class Failure(val message: String) : AuthResult()

@@ -1,8 +1,13 @@
 package com.nexuswavetech.nexusplus.features.nexushealthvault
 
+import android.app.Activity
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -16,43 +21,91 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-
-private data class HealthRecord(
-    val id:         String,
-    val category:   String,
-    val label:      String,
-    val value:      String,
-    val unit:       String,
-    val recordedOn: String,
-)
+import org.koin.androidx.compose.koinViewModel
 
 private data class HealthCategory(val name: String, val icon: ImageVector, val color: Color)
 
 private val categories = listOf(
-    HealthCategory("Vitals",         Icons.Filled.MonitorHeart,   Color(0xFFF44336)),
-    HealthCategory("Medications",    Icons.Filled.Medication,     Color(0xFF9C27B0)),
-    HealthCategory("Lab Results",    Icons.Filled.Science,        Color(0xFF2196F3)),
-    HealthCategory("Appointments",   Icons.Filled.CalendarMonth,  Color(0xFF4CAF50)),
-    HealthCategory("Allergies",      Icons.Filled.Warning,        Color(0xFFFF9800)),
-    HealthCategory("Vaccinations",   Icons.Filled.Vaccines,       Color(0xFF009688)),
+    HealthCategory("Vitals",       Icons.Filled.MonitorHeart,  Color(0xFFF44336)),
+    HealthCategory("Medications",  Icons.Filled.Medication,    Color(0xFF9C27B0)),
+    HealthCategory("Lab Results",  Icons.Filled.Science,       Color(0xFF2196F3)),
+    HealthCategory("Appointments", Icons.Filled.CalendarMonth, Color(0xFF4CAF50)),
+    HealthCategory("Allergies",    Icons.Filled.Warning,       Color(0xFFFF9800)),
+    HealthCategory("Vaccinations", Icons.Filled.Vaccines,      Color(0xFF009688)),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NexusHealthVaultScreen(onBack: () -> Unit) {
-    var records       by remember { mutableStateOf<List<HealthRecord>>(emptyList()) }
-    var selectedCat   by remember { mutableStateOf<String?>(null) }
-    var showAddSheet  by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val vm: HealthVaultViewModel = koinViewModel()
 
-    var newCategory   by remember { mutableStateOf(categories.first().name) }
-    var newLabel      by remember { mutableStateOf("") }
-    var newValue      by remember { mutableStateOf("") }
-    var newUnit       by remember { mutableStateOf("") }
-    var catExpanded   by remember { mutableStateOf(false) }
+    val records by vm.records.collectAsStateWithLifecycle()
 
-    val today = remember { java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault()).format(java.util.Date()) }
+    var isLocked     by remember { mutableStateOf(true) }
+    var authError    by remember { mutableStateOf<String?>(null) }
+    var selectedCat  by remember { mutableStateOf<String?>(null) }
+    var showAddSheet by remember { mutableStateOf(false) }
+
+    var newCategory  by remember { mutableStateOf(categories.first().name) }
+    var newLabel     by remember { mutableStateOf("") }
+    var newValue     by remember { mutableStateOf("") }
+    var newUnit      by remember { mutableStateOf("") }
+    var catExpanded  by remember { mutableStateOf(false) }
+    val today = remember {
+        java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault())
+            .format(java.util.Date())
+    }
+
+    fun launchBiometric() {
+        val bm = BiometricManager.from(context)
+        val canAuth = bm.canAuthenticate(
+            BiometricManager.Authenticators.BIOMETRIC_STRONG or
+            BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        )
+        if (canAuth == BiometricManager.BIOMETRIC_SUCCESS) {
+            val executor = ContextCompat.getMainExecutor(context)
+            BiometricPrompt(
+                context as FragmentActivity, executor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationSucceeded(r: BiometricPrompt.AuthenticationResult) {
+                        isLocked = false; authError = null
+                    }
+                    override fun onAuthenticationError(code: Int, msg: CharSequence) {
+                        authError = msg.toString()
+                    }
+                    override fun onAuthenticationFailed() {
+                        authError = "Authentication failed. Please try again."
+                    }
+                }
+            ).authenticate(
+                BiometricPrompt.PromptInfo.Builder()
+                    .setTitle("Health Vault")
+                    .setSubtitle("Authenticate to access your health records")
+                    .setDescription("Your data is encrypted and synced securely via Firebase")
+                    .setAllowedAuthenticators(
+                        BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                        BiometricManager.Authenticators.DEVICE_CREDENTIAL
+                    )
+                    .build()
+            )
+        } else {
+            isLocked = false
+        }
+    }
+
+    LaunchedEffect(Unit) { launchBiometric() }
+
+    if (isLocked) {
+        HealthVaultLockScreen(error = authError, onUnlockClicked = ::launchBiometric, onBack = onBack)
+        return
+    }
 
     val filtered = remember(records, selectedCat) {
         if (selectedCat == null) records else records.filter { it.category == selectedCat }
@@ -66,11 +119,11 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
         })
 
         LazyColumn(
-            modifier       = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            modifier            = Modifier.fillMaxSize(),
+            contentPadding      = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Hero
+            // Hero card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -78,26 +131,28 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
                 ) {
                     Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Icon(Icons.Filled.HealthAndSafety, null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
-                        Column {
-                            Text("Nexus Health Vault", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold), color = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.semantics { heading() })
-                            Text("Secure, offline-first health records. Medications, vitals, lab results and appointments — encrypted on-device.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text("Health Vault", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), modifier = Modifier.semantics { heading() })
+                            Text("Biometric-locked · Firebase-synced text records", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
+                            Text("Cards & documents stay on-device with AES-256", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                         }
                     }
                 }
             }
 
-            // Category chips
+            // Category filter chips
             item {
-                androidx.compose.foundation.lazy.LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    item {
-                        FilterChip(selected = selectedCat == null, onClick = { selectedCat = null }, label = { Text("All") })
-                    }
-                    items(categories) { cat ->
+                Row(
+                    modifier            = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    FilterChip(selected = selectedCat == null, onClick = { selectedCat = null }, label = { Text("All (${records.size})") })
+                    categories.forEach { cat ->
                         FilterChip(
                             selected    = selectedCat == cat.name,
-                            onClick     = { selectedCat = cat.name },
+                            onClick     = { selectedCat = if (selectedCat == cat.name) null else cat.name },
                             label       = { Text(cat.name) },
-                            leadingIcon = { Icon(cat.icon, null, modifier = Modifier.size(14.dp), tint = cat.color) },
+                            leadingIcon = { Icon(cat.icon, null, modifier = Modifier.size(16.dp), tint = cat.color) },
                         )
                     }
                 }
@@ -105,49 +160,24 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
 
             if (filtered.isEmpty()) {
                 item {
-                    Box(
-                        modifier         = Modifier.fillMaxWidth().padding(vertical = 48.dp).semantics { contentDescription = "No health records yet. Tap + to add." },
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Icon(Icons.Filled.HealthAndSafety, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
-                            Text("No health records", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Track vitals, medications, and appointments.\nAll data stays on your device.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            FilledTonalButton(onClick = { showAddSheet = true }) { Icon(Icons.Filled.Add, null); Spacer(Modifier.width(8.dp)); Text("Add Record") }
+                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Filled.FolderOpen, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f))
+                            Text("No records yet", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Tap + to add your first health record", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Button(onClick = { showAddSheet = true }) { Text("Add Record") }
                         }
                     }
                 }
             } else {
                 items(filtered, key = { it.id }) { record ->
                     val cat = categories.firstOrNull { it.name == record.category }
-                    Card(
-                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "${record.category}: ${record.label}. ${record.value} ${record.unit}. Recorded on ${record.recordedOn}." },
-                        colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    ) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Icon(cat?.icon ?: Icons.Filled.HealthAndSafety, null, tint = cat?.color ?: MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(record.label, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
-                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text("${record.value} ${record.unit}", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
-                                }
-                                Text("${record.category} · ${record.recordedOn}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }
-                            IconButton(onClick = { records = records.filter { it.id != record.id } }) {
-                                Icon(Icons.Filled.Delete, contentDescription = "Delete ${record.label}", tint = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Privacy notice
-            item {
-                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
-                    Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Icon(Icons.Filled.Shield, null, tint = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.size(18.dp))
-                        Text("All health data is stored locally on your device and never shared with third parties.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                    }
+                    HealthRecordCard(
+                        record   = record,
+                        catColor = cat?.color ?: MaterialTheme.colorScheme.primary,
+                        catIcon  = cat?.icon  ?: Icons.Filled.HealthAndSafety,
+                        onDelete = { vm.deleteRecord(record.id) },
+                    )
                 }
             }
         }
@@ -156,45 +186,113 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
     if (showAddSheet) {
         ModalBottomSheet(onDismissRequest = { showAddSheet = false }) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier            = Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 40.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text("Add Health Record", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
 
                 ExposedDropdownMenuBox(expanded = catExpanded, onExpandedChange = { catExpanded = it }) {
                     OutlinedTextField(
-                        value         = newCategory,
+                        value     = newCategory,
                         onValueChange = {},
-                        readOnly      = true,
-                        label         = { Text("Category") },
-                        trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(catExpanded) },
-                        modifier      = Modifier.menuAnchor().fillMaxWidth(),
+                        readOnly  = true,
+                        label     = { Text("Category") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(catExpanded) },
+                        modifier  = Modifier.fillMaxWidth().menuAnchor(),
                     )
                     ExposedDropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
-                        categories.forEach { cat -> DropdownMenuItem(text = { Text(cat.name) }, onClick = { newCategory = cat.name; catExpanded = false }) }
+                        categories.forEach { cat ->
+                            DropdownMenuItem(
+                                text     = { Text(cat.name) },
+                                leadingIcon = { Icon(cat.icon, null, tint = cat.color) },
+                                onClick  = { newCategory = cat.name; catExpanded = false },
+                            )
+                        }
                     }
                 }
 
-                OutlinedTextField(value = newLabel, onValueChange = { newLabel = it }, label = { Text("Record Label (e.g. Blood Pressure)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = newLabel, onValueChange = { newLabel = it }, label = { Text("Label (e.g. Blood Pressure)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(value = newValue, onValueChange = { newValue = it }, label = { Text("Value") }, singleLine = true, modifier = Modifier.weight(2f))
                     OutlinedTextField(value = newUnit, onValueChange = { newUnit = it }, label = { Text("Unit") }, singleLine = true, modifier = Modifier.weight(1f))
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(onClick = { showAddSheet = false }, modifier = Modifier.weight(1f)) { Text("Cancel") }
-                    Button(
-                        onClick = {
-                            if (newLabel.isNotBlank() && newValue.isNotBlank()) {
-                                records = records + HealthRecord(id = System.currentTimeMillis().toString(), category = newCategory, label = newLabel.trim(), value = newValue.trim(), unit = newUnit.trim(), recordedOn = today)
-                                newLabel = ""; newValue = ""; newUnit = ""
-                                showAddSheet = false
-                            }
-                        },
-                        enabled  = newLabel.isNotBlank() && newValue.isNotBlank(),
-                        modifier = Modifier.weight(1f),
-                    ) { Text("Add Record") }
+                Button(
+                    onClick = {
+                        if (newLabel.isNotBlank() && newValue.isNotBlank()) {
+                            vm.addRecord(newCategory, newLabel, newValue, newUnit, today)
+                            newLabel = ""; newValue = ""; newUnit = ""
+                            showAddSheet = false
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Save Record") }
+            }
+        }
+    }
+}
+
+// ── Lock screen ────────────────────────────────────────────────────────────────
+
+@Composable
+private fun HealthVaultLockScreen(error: String?, onUnlockClicked: () -> Unit, onBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        NexusTopBar(title = "Health Vault", onBack = onBack)
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+                modifier            = Modifier.padding(32.dp),
+            ) {
+                Icon(Icons.Filled.Lock, null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.primary)
+                Text("Health Vault is Locked", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
+                Text(
+                    "Authenticate to access your health records",
+                    style     = MaterialTheme.typography.bodyMedium,
+                    color     = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+                if (error != null) {
+                    Text(error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                 }
+                Button(onClick = onUnlockClicked, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                    Icon(Icons.Filled.Fingerprint, null, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Unlock with Biometrics")
+                }
+            }
+        }
+    }
+}
+
+// ── Record card ────────────────────────────────────────────────────────────────
+
+@Composable
+private fun HealthRecordCard(
+    record:   HealthRecord,
+    catColor: Color,
+    catIcon:  ImageVector,
+    onDelete: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = "${record.category}: ${record.label} ${record.value} ${record.unit}. ${record.recordedOn}" },
+    ) {
+        Row(
+            modifier              = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Icon(catIcon, null, modifier = Modifier.size(28.dp), tint = catColor)
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(record.label, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+                Text("${record.value} ${record.unit}".trim(), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = catColor)
+                Text(record.recordedOn, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            IconButton(onClick = onDelete) {
+                Icon(Icons.Filled.DeleteOutline, contentDescription = "Delete record", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

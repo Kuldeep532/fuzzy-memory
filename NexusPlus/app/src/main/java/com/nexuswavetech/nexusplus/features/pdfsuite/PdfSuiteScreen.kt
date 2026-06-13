@@ -309,22 +309,81 @@ private fun convertTextToPdf(context: Context, text: String): String {
 
 @Composable
 fun MergePdfTool(context: Context) {
-    val view = LocalView.current
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(Icons.Filled.CallMerge, null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
-        Text("Merge PDFs", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold))
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer), modifier = Modifier.fillMaxWidth()) {
-            Text(
-                "PDF merging requires page-level byte manipulation beyond Android's built-in PdfDocument API.\n\n" +
-                "To merge PDFs:\n• Use a third-party PDF library (e.g., iText7)\n• Or use the PDF Suite's Text → PDF / Images → PDF tools to build combined documents.\n\n" +
-                "This feature is planned for a future update with library integration.",
-                modifier = Modifier.padding(16.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.bodyMedium
-            )
+    val scope = rememberCoroutineScope()
+    val view  = LocalView.current
+    var pdfUris   by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    var result    by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+        if (uris.isNotEmpty()) { pdfUris = uris; result = "" }
+    }
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Button(onClick = { launcher.launch("application/pdf") }, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.FolderOpen, null); Spacer(Modifier.width(8.dp)); Text("Select PDFs to Merge")
+        }
+        if (pdfUris.isNotEmpty()) {
+            Text("${pdfUris.size} file${if (pdfUris.size != 1) "s" else ""} selected", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            pdfUris.forEachIndexed { i, uri ->
+                Text("${i + 1}. ${uri.lastPathSegment ?: "file"}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Button(
+                onClick = {
+                    scope.launch {
+                        isLoading = true; result = ""
+                        result = withContext(Dispatchers.IO) { mergePdfs(context, pdfUris) }
+                        isLoading = false
+                        view.announceForAccessibility(result)
+                    }
+                },
+                enabled  = pdfUris.size >= 2 && !isLoading,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                if (isLoading) { CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp); Spacer(Modifier.width(8.dp)); Text("Merging…") }
+                else           { Icon(Icons.Filled.CallMerge, null); Spacer(Modifier.width(8.dp)); Text("Merge PDFs") }
+            }
+        }
+        if (pdfUris.size == 1) Text("Select at least 2 PDFs to merge", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (result.isNotEmpty()) {
+            Text(result, style = MaterialTheme.typography.bodySmall, color = if (result.startsWith("Failed")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
         }
     }
 }
+
+/**
+ * Real PDF merge using [PdfRenderer] (read) + [PdfDocument] (write).
+ * Each page is rendered at its native resolution, composited onto a white
+ * background and written into the output document. Works 100% offline with
+ * Android framework APIs — no third-party library required.
+ */
+private fun mergePdfs(context: Context, uris: List<Uri>): String = runCatching {
+    val doc = PdfDocument()
+    var pageIndex = 0
+    for (uri in uris) {
+        val fd = context.contentResolver.openFileDescriptor(uri, "r") ?: continue
+        fd.use { pfd ->
+            PdfRenderer(pfd).use { renderer ->
+                for (i in 0 until renderer.pageCount) {
+                    renderer.openPage(i).use { page ->
+                        val bmp = android.graphics.Bitmap.createBitmap(page.width, page.height, android.graphics.Bitmap.Config.ARGB_8888)
+                        android.graphics.Canvas(bmp).drawColor(android.graphics.Color.WHITE)
+                        page.render(bmp, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+                        val pageInfo = PdfDocument.PageInfo.Builder(page.width, page.height, pageIndex++).create()
+                        val docPage  = doc.startPage(pageInfo)
+                        docPage.canvas.drawBitmap(bmp, 0f, 0f, null)
+                        doc.finishPage(docPage)
+                        bmp.recycle()
+                    }
+                }
+            }
+        }
+    }
+    val outFile = File(context.cacheDir, "nexus_merged_${System.currentTimeMillis()}.pdf")
+    doc.writeTo(FileOutputStream(outFile))
+    doc.close()
+    "Merged ${uris.size} PDFs → ${outFile.name} ($pageIndex pages)"
+}.getOrElse { "Failed: ${it.message}" }
 
 // ── Split PDF ─────────────────────────────────────────────────────────────────
 

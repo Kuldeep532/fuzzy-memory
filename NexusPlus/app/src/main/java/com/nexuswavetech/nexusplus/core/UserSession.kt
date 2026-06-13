@@ -9,7 +9,8 @@ sealed class UserSession {
         val uid: String,
         val displayName: String,
         val email: String,
-        val photoUrl: String? = null
+        val photoUrl: String? = null,
+        val isAdmin: Boolean  = false,
     ) : UserSession()
 
     /** User chose the guest flow and provided their name. */

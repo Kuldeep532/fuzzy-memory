@@ -66,6 +66,10 @@ enum class FeatureId {
     APP_LOCKER,
     CONTACT_BACKUP,
     NEXUS_HEALTH_VAULT,
+    TOTP_AUTHENTICATOR,
+
+    // ── Smart Tools (additional) ──────────────────────────────────────────
+    NETWORK_SPEED_TEST,
 
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE

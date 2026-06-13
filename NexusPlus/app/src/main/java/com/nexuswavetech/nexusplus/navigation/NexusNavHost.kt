@@ -55,6 +55,8 @@ import com.nexuswavetech.nexusplus.features.filemanager.FileManagerScreen
 import com.nexuswavetech.nexusplus.features.alarm.AlarmClockScreen
 import com.nexuswavetech.nexusplus.features.barcode.BarcodeGeneratorScreen
 import com.nexuswavetech.nexusplus.features.nexushealthvault.NexusHealthVaultScreen
+import com.nexuswavetech.nexusplus.features.totp.TotpAuthenticatorScreen
+import com.nexuswavetech.nexusplus.features.speedtest.NetworkSpeedTestScreen
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
@@ -148,9 +150,9 @@ fun NexusNavHost() {
         composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }
 
         // ── Health & Wellbeing ────────────────────────────────────────────
-        composable(Screen.NexusHealthVault.route) {
-            NexusHealthVaultScreen(onBack = { navController.popBackStack() })
-        }
+        composable(Screen.NexusHealthVault.route)   { NexusHealthVaultScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.TotpAuthenticator.route)  { TotpAuthenticatorScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.NetworkSpeedTest.route)   { NetworkSpeedTestScreen (onBack = { navController.popBackStack() }) }
 
         // ── Legal ─────────────────────────────────────────────────────────
         composable(Screen.AboutUs.route)         { AboutUsScreen        (onBack = { navController.popBackStack() }) }

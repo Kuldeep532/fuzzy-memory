@@ -13,12 +13,19 @@ class SessionManager {
     private val _session = MutableStateFlow<UserSession>(UserSession.None)
     val session: StateFlow<UserSession> = _session.asStateFlow()
 
-    fun setAuthenticatedSession(uid: String, name: String, email: String, photoUrl: String? = null) {
+    fun setAuthenticatedSession(
+        uid: String,
+        name: String,
+        email: String,
+        photoUrl: String? = null,
+        isAdmin: Boolean = false,
+    ) {
         _session.value = UserSession.Authenticated(
-            uid = uid,
+            uid         = uid,
             displayName = name,
-            email = email,
-            photoUrl = photoUrl
+            email       = email,
+            photoUrl    = photoUrl,
+            isAdmin     = isAdmin,
         )
     }
 

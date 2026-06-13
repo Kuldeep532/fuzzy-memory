@@ -1,5 +1,8 @@
 package com.nexuswavetech.nexusplus.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +30,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusPlusLogo
 import org.koin.androidx.compose.koinViewModel
@@ -40,6 +47,26 @@ fun WelcomeScreen(
     val privacyAccepted by viewModel.privacyAccepted.collectAsState()
     val termsAccepted   by viewModel.termsAccepted.collectAsState()
     val consentGranted  by viewModel.legalConsentGranted.collectAsState()
+
+    val context = LocalContext.current
+
+    // ── Real Google Sign-In launcher ────────────────────────────────────────
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            runCatching {
+                val task    = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val account = task.getResult(ApiException::class.java)
+                account.idToken?.let { viewModel.onGoogleSignInTokenReceived(it) }
+                    ?: viewModel.onGoogleSignInError("No ID token — check Firebase SHA-1 fingerprint")
+            }.onFailure { e ->
+                viewModel.onGoogleSignInError("Sign-in failed (code ${(e as? ApiException)?.statusCode ?: "?"})")
+            }
+        } else {
+            viewModel.onGoogleSignInError("Sign-in cancelled")
+        }
+    }
 
     LaunchedEffect(uiState.navigateToMain) {
         if (uiState.navigateToMain) {
@@ -72,12 +99,11 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
 
-            // ── Programmatic logo (Canvas-drawn, no raster assets) ─────────
             NexusPlusLogo(
-                modifier      = Modifier.size(100.dp),
-                primaryColor  = MaterialTheme.colorScheme.onPrimary,
-                accentColor   = MaterialTheme.colorScheme.secondary,
-                strokeWidth   = 3.5.dp,
+                modifier     = Modifier.size(100.dp),
+                primaryColor = MaterialTheme.colorScheme.onPrimary,
+                accentColor  = MaterialTheme.colorScheme.secondary,
+                strokeWidth  = 3.5.dp,
             )
 
             Text(
@@ -101,7 +127,6 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // ── Compliance Gate — Privacy Policy + T&C ─────────────────────
             LegalConsentSection(
                 privacyAccepted  = privacyAccepted,
                 termsAccepted    = termsAccepted,
@@ -111,16 +136,22 @@ fun WelcomeScreen(
                 onOpenTerms      = { navController?.navigate(Screen.TermsConditions.route) },
             )
 
-            // ── Google Sign-In ─────────────────────────────────────────────
+            // ── Google Sign-In button (real launcher) ───────────────────────
             GoogleSignInButton(
-                isLoading      = uiState.isLoading,
-                enabled        = consentGranted,
-                onClick        = {
-                    viewModel.onGoogleSignInTokenReceived("stub_google_id_token")
+                isLoading = uiState.isLoading,
+                enabled   = consentGranted,
+                onClick   = {
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(context.getString(com.nexuswavetech.nexusplus.R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+                    val client = GoogleSignIn.getClient(context, gso)
+                    client.signOut().addOnCompleteListener {
+                        googleLauncher.launch(client.signInIntent)
+                    }
                 },
             )
 
-            // ── Guest flow ─────────────────────────────────────────────────
             OutlinedButton(
                 onClick  = viewModel::onContinueAsGuestClicked,
                 enabled  = consentGranted,
@@ -129,10 +160,8 @@ fun WelcomeScreen(
                     .height(56.dp)
                     .semantics {
                         contentDescription =
-                            if (consentGranted)
-                                "Continue as Guest. Tap to enter your name and use the app without a Google account."
-                            else
-                                "Continue as Guest. Disabled until Privacy Policy and Terms are accepted."
+                            if (consentGranted) "Continue as Guest. Tap to enter your name."
+                            else "Continue as Guest. Accept Privacy Policy and Terms first."
                     },
                 shape  = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -162,7 +191,6 @@ fun WelcomeScreen(
             }
         }
 
-        // ── Guest name input dialog ────────────────────────────────────────
         if (uiState.showGuestNameDialog) {
             GuestNameDialog(
                 name          = uiState.guestName,
@@ -202,14 +230,12 @@ private fun LegalConsentSection(
 
             Spacer(Modifier.height(4.dp))
 
-            // Privacy Policy checkbox
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier          = Modifier
                     .fillMaxWidth()
                     .semantics(mergeDescendants = true) {
-                        contentDescription =
-                            "Privacy Policy. ${if (privacyAccepted) "Accepted." else "Not yet accepted."}"
+                        contentDescription = "Privacy Policy. ${if (privacyAccepted) "Accepted." else "Not yet accepted."}"
                         role = Role.Checkbox
                     },
             ) {
@@ -221,30 +247,21 @@ private fun LegalConsentSection(
                         uncheckedColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     ),
                 )
-                Text(
-                    text  = "I have read the ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
-                )
+                Text("I have read the ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f))
                 Text(
                     text     = "Privacy Policy",
                     style    = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                     color    = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.clickable(
-                        onClickLabel = "Open Privacy Policy",
-                        onClick      = onOpenPrivacy,
-                    ),
+                    modifier = Modifier.clickable(onClickLabel = "Open Privacy Policy", onClick = onOpenPrivacy),
                 )
             }
 
-            // Terms & Conditions checkbox
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier          = Modifier
                     .fillMaxWidth()
                     .semantics(mergeDescendants = true) {
-                        contentDescription =
-                            "Terms and Conditions. ${if (termsAccepted) "Accepted." else "Not yet accepted."}"
+                        contentDescription = "Terms and Conditions. ${if (termsAccepted) "Accepted." else "Not yet accepted."}"
                         role = Role.Checkbox
                     },
             ) {
@@ -256,19 +273,12 @@ private fun LegalConsentSection(
                         uncheckedColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
                     ),
                 )
-                Text(
-                    text  = "I accept the ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
-                )
+                Text("I accept the ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f))
                 Text(
                     text     = "Terms & Conditions",
                     style    = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                     color    = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.clickable(
-                        onClickLabel = "Open Terms and Conditions",
-                        onClick      = onOpenTerms,
-                    ),
+                    modifier = Modifier.clickable(onClickLabel = "Open Terms and Conditions", onClick = onOpenTerms),
                 )
             }
         }
@@ -278,11 +288,7 @@ private fun LegalConsentSection(
 // ── Google Sign-In button ──────────────────────────────────────────────────
 
 @Composable
-private fun GoogleSignInButton(
-    isLoading: Boolean,
-    enabled: Boolean,
-    onClick: () -> Unit,
-) {
+private fun GoogleSignInButton(isLoading: Boolean, enabled: Boolean, onClick: () -> Unit) {
     Button(
         onClick  = onClick,
         enabled  = !isLoading && enabled,
@@ -291,10 +297,8 @@ private fun GoogleSignInButton(
             .height(56.dp)
             .semantics {
                 contentDescription =
-                    if (enabled)
-                        "Sign in with Google. Tap to authenticate with your Google account and unlock all features."
-                    else
-                        "Sign in with Google. Disabled until Privacy Policy and Terms are accepted."
+                    if (enabled) "Sign in with Google. Tap to authenticate."
+                    else "Sign in with Google. Disabled until Privacy Policy and Terms are accepted."
                 role = Role.Button
             },
         shape  = RoundedCornerShape(16.dp),
@@ -309,18 +313,9 @@ private fun GoogleSignInButton(
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
         } else {
-            Text(
-                text  = "G",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color      = MaterialTheme.colorScheme.primary,
-                ),
-            )
+            Text("G", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary))
             Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text  = "Sign in with Google",
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-            )
+            Text("Sign in with Google", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
         }
     }
 }
@@ -339,42 +334,26 @@ private fun GuestNameDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text(text = "Welcome, Guest!", modifier = Modifier.semantics { heading() })
-        },
-        text = {
+        title   = { Text(text = "Welcome, Guest!", modifier = Modifier.semantics { heading() }) },
+        text    = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("What should we call you?")
                 OutlinedTextField(
-                    value         = name,
-                    onValueChange = onNameChanged,
-                    label         = { Text("Your name") },
-                    isError       = error != null,
+                    value          = name,
+                    onValueChange  = onNameChanged,
+                    label          = { Text("Your name") },
+                    isError        = error != null,
                     supportingText = { if (error != null) Text(error) },
-                    singleLine    = true,
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction      = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { keyboardController?.hide(); onConfirm() }
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .semantics {
-                            contentDescription = "Name input field. Enter your name to continue as a guest."
-                        },
+                    singleLine     = true,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { keyboardController?.hide(); onConfirm() }),
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Name input field." },
                 )
             }
         },
         confirmButton = {
-            TextButton(
-                onClick  = { keyboardController?.hide(); onConfirm() },
-                modifier = Modifier.semantics { contentDescription = "Enter Nexus Plus as guest" },
-            ) { Text("Enter App") }
+            TextButton(onClick = { keyboardController?.hide(); onConfirm() }, modifier = Modifier.semantics { contentDescription = "Enter Nexus Plus as guest" }) { Text("Enter App") }
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }

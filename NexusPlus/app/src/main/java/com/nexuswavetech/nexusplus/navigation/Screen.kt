@@ -77,6 +77,10 @@ sealed class Screen(val route: String) {
     // ── Health & Wellbeing ───────────────────────────────────────────────────
     object NexusHealthVault : Screen("feature/health_vault")
 
+    // ── New in v1.2 ──────────────────────────────────────────────────────────
+    object TotpAuthenticator : Screen("feature/totp_authenticator")
+    object NetworkSpeedTest  : Screen("feature/network_speed_test")
+
     // ── Legal ───────────────────────────────────────────────────────────────
     object AboutUs         : Screen("legal/about")
     object PrivacyPolicy   : Screen("legal/privacy")

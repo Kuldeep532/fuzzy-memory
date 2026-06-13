@@ -15,6 +15,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nexuswavetech.nexusplus.core.SessionManager
+import com.nexuswavetech.nexusplus.core.UserSession
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -38,19 +40,43 @@ private fun categoryColor(cat: String) = when (cat) {
     else       -> Color(0xFF2196F3)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationCenterScreen(onBack: () -> Unit) {
     val repository: NotificationRepository = koinInject()
+    val sessionManager: SessionManager     = koinInject()
     val scope                              = rememberCoroutineScope()
     val notifications by repository.notifications.collectAsState(initial = emptyList())
+    val session       by sessionManager.session.collectAsState()
 
+    val isAdmin     = (session as? UserSession.Authenticated)?.isAdmin == true
     val unreadCount = notifications.count { !it.isRead }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    var showComposeDialog by remember { mutableStateOf(false) }
+
+    Scaffold(
+        floatingActionButton = {
+            if (isAdmin) {
+                ExtendedFloatingActionButton(
+                    text     = { Text("Send Notification") },
+                    icon     = { Icon(Icons.Filled.Edit, contentDescription = "Compose admin notification") },
+                    onClick  = { showComposeDialog = true },
+                )
+            }
+        },
+    ) { innerPadding ->
+    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
         NexusTopBar(
             title   = "Notifications",
             onBack  = onBack,
             actions = {
+                if (isAdmin) {
+                    IconButton(onClick = {}) {
+                        Badge(containerColor = MaterialTheme.colorScheme.tertiary) {
+                            Text("Admin", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                }
                 if (unreadCount > 0) {
                     TextButton(
                         onClick  = { scope.launch { repository.markAllRead() } },
@@ -183,5 +209,53 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                 }
             }
         }
+    } // end Scaffold
+
+    // ── Admin: Compose notification dialog ─────────────────────────────────
+    if (showComposeDialog) {
+        AdminNotifDialog(
+            onSend = { title, body, category ->
+                scope.launch {
+                    val sent = repository.sendAdminNotification(title, body, category, session)
+                    if (!sent) { /* session expired / not admin — dialog handles state */ }
+                }
+                showComposeDialog = false
+            },
+            onDismiss = { showComposeDialog = false },
+        )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AdminNotifDialog(
+    onSend:   (String, String, String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var title    by remember { mutableStateOf("") }
+    var body     by remember { mutableStateOf("") }
+    var category by remember { mutableStateOf("system") }
+    val categories = listOf("system", "security", "update", "alert")
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Send Notification (Admin)", style = MaterialTheme.typography.titleMedium) },
+        text  = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Title") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = body, onValueChange = { body = it }, label = { Text("Message body") }, maxLines = 4, modifier = Modifier.fillMaxWidth())
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    categories.forEach { cat ->
+                        FilterChip(selected = category == cat, onClick = { category = cat }, label = { Text(cat) })
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { if (title.isNotBlank() && body.isNotBlank()) onSend(title.trim(), body.trim(), category) }, enabled = title.isNotBlank() && body.isNotBlank()) {
+                Text("Send")
+            }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }

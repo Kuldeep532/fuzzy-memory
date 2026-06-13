@@ -75,6 +75,10 @@ class NotificationRepository(private val context: Context) {
         }
     }
 
+    /**
+     * Add a notification — ADMIN ONLY.
+     * Use [sendAdminNotification] from UI to enforce the admin check.
+     */
     suspend fun addNotification(notif: NexusNotification) {
         context.notifStore.edit { prefs ->
             val raw = prefs[NOTIF_KEY] ?: JSONArray().toString()
@@ -91,12 +95,38 @@ class NotificationRepository(private val context: Context) {
         }
     }
 
+    /**
+     * Admin gate: Only an [com.nexuswavetech.nexusplus.core.UserSession.Authenticated]
+     * user with [com.nexuswavetech.nexusplus.core.UserSession.Authenticated.isAdmin] == true
+     * may send notifications. Returns true if successful.
+     */
+    suspend fun sendAdminNotification(
+        title:    String,
+        body:     String,
+        category: String,
+        session:  com.nexuswavetech.nexusplus.core.UserSession,
+    ): Boolean {
+        val auth = session as? com.nexuswavetech.nexusplus.core.UserSession.Authenticated
+        if (auth == null || !auth.isAdmin) return false
+        addNotification(
+            NexusNotification(
+                id          = java.util.UUID.randomUUID().toString(),
+                title       = title,
+                body        = body,
+                timestampMs = System.currentTimeMillis(),
+                isRead      = false,
+                category    = category,
+            )
+        )
+        return true
+    }
+
     private fun seedNotifications(): List<NexusNotification> {
         val now = System.currentTimeMillis()
         return listOf(
-            NexusNotification("seed_1", "Welcome to Nexus Plus", "Your 49-feature super-app is ready to use. Explore all hubs!", now - 60_000, false, "system"),
-            NexusNotification("seed_2", "Biometric Vault Upgraded", "Vault now uses AES-256-GCM hardware encryption. Your data is safer than ever.", now - 120_000, false, "security"),
-            NexusNotification("seed_3", "New: Nexus Intelligence Hub", "Explore the new AI-powered platform ecosystem in your home screen.", now - 180_000, false, "update"),
+            NexusNotification("seed_1", "Welcome to Nexus Plus", "Your 52-feature super-app is ready. Explore all hubs!", now - 60_000, false, "system"),
+            NexusNotification("seed_2", "Biometric Vault", "Vault now uses AES-256-GCM hardware encryption. Your data is safer than ever.", now - 120_000, false, "security"),
+            NexusNotification("seed_3", "Health Vault Added", "Track vitals, medications and appointments — secured with biometric lock.", now - 180_000, false, "update"),
         )
     }
 }

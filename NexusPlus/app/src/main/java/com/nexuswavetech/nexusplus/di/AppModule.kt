@@ -2,8 +2,11 @@ package com.nexuswavetech.nexusplus.di
 
 import com.nexuswavetech.nexusplus.auth.AuthRepository
 import com.nexuswavetech.nexusplus.auth.ConsentRepository
-import com.nexuswavetech.nexusplus.auth.StubFirebaseAuthRepository
+import com.nexuswavetech.nexusplus.auth.FirebaseAuthRepository
 import com.nexuswavetech.nexusplus.auth.WelcomeViewModel
+import com.nexuswavetech.nexusplus.core.AdminRepository
+import com.nexuswavetech.nexusplus.features.nexushealthvault.HealthVaultRepository
+import com.nexuswavetech.nexusplus.features.nexushealthvault.HealthVaultViewModel
 import com.nexuswavetech.nexusplus.core.FavoritesRepository
 import com.nexuswavetech.nexusplus.core.RecentActivityRepository
 import com.nexuswavetech.nexusplus.core.SearchManager
@@ -41,7 +44,9 @@ val appModule = module {
     // ── Core singletons ───────────────────────────────────────────────────
     single<SessionManager>           { SessionManager() }
     single<FavoritesRepository>      { FavoritesRepository(androidContext()) }
-    single<AuthRepository>           { StubFirebaseAuthRepository() }
+    single<AdminRepository>          { AdminRepository() }
+    single<AuthRepository>           { FirebaseAuthRepository(get()) }
+    single { HealthVaultRepository(androidContext()) }
     single<SearchManager>            { SearchManager() }
     single<RecentActivityRepository> { RecentActivityRepository(androidContext()) }
     single<SettingsRepository>       { SettingsRepository(androidContext()) }
@@ -88,6 +93,9 @@ val appModule = module {
     viewModel { MyReminderViewModel() }
     viewModel { QrCodeViewModel() }
     viewModel { CalculatorCenterViewModel() }
+
+    // Health Vault
+    viewModel { HealthVaultViewModel(repository = get()) }
 
     // NSE — factory-scoped engine + repository wired through Koin
     viewModel { NseViewModel(get()) }
