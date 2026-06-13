@@ -4,8 +4,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 /**
  * Data model for a single feature entry in the catalog.
- * All fields are searchable — name, description, and keywords are indexed
- * by [SearchManager] for global search.
+ *
+ * Fields:
+ *  - [isFavorite]  — bookmarked by the user (persisted in FavoritesRepository)
+ *  - [isPinned]    — pinned to the Home dashboard (persisted in FavoritesRepository)
+ *  - [isNew]       — first-party badge for recently-launched features
+ *  - [keywords]    — indexed by [SearchManager] for full-text search
  */
 data class FeatureItem(
     val id: FeatureId,
@@ -16,6 +20,8 @@ data class FeatureItem(
     val category: FeatureCategory,
     val keywords: List<String> = emptyList(),
     val isFavorite: Boolean = false,
+    val isPinned: Boolean = false,
+    val isNew: Boolean = false,
 )
 
 enum class FeatureCategory(val label: String) {

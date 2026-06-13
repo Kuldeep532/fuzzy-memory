@@ -25,13 +25,10 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun AllFeaturesScreen(
     rootNavController: NavController,
-    viewModel: AllFeaturesViewModel = koinViewModel()
+    viewModel: AllFeaturesViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val view = LocalView.current
-
-    // TalkBack announcement on favorite toggle
-    LaunchedEffect(uiState.features) { /* Announcements are in FeatureCard */ }
+    val view    = LocalView.current
 
     LaunchedEffect(uiState.pendingRoute) {
         uiState.pendingRoute?.let { route ->
@@ -41,123 +38,117 @@ fun AllFeaturesScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Search bar
+
+        // ── Search bar ─────────────────────────────────────────────────────
         SearchBar(
-            query = uiState.searchQuery,
-            onQueryChange = viewModel::onSearchChanged,
-            onSearch = {},
-            active = false,
+            query          = uiState.searchQuery,
+            onQueryChange  = viewModel::onSearchChanged,
+            onSearch       = {},
+            active         = false,
             onActiveChange = {},
-            placeholder = { Text("Search features…") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-            modifier = Modifier
+            placeholder    = { Text("Search all features…") },
+            leadingIcon    = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            modifier       = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
-                .semantics { contentDescription = "Search features. Type to filter the list." }
+                .semantics { contentDescription = "Search features. Type to filter the list." },
         ) {}
 
-        // Category filter chips
+        // ── Category filter chips ──────────────────────────────────────────
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
+            contentPadding        = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.semantics {
-                contentDescription = "Category filters. Swipe to browse categories."
-            }
+            modifier              = Modifier.semantics {
+                contentDescription = "Category filters. Swipe to browse."
+            },
         ) {
             item {
                 FilterChip(
                     selected = uiState.selectedCategory == null,
-                    onClick = { viewModel.onCategorySelected(null) },
-                    label = { Text("All") },
+                    onClick  = { viewModel.onCategorySelected(null) },
+                    label    = { Text("All") },
                     modifier = Modifier.semantics {
-                        contentDescription = "All categories filter" +
+                        contentDescription = "All categories" +
                             if (uiState.selectedCategory == null) ". Currently selected." else ""
-                    }
+                    },
                 )
             }
-            items(FeatureCategory.values().toList()) { category ->
+            items(FeatureCategory.entries) { category ->
                 FilterChip(
                     selected = uiState.selectedCategory == category,
-                    onClick = { viewModel.onCategorySelected(category) },
-                    label = { Text(category.label) },
+                    onClick  = { viewModel.onCategorySelected(category) },
+                    label    = { Text(category.label) },
                     modifier = Modifier.semantics {
                         contentDescription = "${category.label} filter" +
                             if (uiState.selectedCategory == category) ". Currently selected." else ""
-                    }
+                    },
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
 
-        // Feature count heading
-        Row(
+        // ── Feature count ──────────────────────────────────────────────────
+        Text(
+            text     = "${uiState.features.size} features",
+            style    = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "${uiState.features.size} features",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.semantics {
-                    contentDescription = "${uiState.features.size} features available"
-                }
-            )
-        }
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+                .semantics { contentDescription = "${uiState.features.size} features available" },
+        )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
 
-        // Features grid
+        // ── Grid or empty state ───────────────────────────────────────────
         if (uiState.features.isEmpty()) {
             Box(
-                modifier = Modifier
+                modifier         = Modifier
                     .fillMaxSize()
                     .semantics { contentDescription = "No features match your search." },
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "No features found",
+                    text  = "No features found",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         } else {
             LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 160.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                columns               = GridCells.Adaptive(minSize = 160.dp),
+                contentPadding        = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
+                verticalArrangement   = Arrangement.spacedBy(12.dp),
+                modifier              = Modifier.fillMaxSize(),
             ) {
-                items(
-                    items = uiState.features,
-                    key = { it.id.name }
-                ) { feature ->
+                items(uiState.features, key = { it.id.name }) { feature ->
                     FeatureCard(
-                        feature = feature,
-                        onTap = { viewModel.onFeatureTapped(feature) },
+                        feature          = feature,
+                        onTap            = { viewModel.onFeatureTapped(feature) },
                         onToggleFavorite = {
-                            val msg = if (feature.isFavorite)
-                                "${feature.name} removed from favorites"
-                            else
-                                "${feature.name} added to favorites"
+                            val msg = if (feature.isFavorite) "${feature.name} removed from favorites"
+                                      else "${feature.name} added to favorites"
                             view.announceForAccessibility(msg)
                             viewModel.onToggleFavorite(feature)
-                        }
+                        },
+                        onTogglePin = {
+                            val msg = if (feature.isPinned) "${feature.name} unpinned from Home"
+                                      else "${feature.name} pinned to Home"
+                            view.announceForAccessibility(msg)
+                            viewModel.onTogglePin(feature)
+                        },
                     )
                 }
             }
         }
     }
 
-    // Gatekeeper restriction dialog
     uiState.gatekeeperBlocked?.let { featureName ->
         GatekeeperDialog(
-            featureName = featureName,
-            onSignInClicked = { viewModel.onGatekeeperDismissed() /* Navigate to sign-in if needed */ },
-            onDismiss = viewModel::onGatekeeperDismissed
+            featureName     = featureName,
+            onSignInClicked = { viewModel.onGatekeeperDismissed() },
+            onDismiss       = viewModel::onGatekeeperDismissed,
         )
     }
 }

@@ -18,12 +18,8 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * AI & Voice Hub — consolidates: AI Image Generator, TTS (NSE),
- * Text Translator, Voice Typer, Object Detector, Colour Detector.
- *
- * The hub maps features by their content affinity with AI/ML,
- * not just by their [FeatureCategory], so it pulls from MEDIA,
- * UTILITIES, and TOOLS buckets.
+ * AI & Voice Hub — cross-category: AI Image Generator, Nexus TTS,
+ * Translator, Voice Typer, Object Detector, Colour Detector.
  */
 @Composable
 fun AIHubScreen(
@@ -37,6 +33,7 @@ fun AIHubScreen(
     val scope = rememberCoroutineScope()
 
     val favoriteIds by favoritesRepository.favoriteIds.collectAsState(initial = emptySet())
+    val pinnedIds   by favoritesRepository.pinnedIds.collectAsState(initial = emptySet())
     var gatekeeperBlocked by remember { mutableStateOf<String?>(null) }
 
     val aiFeatureIds = setOf(
@@ -48,29 +45,21 @@ fun AIHubScreen(
         FeatureId.COLOR_DETECTOR,
     )
 
-    val features = remember(favoriteIds) {
+    val features = remember(favoriteIds, pinnedIds) {
         FeatureCatalog.allFeatures
             .filter { it.id in aiFeatureIds }
-            .map { it.copy(isFavorite = it.id.name in favoriteIds) }
+            .map { it.copy(isFavorite = it.id.name in favoriteIds, isPinned = it.id.name in pinnedIds) }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "AI & Voice Hub", onBack = onBack)
 
-        HubHeader(
-            icon        = FeatureHub.AI.icon,
-            description = FeatureHub.AI.description,
-            color       = FeatureHub.AI.color,
-            count       = features.size,
-        )
+        HubHeader(icon = FeatureHub.AI.icon, description = FeatureHub.AI.description, color = FeatureHub.AI.color, count = features.size)
 
         Text(
             text     = "AI & Voice Tools",
             style    = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color    = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .semantics { heading() },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).semantics { heading() },
         )
 
         LazyVerticalGrid(
@@ -79,28 +68,23 @@ fun AIHubScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement   = Arrangement.spacedBy(12.dp),
         ) {
-            items(items = features, key = { it.id.name }) { feature ->
+            items(features, key = { it.id.name }) { feature ->
                 FeatureCard(
-                    feature = feature,
-                    onTap   = {
-                        val result = NexusGatekeeper.checkAccess(
-                            feature.id, sessionManager.currentSession(), feature.name
-                        )
+                    feature          = feature,
+                    onTap            = {
+                        val result = NexusGatekeeper.checkAccess(feature.id, sessionManager.currentSession(), feature.name)
                         when (result) {
-                            is NexusGatekeeper.AccessResult.Allowed -> {
-                                scope.launch { recentRepo.recordVisit(feature.id) }
-                                onNavigate(feature.route)
-                            }
-                            is NexusGatekeeper.AccessResult.Blocked -> {
-                                gatekeeperBlocked = result.featureName
-                            }
+                            is NexusGatekeeper.AccessResult.Allowed -> { scope.launch { recentRepo.recordVisit(feature.id) }; onNavigate(feature.route) }
+                            is NexusGatekeeper.AccessResult.Blocked -> { gatekeeperBlocked = result.featureName }
                         }
                     },
                     onToggleFavorite = {
-                        val msg = if (feature.isFavorite) "${feature.name} removed from favorites"
-                                  else "${feature.name} added to favorites"
-                        view.announceForAccessibility(msg)
+                        view.announceForAccessibility(if (feature.isFavorite) "${feature.name} removed from favorites" else "${feature.name} added to favorites")
                         scope.launch { favoritesRepository.toggleFavorite(feature.id) }
+                    },
+                    onTogglePin = {
+                        view.announceForAccessibility(if (feature.isPinned) "${feature.name} unpinned from Home" else "${feature.name} pinned to Home")
+                        scope.launch { favoritesRepository.togglePin(feature.id) }
                     },
                 )
             }
@@ -108,10 +92,6 @@ fun AIHubScreen(
     }
 
     gatekeeperBlocked?.let { name ->
-        GatekeeperDialog(
-            featureName     = name,
-            onSignInClicked = { gatekeeperBlocked = null },
-            onDismiss       = { gatekeeperBlocked = null },
-        )
+        GatekeeperDialog(featureName = name, onSignInClicked = { gatekeeperBlocked = null }, onDismiss = { gatekeeperBlocked = null })
     }
 }

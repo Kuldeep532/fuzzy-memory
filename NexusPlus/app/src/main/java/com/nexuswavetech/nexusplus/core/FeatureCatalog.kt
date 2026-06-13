@@ -26,6 +26,7 @@ object FeatureCatalog {
             route       = Screen.AiImageGenerator.route,
             category    = FeatureCategory.MEDIA,
             keywords    = listOf("ai", "image", "generate", "art", "diffusion", "prompt", "pollinations", "creative"),
+            isNew       = true,
         ),
         FeatureItem(
             id          = FeatureId.IPTV_PLAYER,
@@ -53,6 +54,7 @@ object FeatureCatalog {
             route       = Screen.SmartImageEditor.route,
             category    = FeatureCategory.MEDIA,
             keywords    = listOf("image", "editor", "crop", "rotate", "flip", "photo", "adjust", "filter"),
+            isNew       = true,
         ),
 
         // ── Productivity ──────────────────────────────────────────────────────
@@ -237,6 +239,7 @@ object FeatureCatalog {
             route       = Screen.FormX.route,
             category    = FeatureCategory.UTILITIES,
             keywords    = listOf("form", "input", "validate", "email", "password", "field"),
+            isNew       = true,
         ),
 
         // ── Smart Tools ───────────────────────────────────────────────────────
@@ -329,6 +332,7 @@ object FeatureCatalog {
             route       = Screen.ColorDetector.route,
             category    = FeatureCategory.TOOLS,
             keywords    = listOf("color", "colour", "detect", "hex", "rgb", "camera", "identify"),
+            isNew       = true,
         ),
         FeatureItem(
             id          = FeatureId.BARCODE_GENERATOR,
@@ -367,6 +371,7 @@ object FeatureCatalog {
             route       = Screen.BiometricVault.route,
             category    = FeatureCategory.SECURITY,
             keywords    = listOf("vault", "biometric", "fingerprint", "secure", "password", "notes", "private"),
+            isNew       = true,
         ),
         FeatureItem(
             id          = FeatureId.ENCRYPTER_DECRYPTER,

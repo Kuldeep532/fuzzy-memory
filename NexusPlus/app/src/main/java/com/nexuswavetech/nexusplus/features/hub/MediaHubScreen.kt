@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -30,30 +29,24 @@ fun MediaHubScreen(
     val scope = rememberCoroutineScope()
 
     val favoriteIds by favoritesRepository.favoriteIds.collectAsState(initial = emptySet())
+    val pinnedIds   by favoritesRepository.pinnedIds.collectAsState(initial = emptySet())
     var gatekeeperBlocked by remember { mutableStateOf<String?>(null) }
 
-    val features = remember(favoriteIds) {
-        FeatureCatalog.forHub(FeatureHub.MEDIA)
-            .map { it.copy(isFavorite = it.id.name in favoriteIds) }
+    val features = remember(favoriteIds, pinnedIds) {
+        FeatureCatalog.forHub(FeatureHub.MEDIA).map {
+            it.copy(isFavorite = it.id.name in favoriteIds, isPinned = it.id.name in pinnedIds)
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Media Hub", onBack = onBack)
 
-        HubHeader(
-            icon        = FeatureHub.MEDIA.icon,
-            description = FeatureHub.MEDIA.description,
-            color       = FeatureHub.MEDIA.color,
-            count       = features.size,
-        )
+        HubHeader(icon = FeatureHub.MEDIA.icon, description = FeatureHub.MEDIA.description, color = FeatureHub.MEDIA.color, count = features.size)
 
         Text(
             text     = "Media Tools",
             style    = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color    = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .semantics { heading() },
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).semantics { heading() },
         )
 
         LazyVerticalGrid(
@@ -62,28 +55,23 @@ fun MediaHubScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement   = Arrangement.spacedBy(12.dp),
         ) {
-            items(items = features, key = { it.id.name }) { feature ->
+            items(features, key = { it.id.name }) { feature ->
                 FeatureCard(
-                    feature = feature,
-                    onTap   = {
-                        val result = NexusGatekeeper.checkAccess(
-                            feature.id, sessionManager.currentSession(), feature.name
-                        )
+                    feature          = feature,
+                    onTap            = {
+                        val result = NexusGatekeeper.checkAccess(feature.id, sessionManager.currentSession(), feature.name)
                         when (result) {
-                            is NexusGatekeeper.AccessResult.Allowed -> {
-                                scope.launch { recentRepo.recordVisit(feature.id) }
-                                onNavigate(feature.route)
-                            }
-                            is NexusGatekeeper.AccessResult.Blocked -> {
-                                gatekeeperBlocked = result.featureName
-                            }
+                            is NexusGatekeeper.AccessResult.Allowed -> { scope.launch { recentRepo.recordVisit(feature.id) }; onNavigate(feature.route) }
+                            is NexusGatekeeper.AccessResult.Blocked -> { gatekeeperBlocked = result.featureName }
                         }
                     },
                     onToggleFavorite = {
-                        val msg = if (feature.isFavorite) "${feature.name} removed from favorites"
-                                  else "${feature.name} added to favorites"
-                        view.announceForAccessibility(msg)
+                        view.announceForAccessibility(if (feature.isFavorite) "${feature.name} removed from favorites" else "${feature.name} added to favorites")
                         scope.launch { favoritesRepository.toggleFavorite(feature.id) }
+                    },
+                    onTogglePin = {
+                        view.announceForAccessibility(if (feature.isPinned) "${feature.name} unpinned from Home" else "${feature.name} pinned to Home")
+                        scope.launch { favoritesRepository.togglePin(feature.id) }
                     },
                 )
             }
@@ -91,10 +79,6 @@ fun MediaHubScreen(
     }
 
     gatekeeperBlocked?.let { name ->
-        GatekeeperDialog(
-            featureName     = name,
-            onSignInClicked = { gatekeeperBlocked = null },
-            onDismiss       = { gatekeeperBlocked = null },
-        )
+        GatekeeperDialog(featureName = name, onSignInClicked = { gatekeeperBlocked = null }, onDismiss = { gatekeeperBlocked = null })
     }
 }

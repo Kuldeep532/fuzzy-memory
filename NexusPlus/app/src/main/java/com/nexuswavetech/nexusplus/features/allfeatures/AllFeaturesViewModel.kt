@@ -10,13 +10,13 @@ data class AllFeaturesUiState(
     val features: List<FeatureItem> = emptyList(),
     val searchQuery: String = "",
     val selectedCategory: FeatureCategory? = null,
-    val gatekeeperBlocked: String? = null,  // non-null = show restriction dialog
-    val pendingRoute: String? = null
+    val gatekeeperBlocked: String? = null,
+    val pendingRoute: String? = null,
 )
 
 class AllFeaturesViewModel(
     private val sessionManager: SessionManager,
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AllFeaturesUiState())
@@ -24,48 +24,58 @@ class AllFeaturesViewModel(
 
     init {
         viewModelScope.launch {
-            favoritesRepository.favoriteIds.collect { favoriteIds ->
-                val allFeatures = FeatureCatalog.allFeatures.map { it.copy(isFavorite = it.id.name in favoriteIds) }
-                _uiState.update { it.copy(features = filterFeatures(allFeatures, it.searchQuery, it.selectedCategory)) }
-            }
+            combine(
+                favoritesRepository.favoriteIds,
+                favoritesRepository.pinnedIds,
+            ) { favs, pins -> favs to pins }
+                .collect { (favoriteIds, pinnedIds) ->
+                    val enriched = FeatureCatalog.allFeatures.map {
+                        it.copy(
+                            isFavorite = it.id.name in favoriteIds,
+                            isPinned   = it.id.name in pinnedIds,
+                        )
+                    }
+                    _uiState.update { s ->
+                        s.copy(features = filterFeatures(enriched, s.searchQuery, s.selectedCategory))
+                    }
+                }
         }
     }
 
     fun onSearchChanged(query: String) {
-        _uiState.update { state ->
-            val allWithFav = FeatureCatalog.allFeatures.map { feature ->
-                feature.copy(isFavorite = state.features.find { it.id == feature.id }?.isFavorite ?: false)
-            }
-            state.copy(
+        _uiState.update { s ->
+            s.copy(
                 searchQuery = query,
-                features = filterFeatures(allWithFav, query, state.selectedCategory)
+                features    = filterFeatures(s.features, query, s.selectedCategory),
             )
         }
     }
 
     fun onCategorySelected(category: FeatureCategory?) {
-        _uiState.update { state ->
-            val allWithFav = FeatureCatalog.allFeatures.map { feature ->
-                feature.copy(isFavorite = state.features.find { it.id == feature.id }?.isFavorite ?: false)
-            }
-            state.copy(
+        _uiState.update { s ->
+            s.copy(
                 selectedCategory = category,
-                features = filterFeatures(allWithFav, state.searchQuery, category)
+                features         = filterFeatures(s.features, s.searchQuery, category),
             )
         }
     }
 
     fun onFeatureTapped(feature: FeatureItem) {
-        val session = sessionManager.currentSession()
-        val result = NexusGatekeeper.checkAccess(feature.id, session, feature.name)
+        val result = NexusGatekeeper.checkAccess(
+            feature.id, sessionManager.currentSession(), feature.name
+        )
         when (result) {
-            is NexusGatekeeper.AccessResult.Allowed -> {
-                _uiState.update { it.copy(pendingRoute = feature.route) }
-            }
-            is NexusGatekeeper.AccessResult.Blocked -> {
-                _uiState.update { it.copy(gatekeeperBlocked = result.featureName) }
-            }
+            is NexusGatekeeper.AccessResult.Allowed -> _uiState.update { it.copy(pendingRoute = feature.route) }
+            is NexusGatekeeper.AccessResult.Blocked -> _uiState.update { it.copy(gatekeeperBlocked = result.featureName) }
         }
+    }
+
+    fun onToggleFavorite(feature: FeatureItem) {
+        viewModelScope.launch { favoritesRepository.toggleFavorite(feature.id) }
+    }
+
+    fun onTogglePin(feature: FeatureItem) {
+        viewModelScope.launch { favoritesRepository.togglePin(feature.id) }
     }
 
     fun onNavigationConsumed() {
@@ -76,23 +86,16 @@ class AllFeaturesViewModel(
         _uiState.update { it.copy(gatekeeperBlocked = null) }
     }
 
-    fun onToggleFavorite(feature: FeatureItem) {
-        viewModelScope.launch {
-            favoritesRepository.toggleFavorite(feature.id)
-        }
-    }
-
     private fun filterFeatures(
         features: List<FeatureItem>,
         query: String,
-        category: FeatureCategory?
-    ): List<FeatureItem> {
-        return features.filter { feature ->
-            val matchesQuery = query.isBlank() ||
-                feature.name.contains(query, ignoreCase = true) ||
-                feature.description.contains(query, ignoreCase = true)
-            val matchesCategory = category == null || feature.category == category
-            matchesQuery && matchesCategory
-        }
+        category: FeatureCategory?,
+    ): List<FeatureItem> = features.filter { f ->
+        val matchesQuery = query.isBlank() ||
+            f.name.contains(query, ignoreCase = true) ||
+            f.description.contains(query, ignoreCase = true) ||
+            f.keywords.any { it.contains(query, ignoreCase = true) }
+        val matchesCategory = category == null || f.category == category
+        matchesQuery && matchesCategory
     }
 }

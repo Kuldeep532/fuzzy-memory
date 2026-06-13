@@ -32,15 +32,17 @@ fun UtilitiesHubScreen(
     val scope = rememberCoroutineScope()
 
     val favoriteIds by favoritesRepository.favoriteIds.collectAsState(initial = emptySet())
+    val pinnedIds   by favoritesRepository.pinnedIds.collectAsState(initial = emptySet())
     var searchQuery       by remember { mutableStateOf("") }
     var gatekeeperBlocked by remember { mutableStateOf<String?>(null) }
 
-    val allUtilities = remember(favoriteIds) {
-        FeatureCatalog.forHub(FeatureHub.UTILITIES)
-            .map { it.copy(isFavorite = it.id.name in favoriteIds) }
+    val allUtilities = remember(favoriteIds, pinnedIds) {
+        FeatureCatalog.forHub(FeatureHub.UTILITIES).map {
+            it.copy(isFavorite = it.id.name in favoriteIds, isPinned = it.id.name in pinnedIds)
+        }
     }
 
-    val displayedFeatures = remember(allUtilities, searchQuery) {
+    val displayed = remember(allUtilities, searchQuery) {
         if (searchQuery.isBlank()) allUtilities
         else allUtilities.filter { f ->
             f.name.contains(searchQuery, ignoreCase = true) ||
@@ -52,12 +54,7 @@ fun UtilitiesHubScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Utilities Hub", onBack = onBack)
 
-        HubHeader(
-            icon        = FeatureHub.UTILITIES.icon,
-            description = FeatureHub.UTILITIES.description,
-            color       = FeatureHub.UTILITIES.color,
-            count       = allUtilities.size,
-        )
+        HubHeader(icon = FeatureHub.UTILITIES.icon, description = FeatureHub.UTILITIES.description, color = FeatureHub.UTILITIES.color, count = allUtilities.size)
 
         OutlinedTextField(
             value         = searchQuery,
@@ -72,12 +69,10 @@ fun UtilitiesHubScreen(
         )
 
         Text(
-            text     = "${displayedFeatures.size} tools",
+            text     = "${displayed.size} tools",
             style    = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .semantics { heading() },
+            modifier = Modifier.padding(horizontal = 16.dp).semantics { heading() },
         )
 
         Spacer(Modifier.height(8.dp))
@@ -88,28 +83,23 @@ fun UtilitiesHubScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement   = Arrangement.spacedBy(12.dp),
         ) {
-            items(items = displayedFeatures, key = { it.id.name }) { feature ->
+            items(displayed, key = { it.id.name }) { feature ->
                 FeatureCard(
-                    feature = feature,
-                    onTap   = {
-                        val result = NexusGatekeeper.checkAccess(
-                            feature.id, sessionManager.currentSession(), feature.name
-                        )
+                    feature          = feature,
+                    onTap            = {
+                        val result = NexusGatekeeper.checkAccess(feature.id, sessionManager.currentSession(), feature.name)
                         when (result) {
-                            is NexusGatekeeper.AccessResult.Allowed -> {
-                                scope.launch { recentRepo.recordVisit(feature.id) }
-                                onNavigate(feature.route)
-                            }
-                            is NexusGatekeeper.AccessResult.Blocked -> {
-                                gatekeeperBlocked = result.featureName
-                            }
+                            is NexusGatekeeper.AccessResult.Allowed -> { scope.launch { recentRepo.recordVisit(feature.id) }; onNavigate(feature.route) }
+                            is NexusGatekeeper.AccessResult.Blocked -> { gatekeeperBlocked = result.featureName }
                         }
                     },
                     onToggleFavorite = {
-                        val msg = if (feature.isFavorite) "${feature.name} removed from favorites"
-                                  else "${feature.name} added to favorites"
-                        view.announceForAccessibility(msg)
+                        view.announceForAccessibility(if (feature.isFavorite) "${feature.name} removed from favorites" else "${feature.name} added to favorites")
                         scope.launch { favoritesRepository.toggleFavorite(feature.id) }
+                    },
+                    onTogglePin = {
+                        view.announceForAccessibility(if (feature.isPinned) "${feature.name} unpinned from Home" else "${feature.name} pinned to Home")
+                        scope.launch { favoritesRepository.togglePin(feature.id) }
                     },
                 )
             }
@@ -117,10 +107,6 @@ fun UtilitiesHubScreen(
     }
 
     gatekeeperBlocked?.let { name ->
-        GatekeeperDialog(
-            featureName     = name,
-            onSignInClicked = { gatekeeperBlocked = null },
-            onDismiss       = { gatekeeperBlocked = null },
-        )
+        GatekeeperDialog(featureName = name, onSignInClicked = { gatekeeperBlocked = null }, onDismiss = { gatekeeperBlocked = null })
     }
 }
