@@ -1,0 +1,314 @@
+### Principal System Architect Directive: Intelligent Codebase Consolidation, Next-Generation Nexus Speech Engine (NSE), & Cross-Platform Modernization
+
+**Context & Role:**
+You are operating as an elite Principal Cross-Platform Software Architect, Software Modernization Specialist, and Lead Systems Engineer. We are upgrading a premium Compose Multiplatform (CMP) and Kotlin Multiplatform (KMP) application. You have access to a high-compute environment and must generate production-ready, highly optimized, type-safe code following Clean Architecture, SOLID principles, strict accessibility standards, and enterprise-grade maintainability.
+
+---
+
+## Core Mission
+
+Perform a full architectural audit of the entire codebase and execute a **safe intelligent cleanup**, removing only code, modules, resources, assets, dependencies, and files that are genuinely obsolete, duplicated, migrated, unused, or superseded by newer implementations.
+
+**Do NOT delete files blindly.**
+
+Before removing anything:
+
+1. Analyze all references, imports, dependency graphs, build configurations, navigation routes, DI bindings, and platform integrations.
+2. Confirm that a file, module, asset, or resource is no longer referenced anywhere.
+3. Detect duplicate implementations where functionality has already been migrated elsewhere.
+4. Preserve all actively used production functionality.
+5. Generate a detailed deletion report explaining every removed component and its replacement (if applicable).
+
+The final result must be a cleaner codebase with zero dead code, zero duplicate implementations, zero abandoned resources, and zero orphaned files.
+
+---
+
+# 1. Intelligent Codebase Cleanup & Consolidation
+
+### Safe Removal Rules
+
+Identify and permanently remove:
+
+* Unused Kotlin files
+* Unused Swift files
+* Deprecated modules
+* Duplicate feature implementations
+* Abandoned ViewModels
+* Unused repositories
+* Unused use-cases
+* Dead navigation routes
+* Legacy resource files
+* Duplicate assets
+* Legacy authentication code
+* Obsolete build configurations
+* Unused DI registrations
+* Unreferenced icons and images
+* Migrated code that still exists in old directories
+
+### Duplicate Detection Requirements
+
+If functionality exists in multiple locations:
+
+* Keep the most modern implementation.
+* Merge improvements where necessary.
+* Remove older copies.
+* Update imports and references.
+* Eliminate all confusion-causing duplicate structures.
+
+### Deliverables
+
+Generate:
+
+* Removal Report
+* Dependency Cleanup Report
+* File Migration Report
+* Duplicate Resolution Report
+* Remaining Architecture Map
+
+---
+
+# 2. Complete Nexus Speech Engine (NSE) Rebuild
+
+## Mandatory Replacement Strategy
+
+The existing TTS implementation must be treated as legacy architecture.
+
+Perform a full audit of:
+
+* Existing TTS services
+* Speech managers
+* Audio pipelines
+* JNI layers
+* Voice switching logic
+* Language detection systems
+* Playback engines
+* Buffer management systems
+
+### Legacy TTS Decommissioning
+
+After validating migration:
+
+* Remove all obsolete TTS files.
+* Remove deprecated speech modules.
+* Remove abandoned speech experiments.
+* Remove duplicate voice engines.
+* Remove unused JNI bindings.
+* Remove unused audio services.
+* Remove unused speech resources.
+
+No legacy TTS file should remain in the project unless it is actively required by the new architecture.
+
+The final repository must contain only the new Nexus Speech Engine implementation.
+
+### Nexus Speech Engine 2.0 Architecture
+
+Build a completely new production-grade speech stack:
+
+#### Native Core
+
+* Modern C++20
+* Thread-safe architecture
+* Lock-minimized audio processing
+* Low-latency streaming
+* Memory-safe buffer management
+* Crash-resistant execution model
+
+#### JNI Layer
+
+* Clean JNI bridge
+* Structured error propagation
+* Native resource lifecycle management
+* Safe thread attachment/detachment
+* Performance monitoring hooks
+
+#### Speech Processing Modes
+
+##### Auto Mode
+
+* Automatic language detection
+* Script recognition
+* Dynamic voice selection
+* Runtime parameter adaptation
+
+##### Single Voice Mode
+
+* Manual voice assignment
+* Voice profile control
+* Fine-grained speech tuning
+
+##### Mix Mode
+
+* Multi-engine synthesis
+* Concurrent voice rendering
+* Stream synchronization
+* Non-blocking buffer mixing
+
+### Stability Requirements
+
+Investigate and resolve:
+
+* Audio stuttering
+* Buffer starvation
+* Voice switching crashes
+* Background execution failures
+* Race conditions
+* Audio focus conflicts
+* Android/iOS engine switching instability
+
+### Repository Cleanliness Requirement
+
+After migration:
+
+* No legacy TTS files.
+* No duplicate speech implementations.
+* No abandoned audio services.
+* No unused JNI files.
+* No conflicting speech managers.
+
+The speech subsystem must be fully unified under NSE.
+
+---
+
+# 3. In-House Visual System & Branding
+
+### Programmatic Asset Generation
+
+Do not use external raster logo assets.
+
+Generate:
+
+* App logo
+* Navigation icons
+* Dashboard icons
+* Feature icons
+
+Using:
+
+* ImageVector.Builder
+* Compose Canvas APIs
+* Type-safe vector rendering
+
+### Home Dashboard Sacred Designation
+
+Display:
+
+"Jai Shri Krishna"
+
+Requirements:
+
+* Localized resource entry
+* Screen-reader optimized
+* Semantic accessibility support
+* Material 3 styling
+
+---
+
+# 4. Material Design 3 & Accessibility Overhaul
+
+Implement:
+
+* Unified MaterialTheme
+* Dynamic color support
+* Adaptive typography
+* Shape token system
+* System-synchronized dark mode
+* Flicker-free theme transitions
+
+### Accessibility Audit
+
+Enforce:
+
+* Modifier.semantics everywhere
+* Accurate content descriptions
+* WCAG AA compliance
+* 48dp minimum touch targets
+* TalkBack optimization
+* VoiceOver optimization
+* Predictable traversal order
+
+---
+
+# 5. Cross-Platform Stability & Resource Unification
+
+Resolve:
+
+* Android compilation failures
+* iOS compilation failures
+* KMP dependency conflicts
+* Resource loading inconsistencies
+* Platform-specific crashes
+
+Adopt:
+
+* Unified CMP Resource API
+* Shared resource architecture
+* Platform parity validation
+
+---
+
+# 6. Authentication & Enterprise Security
+
+### Authentication Modernization
+
+Retire:
+
+* Legacy username/password flows
+
+Implement:
+
+* Google Identity One-Tap
+* Cross-platform authentication abstraction
+* Secure token lifecycle
+
+### Compliance Gate
+
+Authentication must remain blocked until:
+
+* Privacy Policy accepted
+* Terms & Conditions accepted
+
+### RBAC
+
+Use:
+
+* Firebase Custom Claims
+* Server-side role validation
+
+### Admin Notification Center
+
+Admin-only access.
+
+Features:
+
+* Firebase Cloud Messaging integration
+* System-wide broadcasts
+* Route protection
+* Role validation enforcement
+
+---
+
+# Required Deliverables
+
+1. Complete File Deletion Report
+2. Duplicate File Resolution Report
+3. Legacy-to-New TTS Migration Report
+4. Final Repository Structure
+5. Production-Ready Kotlin Code
+6. Production-Ready C++20 NSE Core
+7. JNI Integration Layer
+8. Accessibility Compliance Report
+9. Cross-Platform Build Validation Report
+10. Security & RBAC Architecture Report
+
+### Critical Rule
+
+Never delete a file solely because it appears old.
+
+Delete a file only after proving that:
+
+* It is unused,
+* It is duplicated,
+* It has been fully migrated,
+* Or it has been replaced by a newer implementation.
+
+The final repository must contain no dead code, no duplicate code, no orphaned resources, no abandoned TTS components, and no architectural ambiguity.
