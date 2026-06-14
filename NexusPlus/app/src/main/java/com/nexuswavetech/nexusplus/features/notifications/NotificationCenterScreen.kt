@@ -209,12 +209,13 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                 }
             }
         }
+    }
     } // end Scaffold
 
     // ── Admin: Compose notification dialog ─────────────────────────────────
     if (showComposeDialog) {
         AdminNotifDialog(
-            onSend = { title, body, category ->
+            onSend = { title: String, body: String, category: String ->
                 scope.launch {
                     val sent = repository.sendAdminNotification(title, body, category, session)
                     if (!sent) { /* session expired / not admin — dialog handles state */ }
@@ -229,7 +230,7 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdminNotifDialog(
-    onSend:   (String, String, String) -> Unit,
+    onSend: (String, String, String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var title    by remember { mutableStateOf("") }
