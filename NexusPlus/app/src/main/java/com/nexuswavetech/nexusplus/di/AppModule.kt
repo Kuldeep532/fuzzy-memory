@@ -93,7 +93,7 @@ val appModule = module {
 
     // Utilities
     viewModel { TextTranslatorViewModel() }
-    viewModel { MorseCodeViewModel() }
+    viewModel { MorseCodeViewModel(settings = get()) }
     viewModel { NumberSystemViewModel() }
     viewModel { JsonFormatterViewModel() }
     viewModel { RegexTesterViewModel() }
@@ -105,7 +105,7 @@ val appModule = module {
     viewModel { HealthVaultViewModel(repository = get()) }
 
     // NSE — factory-scoped engine + repository wired through Koin
-    viewModel { NseViewModel(get()) }
+    viewModel { NseViewModel(repository = get(), settings = get()) }
 
     // Camera / sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
     // DocHub, VoiceTyper — state managed locally in composables.

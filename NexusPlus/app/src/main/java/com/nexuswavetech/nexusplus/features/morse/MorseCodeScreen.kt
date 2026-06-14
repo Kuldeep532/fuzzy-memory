@@ -23,10 +23,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 private val MORSE_MAP = mapOf(
     'A' to ".-",    'B' to "-...",  'C' to "-.-.",  'D' to "-..",
@@ -65,7 +69,7 @@ fun morseToText(morse: String): String =
 
 enum class MorseMode { TEXT_TO_MORSE, MORSE_TO_TEXT }
 
-class MorseCodeViewModel : ViewModel() {
+class MorseCodeViewModel(private val settings: SettingsRepository) : ViewModel() {
     var mode   by mutableStateOf(MorseMode.TEXT_TO_MORSE)
         private set
     var input  by mutableStateOf("")
@@ -97,6 +101,17 @@ class MorseCodeViewModel : ViewModel() {
         val morse = if (mode == MorseMode.TEXT_TO_MORSE) output else input
         if (morse.isBlank()) return
         viewModelScope.launch {
+            val speed = settings.morseVibrationSpeed.first()
+            val unit: Long = when (speed) {
+                SettingsRepository.MORSE_SPEED_SLOW -> 150L
+                SettingsRepository.MORSE_SPEED_FAST -> 50L
+                else                                -> 100L
+            }
+            val dotMs  = unit
+            val dashMs = unit * 3
+            val gapMs  = unit * 2
+            val wordMs = unit * 5
+
             val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 (context.getSystemService(android.content.Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager).defaultVibrator
             } else {
@@ -105,10 +120,10 @@ class MorseCodeViewModel : ViewModel() {
             }
             for (char in morse) {
                 when (char) {
-                    '.' -> { vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE)); delay(200) }
-                    '-' -> { vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE)); delay(400) }
-                    ' ' -> delay(200)
-                    '/' -> delay(500)
+                    '.' -> { vibrator.vibrate(VibrationEffect.createOneShot(dotMs,  VibrationEffect.DEFAULT_AMPLITUDE)); delay(dotMs  + gapMs) }
+                    '-' -> { vibrator.vibrate(VibrationEffect.createOneShot(dashMs, VibrationEffect.DEFAULT_AMPLITUDE)); delay(dashMs + gapMs) }
+                    ' ' -> delay(gapMs)
+                    '/' -> delay(wordMs)
                 }
             }
         }
@@ -117,9 +132,12 @@ class MorseCodeViewModel : ViewModel() {
 
 @Composable
 fun MorseCodeScreen(onBack: () -> Unit, viewModel: MorseCodeViewModel = koinViewModel()) {
-    val clipboard = LocalClipboardManager.current
-    val context   = LocalContext.current
-    val view      = LocalView.current
+    val clipboard  = LocalClipboardManager.current
+    val context    = LocalContext.current
+    val view       = LocalView.current
+    val haptic     = koinInject<HapticHelper>()
+    val settings   = koinInject<SettingsRepository>()
+    val touchVib   by settings.touchVibration.collectAsState(initial = true)
 
     Column(Modifier.fillMaxSize()) {
         NexusTopBar(title = "Morse Code", onBack = onBack)
@@ -157,6 +175,7 @@ fun MorseCodeScreen(onBack: () -> Unit, viewModel: MorseCodeViewModel = koinView
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(
                     onClick  = {
+                        haptic.click(view, touchVib)
                         viewModel.playMorseVibration(context)
                         view.announceForAccessibility("Playing Morse code via vibration")
                     },
@@ -168,7 +187,10 @@ fun MorseCodeScreen(onBack: () -> Unit, viewModel: MorseCodeViewModel = koinView
                     Text("Vibrate")
                 }
                 OutlinedButton(
-                    onClick  = viewModel::swapInputOutput,
+                    onClick  = {
+                        haptic.click(view, touchVib)
+                        viewModel.swapInputOutput()
+                    },
                     enabled  = viewModel.output.isNotBlank(),
                     modifier = Modifier.weight(1f)
                 ) {
@@ -176,7 +198,10 @@ fun MorseCodeScreen(onBack: () -> Unit, viewModel: MorseCodeViewModel = koinView
                     Spacer(Modifier.width(4.dp))
                     Text("Swap")
                 }
-                IconButton(onClick = viewModel::clearAll) {
+                IconButton(onClick = {
+                    haptic.click(view, touchVib)
+                    viewModel.clearAll()
+                }) {
                     Icon(Icons.Filled.Clear, contentDescription = "Clear")
                 }
             }
@@ -194,6 +219,7 @@ fun MorseCodeScreen(onBack: () -> Unit, viewModel: MorseCodeViewModel = koinView
                     }
                     OutlinedButton(
                         onClick  = {
+                            haptic.click(view, touchVib)
                             clipboard.setText(AnnotatedString(viewModel.output))
                             view.announceForAccessibility("Morse code copied to clipboard")
                         },

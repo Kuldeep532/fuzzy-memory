@@ -20,6 +20,9 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlin.math.roundToInt
 import java.util.Locale
@@ -56,6 +59,10 @@ fun NexusTtsScreen(
     viewModel: NseViewModel = koinViewModel(),
 ) {
     val view          = LocalView.current
+    val haptic        = koinInject<HapticHelper>()
+    val settings      = koinInject<SettingsRepository>()
+    val touchVib      by settings.touchVibration.collectAsState(initial = true)
+
     val engineState   by viewModel.engineState.collectAsState()
     val inputText     by viewModel.inputText.collectAsState()
     val pitch         by viewModel.pitch.collectAsState()
@@ -150,6 +157,7 @@ fun NexusTtsScreen(
             ) {
                 Button(
                     onClick  = {
+                        haptic.confirm(view, touchVib)
                         viewModel.speak()
                         val localeLabel = detectedLocale?.displayLanguage ?: "default language"
                         view.announceForAccessibility("Speaking in $localeLabel")
@@ -170,6 +178,7 @@ fun NexusTtsScreen(
 
                 OutlinedButton(
                     onClick  = {
+                        haptic.click(view, touchVib)
                         viewModel.stop()
                         view.announceForAccessibility("Speech stopped")
                     },
@@ -186,7 +195,10 @@ fun NexusTtsScreen(
             }
 
             OutlinedButton(
-                onClick  = viewModel::clearText,
+                onClick  = {
+                    haptic.click(view, touchVib)
+                    viewModel.clearText()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .semantics { contentDescription = "Clear text input." },

@@ -23,6 +23,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 
@@ -100,8 +103,11 @@ fun QrCodeScreen(
     onBack: () -> Unit,
     viewModel: QrCodeViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val view = LocalView.current
+    val uiState  by viewModel.uiState.collectAsState()
+    val view     = LocalView.current
+    val haptic   = koinInject<HapticHelper>()
+    val settings = koinInject<SettingsRepository>()
+    val touchVib by settings.touchVibration.collectAsState(initial = true)
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "QR Code Generator", onBack = onBack)
@@ -159,6 +165,7 @@ fun QrCodeScreen(
 
             Button(
                 onClick = {
+                    haptic.confirm(view, touchVib)
                     viewModel.generate()
                     view.announceForAccessibility("Generating QR code")
                 },

@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -122,8 +125,11 @@ fun CalculatorCenterScreen(
     onBack: () -> Unit,
     viewModel: CalculatorCenterViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val view = LocalView.current
+    val uiState  by viewModel.uiState.collectAsState()
+    val view     = LocalView.current
+    val haptic   = koinInject<HapticHelper>()
+    val settings = koinInject<SettingsRepository>()
+    val touchVib by settings.touchVibration.collectAsState(initial = true)
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Calculator Center", onBack = onBack)
@@ -144,14 +150,19 @@ fun CalculatorCenterScreen(
         }
 
         when (uiState.tab) {
-            CalcTab.STANDARD -> StandardCalc(uiState, viewModel)
-            CalcTab.AGE      -> AgeCalc(uiState, viewModel)
+            CalcTab.STANDARD -> StandardCalc(uiState, viewModel, haptic, touchVib)
+            CalcTab.AGE      -> AgeCalc(uiState, viewModel, haptic, touchVib)
         }
     }
 }
 
 @Composable
-private fun StandardCalc(uiState: CalcUiState, viewModel: CalculatorCenterViewModel) {
+private fun StandardCalc(
+    uiState: CalcUiState,
+    viewModel: CalculatorCenterViewModel,
+    haptic: HapticHelper,
+    touchVib: Boolean,
+) {
     val view = LocalView.current
     Column(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
         // Display
@@ -185,10 +196,10 @@ private fun StandardCalc(uiState: CalcUiState, viewModel: CalculatorCenterViewMo
             ) {
                 val rowSet = row.toMutableList()
                 if (rowSet.count { it == "=" } > 1) {
-                    // "=" takes double width in last row
                     rowSet.removeAt(rowSet.lastIndexOf("="))
                     rowSet.forEachIndexed { idx, sym ->
                         CalcButton(sym, modifier = Modifier.weight(1f)) {
+                            haptic.click(view, touchVib)
                             viewModel.onButton(sym)
                             view.announceForAccessibility(sym)
                         }
@@ -196,6 +207,7 @@ private fun StandardCalc(uiState: CalcUiState, viewModel: CalculatorCenterViewMo
                 } else {
                     row.forEach { sym ->
                         CalcButton(sym, modifier = Modifier.weight(1f)) {
+                            haptic.click(view, touchVib)
                             viewModel.onButton(sym)
                         }
                     }
@@ -233,7 +245,12 @@ private fun CalcButton(label: String, modifier: Modifier = Modifier, onClick: ()
 }
 
 @Composable
-private fun AgeCalc(uiState: CalcUiState, viewModel: CalculatorCenterViewModel) {
+private fun AgeCalc(
+    uiState: CalcUiState,
+    viewModel: CalculatorCenterViewModel,
+    haptic: HapticHelper,
+    touchVib: Boolean,
+) {
     val view = LocalView.current
     Column(
         modifier = Modifier
@@ -256,6 +273,7 @@ private fun AgeCalc(uiState: CalcUiState, viewModel: CalculatorCenterViewModel) 
         )
         Button(
             onClick = {
+                haptic.confirm(view, touchVib)
                 viewModel.calculateAge()
                 view.announceForAccessibility("Calculating age")
             },

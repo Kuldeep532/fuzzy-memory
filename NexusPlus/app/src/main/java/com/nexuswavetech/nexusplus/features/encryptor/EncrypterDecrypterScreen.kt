@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.io.File
 import java.security.MessageDigest
 import javax.crypto.Cipher
@@ -131,9 +134,12 @@ fun EncrypterDecrypterScreen(
     onBack: () -> Unit,
     viewModel: EncrypterDecrypterViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-    val view = LocalView.current
+    val uiState  by viewModel.uiState.collectAsState()
+    val context  = LocalContext.current
+    val view     = LocalView.current
+    val haptic   = koinInject<HapticHelper>()
+    val settings = koinInject<SettingsRepository>()
+    val touchVib by settings.touchVibration.collectAsState(initial = true)
 
     val fileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
@@ -214,6 +220,7 @@ fun EncrypterDecrypterScreen(
                     )
                     Button(
                         onClick = {
+                            haptic.confirm(view, touchVib)
                             viewModel.processText()
                             view.announceForAccessibility(if (uiState.isEncrypting) "Encrypting text" else "Decrypting text")
                         },
@@ -252,6 +259,7 @@ fun EncrypterDecrypterScreen(
                     }
                     Button(
                         onClick = {
+                            haptic.confirm(view, touchVib)
                             viewModel.processFile(context)
                             view.announceForAccessibility("Processing file")
                         },
@@ -290,6 +298,7 @@ fun EncrypterDecrypterScreen(
                             )
                             if (uiState.mode == EncryptMode.TEXT) {
                                 IconButton(onClick = {
+                                    haptic.click(view, touchVib)
                                     val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                                     cm.setPrimaryClip(ClipData.newPlainText("nexus_encrypt", uiState.output))
                                     view.announceForAccessibility("Copied to clipboard")

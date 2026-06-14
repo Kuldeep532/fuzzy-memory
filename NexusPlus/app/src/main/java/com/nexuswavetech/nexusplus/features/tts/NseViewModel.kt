@@ -2,6 +2,7 @@ package com.nexuswavetech.nexusplus.features.tts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -9,9 +10,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
@@ -26,7 +29,10 @@ import java.util.Locale
  *   • Mix       — multi-language input, voiced per-script segment.
  */
 @OptIn(FlowPreview::class)
-class NseViewModel(private val repository: NseRepository) : ViewModel() {
+class NseViewModel(
+    private val repository: NseRepository,
+    private val settings: SettingsRepository,
+) : ViewModel() {
 
     // ── Engine state (forwarded from repository) ───────────────────────────
 
@@ -78,6 +84,12 @@ class NseViewModel(private val repository: NseRepository) : ViewModel() {
 
     init {
         repository.initialise()
+
+        // Seed speech rate from the user's saved TTS default rate preference
+        viewModelScope.launch {
+            val savedRate = settings.ttsDefaultRate.first().coerceIn(0.25f, 3.0f)
+            _speechRate.value = savedRate
+        }
 
         // Debounced language detection as user types
         _inputText
