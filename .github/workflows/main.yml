@@ -1,13 +1,16 @@
 name: Build NexusPlus APK
+
 on:
   workflow_dispatch:
   push:
     branches:
       - main
       - master
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -51,11 +54,7 @@ jobs:
         working-directory: NexusPlus
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        working-directory: NexusPlus
-        run: ./gradlew --no-daemon assembleDebug
-
-      - name: Build Release APK
+      - name: Build Production APK
         working-directory: NexusPlus
         env:
           SIGNING_STORE_FILE: release.keystore
@@ -64,14 +63,8 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew --no-daemon assembleRelease
 
-      - name: Upload Debug APK
+      - name: Upload Production APK
         uses: actions/upload-artifact@v4
         with:
-          name: NexusPlus-Debug
-          path: NexusPlus/**/build/outputs/apk/debug/*.apk
-
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NexusPlus-Release
+          name: NexusPlus-Production
           path: NexusPlus/**/build/outputs/apk/release/*.apk
