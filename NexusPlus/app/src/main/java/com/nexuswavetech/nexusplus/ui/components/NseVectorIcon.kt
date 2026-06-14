@@ -59,8 +59,8 @@ val NseVectorIcon: ImageVector by lazy {
             fill            = null,
         ) {
             moveTo(1.5f, 7f)
-            cubicTo(4f, 2f, 7f, 11f, 10.5f, 5f)
-            cubicTo(14f, -1f, 17f, 9f, 19.5f, 4f)
+            curveTo(4f, 2f, 7f, 11f, 10.5f, 5f)
+            curveTo(14f, -1f, 17f, 9f, 19.5f, 4f)
         }
 
     }.build()

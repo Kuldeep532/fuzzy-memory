@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.objects.DetectedObject as MlDetectedObject
 import com.google.mlkit.vision.objects.ObjectDetection
 import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
@@ -89,7 +90,7 @@ fun ObjectDetectorScreen(onBack: () -> Unit) {
                                                 proxy.imageInfo.rotationDegrees
                                             )
                                             detector.process(image)
-                                                .addOnSuccessListener { objects ->
+                                                .addOnSuccessListener { objects: List<MlDetectedObject> ->
                                                     detectedObjects = objects.map { obj ->
                                                         DetectedObject(
                                                             label      = obj.labels.firstOrNull()?.text ?: "Object",

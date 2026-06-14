@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -65,7 +64,6 @@ class NseViewModel(
     // ── Derived convenience ────────────────────────────────────────────────
 
     val isSpeaking: StateFlow<Boolean> = repository.state
-        .distinctUntilChanged()
         .let { flow ->
             MutableStateFlow(false).also { sf ->
                 flow.onEach { sf.value = it == NseState.Speaking }.launchIn(viewModelScope)
@@ -73,7 +71,6 @@ class NseViewModel(
         }
 
     val isReady: StateFlow<Boolean> = repository.state
-        .distinctUntilChanged()
         .let { flow ->
             MutableStateFlow(false).also { sf ->
                 flow.onEach { sf.value = it == NseState.Ready }.launchIn(viewModelScope)

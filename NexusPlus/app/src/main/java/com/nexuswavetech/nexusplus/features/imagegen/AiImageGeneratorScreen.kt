@@ -120,6 +120,7 @@ class AiImageViewModel : ViewModel() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AiImageGeneratorScreen(
     onBack: () -> Unit,

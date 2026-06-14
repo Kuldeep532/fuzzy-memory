@@ -61,28 +61,32 @@ class HealthVaultRepository(private val context: Context) {
 
     // ── Firestore sync (small text only) ──────────────────────────────────
 
-    private fun firestoreSet(r: HealthRecord) = runCatching {
+    private fun firestoreSet(r: HealthRecord) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance()
-            .collection("users").document(uid)
-            .collection("health_records").document(r.id)
-            .set(mapOf(
-                "id"         to r.id,
-                "category"   to r.category,
-                "label"      to r.label,
-                "value"      to r.value,
-                "unit"       to r.unit,
-                "recordedOn" to r.recordedOn,
-                "syncedAt"   to System.currentTimeMillis(),
-            ))
+        runCatching {
+            FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("health_records").document(r.id)
+                .set(mapOf(
+                    "id"         to r.id,
+                    "category"   to r.category,
+                    "label"      to r.label,
+                    "value"      to r.value,
+                    "unit"       to r.unit,
+                    "recordedOn" to r.recordedOn,
+                    "syncedAt"   to System.currentTimeMillis(),
+                ))
+        }
     }
 
-    private fun firestoreDelete(id: String) = runCatching {
+    private fun firestoreDelete(id: String) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance()
-            .collection("users").document(uid)
-            .collection("health_records").document(id)
-            .delete()
+        runCatching {
+            FirebaseFirestore.getInstance()
+                .collection("users").document(uid)
+                .collection("health_records").document(id)
+                .delete()
+        }
     }
 
     // ── JSON helpers ──────────────────────────────────────────────────────
