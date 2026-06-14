@@ -206,7 +206,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.mlkit.translate)
-    implementation(libs.mlkit.object.detection)
+    // REMOVED: ML Kit Object Detection - Causing persistent build failures
+    // If needed later, can be re-added as: implementation(libs.mlkit.object.detection)
     implementation(libs.mlkit.image.labeling)
 
     implementation(libs.accompanist.permissions)
