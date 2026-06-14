@@ -8,7 +8,12 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.services)
+}
+
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    logger.warn("google-services.json not found; skipping Google Services plugin for local/non-Firebase builds.")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -32,9 +37,10 @@ fun signingProp(propKey: String, envKey: String, default: String = ""): String =
         ?: default
 
 val keystoreFilePath = signingProp("storeFile",    "SIGNING_STORE_FILE",    "app/nexusplus-upload-key.jks")
-val keystorePassword = signingProp("storePassword", "SIGNING_STORE_PASSWORD")
+val localDevSigningPassword = "localDevOnly@2026"
+val keystorePassword = signingProp("storePassword", "SIGNING_STORE_PASSWORD", localDevSigningPassword)
 val keystoreAlias    = signingProp("keyAlias",      "SIGNING_KEY_ALIAS",     "NexusPlus")
-val keystoreKeyPass  = signingProp("keyPassword",   "SIGNING_KEY_PASSWORD")
+val keystoreKeyPass  = signingProp("keyPassword",   "SIGNING_KEY_PASSWORD",  localDevSigningPassword)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // autoGenerateKeystore — LOCAL DEV ONLY fallback.
@@ -81,8 +87,8 @@ tasks.register("autoGenerateKeystore") {
             "-keyalg",    "RSA",
             "-keysize",   "4096",
             "-validity",  "9125",
-            "-storepass", keystorePassword.ifBlank { "localDevOnly@2026" },
-            "-keypass",   keystoreKeyPass.ifBlank  { "localDevOnly@2026" },
+            "-storepass", keystorePassword,
+            "-keypass",   keystoreKeyPass,
             "-dname",     "CN=Kuldeep Kumar Yadav, OU=Development, O=Nexus Wave Technologies, L=Korba, ST=Chhattisgarh, C=IN"
         )
 
@@ -93,7 +99,7 @@ tasks.register("autoGenerateKeystore") {
 
         if (result.result.get().exitValue == 0) {
             val ks = KeyStore.getInstance("PKCS12")
-            ksFile.inputStream().use { ks.load(it, keystorePassword.ifBlank { "localDevOnly@2026" }.toCharArray()) }
+            ksFile.inputStream().use { ks.load(it, keystorePassword.toCharArray()) }
             val cert: Certificate = ks.getCertificate(keystoreAlias)
             println("✅ Keystore created: ${ksFile.absolutePath}  (${ksFile.length()} bytes)")
             println("   Alias : $keystoreAlias  |  Cert : ${cert.type}")
