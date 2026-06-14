@@ -1,82 +1,85 @@
 name: Build NexusPlus APK
 
 on:
-workflow_dispatch:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: NexusPlus
 
-```
-steps:
-  - name: Checkout Repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  - name: Setup Java 17
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: 17
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-  - name: Setup Gradle Cache
-    uses: gradle/actions/setup-gradle@v4
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-  - name: Validate Required Secrets
-    run: |
-      test -n "${{ secrets.GOOGLE_SERVICES_JSON }}" || (echo "Missing GOOGLE_SERVICES_JSON" && exit 1)
-      test -n "${{ secrets.KEYSTORE_BASE64 }}" || (echo "Missing KEYSTORE_BASE64" && exit 1)
-      test -n "${{ secrets.KEYSTORE_PASSWORD }}" || (echo "Missing KEYSTORE_PASSWORD" && exit 1)
-      test -n "${{ secrets.KEY_ALIAS }}" || (echo "Missing KEY_ALIAS" && exit 1)
-      test -n "${{ secrets.KEY_PASSWORD }}" || (echo "Missing KEY_PASSWORD" && exit 1)
+      - name: Setup Gradle Cache
+        uses: gradle/actions/setup-gradle@v4
 
-  - name: Restore google-services.json
-    run: |
-      mkdir -p app
-      echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
+      - name: Validate Required Secrets
+        run: |
+          test -n "${{ secrets.GOOGLE_SERVICES_JSON }}" || (echo "Missing GOOGLE_SERVICES_JSON" && exit 1)
+          test -n "${{ secrets.KEYSTORE_BASE64 }}" || (echo "Missing KEYSTORE_BASE64" && exit 1)
+          test -n "${{ secrets.KEYSTORE_PASSWORD }}" || (echo "Missing KEYSTORE_PASSWORD" && exit 1)
+          test -n "${{ secrets.KEY_ALIAS }}" || (echo "Missing KEY_ALIAS" && exit 1)
+          test -n "${{ secrets.KEY_PASSWORD }}" || (echo "Missing KEY_PASSWORD" && exit 1)
 
-  - name: Restore Keystore
-    run: |
-      echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
+      - name: Restore google-services.json
+        run: |
+          mkdir -p app
+          printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
 
-  - name: Create key.properties
-    run: |
-      cat > key.properties << EOF
-      storeFile=release.keystore
-      storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-      keyAlias=${{ secrets.KEY_ALIAS }}
-      keyPassword=${{ secrets.KEY_PASSWORD }}
-      EOF
+      - name: Restore Keystore
+        run: |
+          printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
 
-  - name: Diagnostics
-    run: |
-      java -version
-      ./gradlew --version
-      ls -la
-      test -f key.properties
-      test -f release.keystore
+      - name: Create key.properties
+        run: |
+          cat > key.properties <<EOF_PROPERTIES
+          storeFile=release.keystore
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          EOF_PROPERTIES
 
-  - name: Grant Gradle Permission
-    run: chmod +x gradlew
+      - name: Diagnostics
+        run: |
+          java -version
+          ./gradlew --version
+          test -f key.properties
+          test -f release.keystore
+          test -f app/google-services.json
 
-  - name: Build Release APK
-    env:
-      SIGNING_STORE_FILE: release.keystore
-      SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-      SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-    run: |
-      ./gradlew \
-        clean \
-        assembleRelease \
-        --stacktrace \
-        --info \
-        --warning-mode all \
-        --refresh-dependencies \
-        --no-daemon
+      - name: Grant Gradle Permission
+        run: chmod +x gradlew
 
-  - name: Upload Release APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: NexusPlus-Production
-      path: "**/build/outputs/apk/release/*.apk"
-```
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace --warning-mode all --no-daemon
+
+      - name: Build Release APK
+        run: ./gradlew clean assembleRelease --stacktrace --info --warning-mode all --no-daemon
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusPlus-Debug
+          path: NexusPlus/app/build/outputs/apk/debug/*.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusPlus-Production
+          path: NexusPlus/app/build/outputs/apk/release/*.apk
