@@ -6,3 +6,4 @@
 - [Hub refactor architecture](hub-refactor.md) — 5-hub navigation layer added on top of existing feature screens; navigation-level consolidation only.
 - [Duplicate hub cleanup](duplicate-hub-cleanup.md) — NexusIntelligence/Automation/DevKit were hub-within-hub duplicates; removed. 52 real features remain (after v1.2 additions).
 - [Firebase + security upgrade](firebase-security.md) — Firebase Auth/Firestore integration, biometric Health Vault, admin notifications, TOTP, Speed Test.
+- [Vault ViewModel scoping fix](vault-vm-scoping.md) — BiometricVaultViewModel must be activity-scoped to survive nav; also locks on ON_STOP lifecycle event.

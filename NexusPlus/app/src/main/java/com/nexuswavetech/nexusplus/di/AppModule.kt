@@ -11,6 +11,7 @@ import com.nexuswavetech.nexusplus.core.FavoritesRepository
 import com.nexuswavetech.nexusplus.core.RecentActivityRepository
 import com.nexuswavetech.nexusplus.core.SearchManager
 import com.nexuswavetech.nexusplus.core.SessionManager
+import com.nexuswavetech.nexusplus.core.HapticHelper
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesViewModel
 import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultRepository
@@ -52,6 +53,7 @@ val appModule = module {
     single<SettingsRepository>       { SettingsRepository(androidContext()) }
     single<NotificationRepository>   { NotificationRepository(androidContext()) }
     single<BiometricVaultRepository> { BiometricVaultRepository(androidContext()) }
+    single { HapticHelper(get()) }
 
     // ConsentRepository — process-scoped, DataStore-backed legal consent gate.
     single { ConsentRepository(androidContext()) }
@@ -82,7 +84,12 @@ val appModule = module {
     viewModel { EncrypterDecrypterViewModel() }
     viewModel { HashGeneratorViewModel() }
     viewModel { PasswordGeneratorViewModel() }
-    viewModel { BiometricVaultViewModel(repository = get()) }
+    viewModel {
+        BiometricVaultViewModel(
+            repository         = get(),
+            settingsRepository = get(),
+        )
+    }
 
     // Utilities
     viewModel { TextTranslatorViewModel() }

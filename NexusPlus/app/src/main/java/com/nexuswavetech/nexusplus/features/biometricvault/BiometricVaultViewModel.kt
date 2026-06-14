@@ -2,26 +2,28 @@ package com.nexuswavetech.nexusplus.features.biometricvault
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-private const val SESSION_TIMEOUT_MS = 5 * 60_000L  // 5-minute auto-lock
 
 data class VaultUiState(
     val isUnlocked:       Boolean         = false,
     val items:            List<VaultItem> = emptyList(),
     val selectedCategory: VaultCategory?  = null,
     val authError:        String?          = null,
-    val sessionSecsLeft:  Int             = (SESSION_TIMEOUT_MS / 1000).toInt(),
+    val sessionSecsLeft:  Int             = 0,
+    val autoLockMinutes:  Int             = SettingsRepository.VAULT_LOCK_DEFAULT,
 )
 
 class BiometricVaultViewModel(
-    private val repository: BiometricVaultRepository,
+    private val repository:        BiometricVaultRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(VaultUiState())
@@ -33,6 +35,12 @@ class BiometricVaultViewModel(
         viewModelScope.launch {
             repository.itemsFlow.collect { items ->
                 _state.update { it.copy(items = items) }
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.vaultAutoLockMinutes.collect { mins ->
+                _state.update { it.copy(autoLockMinutes = mins) }
+                if (_state.value.isUnlocked) startSessionTimer()
             }
         }
     }
@@ -65,14 +73,21 @@ class BiometricVaultViewModel(
     fun onUserActivity() = resetSessionTimer()
 
     fun lock() {
-        _state.update { it.copy(isUnlocked = false, authError = null) }
+        _state.update { it.copy(isUnlocked = false, authError = null, sessionSecsLeft = 0) }
         timeoutJob?.cancel()
     }
 
     private fun startSessionTimer() {
         timeoutJob?.cancel()
+        val lockMins = _state.value.autoLockMinutes
+        if (lockMins <= 0) {
+            // Auto-lock disabled — clear any stale countdown
+            _state.update { it.copy(sessionSecsLeft = -1) }
+            return
+        }
+        val totalSecs = lockMins * 60
         timeoutJob = viewModelScope.launch {
-            var secsLeft = (SESSION_TIMEOUT_MS / 1000).toInt()
+            var secsLeft = totalSecs
             while (secsLeft > 0) {
                 _state.update { it.copy(sessionSecsLeft = secsLeft) }
                 delay(1_000L)
@@ -89,7 +104,6 @@ class BiometricVaultViewModel(
     override fun onCleared() {
         super.onCleared()
         timeoutJob?.cancel()
-        // Lock on ViewModel death (back-press, process death)
         _state.update { it.copy(isUnlocked = false) }
     }
 }

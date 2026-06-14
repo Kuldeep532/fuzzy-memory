@@ -1,6 +1,5 @@
 package com.nexuswavetech.nexusplus.features.biometricvault
 
-import android.app.Activity
 import android.view.WindowManager
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
@@ -29,8 +28,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
@@ -76,15 +79,29 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val view    = LocalView.current
     val scope   = rememberCoroutineScope()
-    val vm: BiometricVaultViewModel = koinViewModel()
+    // Activity-scoped so the ViewModel survives navigation back/forward within the same task.
+    // Previously per-backstack-entry, which caused a re-lock on every navigate().
+    val activity = context as ComponentActivity
+    val vm: BiometricVaultViewModel = koinViewModel(viewModelStoreOwner = activity)
     val state by vm.state.collectAsStateWithLifecycle()
 
     // FLAG_SECURE — blocks screenshots and recent-apps thumbnails
     DisposableEffect(Unit) {
-        (context as? Activity)?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         onDispose {
-            (context as? Activity)?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
+    }
+
+    // Auto-lock when the app is sent to the background (ON_STOP).
+    // ON_PAUSE fires for dialogs/overlays too, so ON_STOP is the correct event.
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) vm.lock()
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
     }
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -135,16 +152,20 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
             },
             actions = {
                 if (state.isUnlocked) {
-                    // Session countdown
-                    val mins = state.sessionSecsLeft / 60
-                    val secs = state.sessionSecsLeft % 60
-                    Text(
-                        "%d:%02d".format(mins, secs),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (state.sessionSecsLeft < 60) MaterialTheme.colorScheme.error
-                                else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(end = 8.dp).semantics { contentDescription = "Auto-lock in ${state.sessionSecsLeft} seconds" },
-                    )
+                    if (state.sessionSecsLeft >= 0) {
+                        // Show countdown only when auto-lock is enabled (sessionSecsLeft >= 0)
+                        val mins = state.sessionSecsLeft / 60
+                        val secs = state.sessionSecsLeft % 60
+                        Text(
+                            "%d:%02d".format(mins, secs),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (state.sessionSecsLeft < 60) MaterialTheme.colorScheme.error
+                                    else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(end = 8.dp).semantics {
+                                contentDescription = "Auto-lock in ${state.sessionSecsLeft} seconds"
+                            },
+                        )
+                    }
                     IconButton(onClick = { vm.lock(); view.announceForAccessibility("Vault locked") }) {
                         Icon(Icons.Filled.Lock, contentDescription = "Lock vault now")
                     }
