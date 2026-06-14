@@ -2,6 +2,7 @@ package com.nexuswavetech.nexusplus.features.imageeditor
 
 import android.content.ContentValues
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
