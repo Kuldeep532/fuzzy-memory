@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
  * The fill colour is Color.Black — Material3 Icon composables apply the
  * caller's tint on top, so this acts as a mask.
  */
+@Suppress("UNCHECKED_CAST")
 val NseVectorIcon: ImageVector by lazy {
     ImageVector.Builder(
         name           = "NexusSpeechEngine",
