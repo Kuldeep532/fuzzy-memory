@@ -31,37 +31,41 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Restore google-services.json
+        if: ${{ secrets.GOOGLE_SERVICES_JSON != '' }}
         run: |
           mkdir -p NexusPlus/app
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > NexusPlus/app/google-services.json
+          printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > NexusPlus/app/google-services.json
 
       - name: Restore Keystore
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > NexusPlus/release.keystore
+          printf '%s' "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > NexusPlus/release.keystore
 
-      - name: Create signing.properties
+      - name: Create key.properties
         run: |
-          cat > NexusPlus/signing.properties <<EOF
-          storeFile=release.keystore
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          EOF
+          cat > NexusPlus/key.properties <<EOF
+storeFile=release.keystore
+storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+keyAlias=${{ secrets.KEY_ALIAS }}
+keyPassword=${{ secrets.KEY_PASSWORD }}
+EOF
 
       - name: Grant Gradle Permission
-        run: |
-          cd NexusPlus
-          chmod +x gradlew
+        working-directory: NexusPlus
+        run: chmod +x gradlew
 
       - name: Build Debug APK
-        run: |
-          cd NexusPlus
-          ./gradlew assembleDebug
+        working-directory: NexusPlus
+        run: ./gradlew --no-daemon assembleDebug
 
       - name: Build Release APK
-        run: |
-          cd NexusPlus
-          ./gradlew assembleRelease
+        working-directory: NexusPlus
+        env:
+          SIGNING_STORE_FILE: release.keystore
+          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleRelease
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
