@@ -23,11 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 // Reactive validation state — computed instantly from raw field values.
 // No manual toggles or switches required; every field locks/unlocks/adapts
 // automatically based on content validity.
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 
 private enum class PasswordStrength(val label: String, val color: Color, val fraction: Float) {
     EMPTY("", Color.Transparent, 0f),
@@ -56,7 +56,7 @@ private data class FormXState(
             if (password.length >= 8) score++
             if (password.any { it.isUpperCase() }) score++
             if (password.any { it.isDigit() }) score++
-            if (password.any { "!@#\$%^&*()_+-=[]{}|;':\",./<>?".contains(it) }) score++
+            if (password.any { "!@#$%^&*()_+-=[]{}|;':,.<>?".contains(it) }) score++
             return when {
                 score <= 1 -> PasswordStrength.WEAK
                 score == 2 || score == 3 -> PasswordStrength.FAIR
@@ -83,12 +83,12 @@ private data class FormXState(
     val allValid: Boolean get() = emailValid && passwordValid && specDataValid
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 // AutoUniversalFormX — Material 3 reactive form.
 //
 // Fields auto-lock, unlock, and display validation state instantly without
 // any manual switches. The submit button is gated on all-fields-valid.
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 
 @Composable
 fun AutoUniversalFormX(
@@ -128,7 +128,7 @@ fun AutoUniversalFormX(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
 
-            // ── Header ────────────────────────────────────────────────────────
+            // ── Header ───────────────────────────────────────────────────────
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.primaryContainer,
@@ -315,8 +315,7 @@ fun AutoUniversalFormX(
                     supportingText = {
                         AnimatedVisibility(visible = state.showSpecDataError) {
                             Text(
-                                "Format: DrugName | Dosage | Route | Duration\n" +
-                                        "e.g. Amoxicillin | 500mg | Oral | 7 days",
+                                "Format: DrugName | Dosage | Route | Duration\ne.g. Amoxicillin | 500mg | Oral | 7 days",
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.labelSmall
                             )
@@ -515,9 +514,9 @@ fun AutoUniversalFormX(
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 // Reusable sub-composables
-// ─────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────
 
 @Composable
 private fun FormXSection(
