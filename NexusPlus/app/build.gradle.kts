@@ -1,172 +1,145 @@
-import java.security.KeyPairGenerator
-import java.security.KeyStore
-import java.security.SecureRandom
-import java.security.cert.Certificate
+import java.util.Base64
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
-if (file("google-services.json").exists()) {
-    apply(plugin = "com.google.gms.google-services")
-} else {
-    logger.warn("google-services.json not found; skipping Google Services plugin for local/non-Firebase builds.")
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Signing credential resolution — three-tier priority:
-//   1. key.properties  (local dev — gitignored)
-//   2. Environment variables  (CI/CD — injected by GitHub Actions)
-//   3. Safe empty default  (causes loud Gradle failure if creds truly absent)
-//
-// NEVER store real passwords in this file.
-// In CI/CD, the GitHub Actions workflow decodes KEYSTORE_BASE64 and sets
-// the SIGNING_* environment variables before Gradle is invoked.
-// ─────────────────────────────────────────────────────────────────────────────
 val keyPropertiesFile = rootProject.file("key.properties")
-val keyProps = Properties().apply {
-    if (keyPropertiesFile.exists()) keyPropertiesFile.inputStream().use { load(it) }
+val keyProperties = Properties().apply {
+    if (keyPropertiesFile.isFile) {
+        keyPropertiesFile.inputStream().use(::load)
+    }
 }
 
-fun signingProp(propKey: String, envKey: String, default: String = ""): String =
-    keyProps.getProperty(propKey)?.takeIf { it.isNotBlank() }
-        ?: System.getenv(envKey)?.takeIf { it.isNotBlank() }
-        ?: default
+fun localProperty(name: String): String? =
+    keyProperties.getProperty(name)?.trim()?.takeIf(String::isNotEmpty)
 
-val keystoreFilePath = signingProp("storeFile",    "SIGNING_STORE_FILE",    "app/nexusplus-upload-key.jks")
-val localDevSigningPassword = "localDevOnly@2026"
-val keystorePassword = signingProp("storePassword", "SIGNING_STORE_PASSWORD", localDevSigningPassword)
-val keystoreAlias    = signingProp("keyAlias",      "SIGNING_KEY_ALIAS",     "NexusPlus")
-val keystoreKeyPass  = signingProp("keyPassword",   "SIGNING_KEY_PASSWORD",  localDevSigningPassword)
+fun environmentVariable(name: String): String? =
+    providers.environmentVariable(name).orNull?.trim()?.takeIf(String::isNotEmpty)
 
-// ─────────────────────────────────────────────────────────────────────────────
-// autoGenerateKeystore — LOCAL DEV ONLY fallback.
-// In CI/CD the keystore is decoded from KEYSTORE_BASE64 by the workflow;
-// this task is intentionally skipped when env vars are already set.
-// ─────────────────────────────────────────────────────────────────────────────
-tasks.register("autoGenerateKeystore") {
-    description = "Generates a local dev keystore if none is present. Skipped in CI when SIGNING_STORE_PASSWORD is set."
+fun signingValue(propertyName: String, environmentName: String): String? =
+    localProperty(propertyName) ?: environmentVariable(environmentName)
+
+val ciKeystoreFile = layout.buildDirectory.file("signing/nexusplus-release.jks")
+val keystoreBase64 = environmentVariable("KEYSTORE_BASE64")
+val configuredStoreFile = localProperty("storeFile")
+    ?.let { rootProject.file(it) }
+    ?: environmentVariable("KEYSTORE_FILE")?.let { file(it) }
+    ?: keystoreBase64?.let { ciKeystoreFile.get().asFile }
+
+val releaseStorePassword = signingValue("storePassword", "KEYSTORE_PASSWORD")
+val releaseKeyAlias = signingValue("keyAlias", "KEY_ALIAS")
+val releaseKeyPassword = signingValue("keyPassword", "KEY_PASSWORD")
+
+fun missingSigningConfiguration(): List<String> = buildList {
+    if (configuredStoreFile == null) add("storeFile in key.properties, KEYSTORE_FILE, or KEYSTORE_BASE64")
+    if (releaseStorePassword == null) add("storePassword in key.properties or KEYSTORE_PASSWORD")
+    if (releaseKeyAlias == null) add("keyAlias in key.properties or KEY_ALIAS")
+    if (releaseKeyPassword == null) add("keyPassword in key.properties or KEY_PASSWORD")
+}
+
+
+val googleServicesJson = environmentVariable("GOOGLE_SERVICES_JSON")
+
+val prepareGoogleServicesJson by tasks.registering {
     group = "build setup"
+    description = "Writes app/google-services.json from GOOGLE_SERVICES_JSON when supplied by CI."
 
-    doFirst {
-        val ciMode = System.getenv("SIGNING_STORE_PASSWORD")?.isNotBlank() == true
-        if (ciMode) {
-            println("ℹ️  autoGenerateKeystore: CI mode detected — skipping (keystore injected by workflow).")
-            return@doFirst
-        }
+    onlyIf { googleServicesJson != null && !file("google-services.json").isFile }
 
-        val ksFile = rootProject.file(keystoreFilePath)
-        if (ksFile.exists()) {
-            println("✅ autoGenerateKeystore: keystore already present → ${ksFile.absolutePath}")
-            try {
-                val ks = KeyStore.getInstance("PKCS12")
-                ksFile.inputStream().use { ks.load(it, keystorePassword.toCharArray()) }
-                val cert: Certificate? = ks.getCertificate(keystoreAlias)
-                println("   Format : PKCS12  |  Alias : $keystoreAlias  |  Cert : ${cert?.type ?: "n/a"}")
-            } catch (_: Exception) {
-                println("   (Skipping verification — may be JKS format, which is still valid)")
-            }
-            return@doFirst
-        }
+    doLast {
+        file("google-services.json").writeText(googleServicesJson ?: return@doLast)
+    }
+}
 
-        println("🔑 autoGenerateKeystore: no keystore found — generating local dev RSA-4096 …")
+val prepareReleaseKeystore by tasks.registering {
+    group = "build setup"
+    description = "Validates release signing credentials and materializes the CI keystore when KEYSTORE_BASE64 is used."
 
-        val kpg = KeyPairGenerator.getInstance("RSA")
-        kpg.initialize(4096, SecureRandom())
-        kpg.generateKeyPair()
-        println("   RSA-4096 key pair generated in-memory")
+    inputs.property("hasKeyProperties", keyPropertiesFile.isFile)
+    inputs.property("hasKeyStoreBase64", keystoreBase64 != null)
+    outputs.file(ciKeystoreFile)
+        .optional()
 
-        val keytoolCmd = listOf(
-            "keytool", "-genkeypair",
-            "-keystore",  ksFile.absolutePath,
-            "-storetype", "PKCS12",
-            "-alias",     keystoreAlias,
-            "-keyalg",    "RSA",
-            "-keysize",   "4096",
-            "-validity",  "9125",
-            "-storepass", keystorePassword,
-            "-keypass",   keystoreKeyPass,
-            "-dname",     "CN=Kuldeep Kumar Yadav, OU=Development, O=Nexus Wave Technologies, L=Korba, ST=Chhattisgarh, C=IN"
-        )
-
-        val result = providers.exec {
-            commandLine(keytoolCmd)
-            isIgnoreExitValue = true
-        }
-
-        if (result.result.get().exitValue == 0) {
-            val ks = KeyStore.getInstance("PKCS12")
-            ksFile.inputStream().use { ks.load(it, keystorePassword.toCharArray()) }
-            val cert: Certificate = ks.getCertificate(keystoreAlias)
-            println("✅ Keystore created: ${ksFile.absolutePath}  (${ksFile.length()} bytes)")
-            println("   Alias : $keystoreAlias  |  Cert : ${cert.type}")
-        } else {
+    doLast {
+        val missing = missingSigningConfiguration()
+        if (missing.isNotEmpty()) {
             throw GradleException(
-                "❌ autoGenerateKeystore failed. keytool must be on PATH (ships with every JDK).\n" +
-                "   Place your own keystore at: ${ksFile.absolutePath}\n" +
-                "   and set credentials in key.properties or environment variables."
+                "Release signing is not configured. Missing: ${missing.joinToString()}. " +
+                    "For local builds, create root key.properties with storeFile, storePassword, keyAlias, and keyPassword. " +
+                    "For GitHub Actions, provide GOOGLE_SERVICES_JSON, KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD."
             )
         }
+
+        val keystoreFile = configuredStoreFile ?: error("Signing store file was unexpectedly null.")
+        if (keystoreBase64 != null && localProperty("storeFile") == null && environmentVariable("KEYSTORE_FILE") == null) {
+            keystoreFile.parentFile.mkdirs()
+            keystoreFile.writeBytes(Base64.getDecoder().decode(keystoreBase64))
+        }
+
+        if (!keystoreFile.isFile) {
+            throw GradleException("Release signing keystore does not exist: ${keystoreFile.absolutePath}")
+        }
     }
 }
 
-afterEvaluate {
-    tasks.matching { it.name.startsWith("assemble") || it.name.startsWith("package") }.configureEach {
-        dependsOn("autoGenerateKeystore")
-    }
+kotlin {
+    jvmToolchain(17)
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 android {
-    namespace  = "com.nexuswavetech.nexusplus"
+    namespace = "com.nexuswavetech.nexusplus"
     compileSdk = 35
 
     defaultConfig {
-        applicationId         = "com.nexuswavetech.nexusplus"
-        minSdk                = 26
-        targetSdk             = 35
-        versionCode           = 3
-        versionName           = "1.2.0"
+        applicationId = "com.nexuswavetech.nexusplus"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 3
+        versionName = "1.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         create("release") {
-            storeFile     = rootProject.file(keystoreFilePath)
-            storePassword = keystorePassword
-            keyAlias      = keystoreAlias
-            keyPassword   = keystoreKeyPass
+            storeFile = configuredStoreFile
+            storePassword = releaseStorePassword
+            keyAlias = releaseKeyAlias
+            keyPassword = releaseKeyPassword
         }
     }
 
     buildTypes {
-        release {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            signingConfig = signingConfigs.getByName("release")
-        }
         debug {
             isMinifyEnabled = false
+        }
+
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 
     buildFeatures {
-        compose     = true
+        compose = true
         buildConfig = true
     }
 
@@ -177,8 +150,22 @@ android {
     }
 }
 
+tasks.matching {
+    it.name.startsWith("process") && it.name.endsWith("GoogleServices")
+}.configureEach {
+    dependsOn(prepareGoogleServicesJson)
+}
+
+tasks.matching {
+    it.name == "validateSigningRelease" ||
+        (it.name.startsWith("package") && it.name.endsWith("Release")) ||
+        (it.name.startsWith("assemble") && it.name.endsWith("Release")) ||
+        (it.name.startsWith("bundle") && it.name.endsWith("Release"))
+}.configureEach {
+    dependsOn(prepareReleaseKeystore)
+}
+
 dependencies {
-    // ── Shared KMP module ─────────────────────────────────────────────────
     implementation(project(":shared"))
 
     implementation(libs.androidx.core.ktx)
@@ -194,7 +181,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.palette)
-
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.work.runtime)
 
@@ -226,7 +212,6 @@ dependencies {
     implementation(libs.accompanist.permissions)
     implementation(libs.zxing.core)
 
-    // ── Firebase ──────────────────────────────────────────────────────────
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
@@ -235,9 +220,8 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.espresso.core)
 }
