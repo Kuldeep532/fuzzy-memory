@@ -1,62 +1,16 @@
-name: Build NexusPlus APK
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Restore google-services.json
-        run: |
-          mkdir -p NexusPlus/app
-          echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > NexusPlus/app/google-services.json
-
-      - name: Restore Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > NexusPlus/release.keystore
-
-      - name: Create key.properties
-        run: |
-          cat > NexusPlus/key.properties << EOF
-          storeFile=release.keystore
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          EOF
-
-      - name: Grant Gradle Permission
-        working-directory: NexusPlus
-        run: chmod +x gradlew
-
-      - name: Build Release APK
-        working-directory: NexusPlus
-        env:
-          SIGNING_STORE_FILE: release.keystore
-          SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew --no-daemon assembleRelease
-
-      - name: Upload Release APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NexusPlus-Production
-          path: NexusPlus/**/build/outputs/apk/release/*.apk
+- name: Build Release APK (Verbose Diagnostics)
+  working-directory: NexusPlus
+  env:
+    SIGNING_STORE_FILE: release.keystore
+    SIGNING_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+    SIGNING_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+    SIGNING_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+  run: |
+    ./gradlew \
+      clean \
+      assembleRelease \
+      --stacktrace \
+      --info \
+      --warning-mode all \
+      --refresh-dependencies \
+      --no-daemon
