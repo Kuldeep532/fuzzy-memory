@@ -90,6 +90,7 @@ private data class FormXState(
 // any manual switches. The submit button is gated on all-fields-valid.
 // ────────────────────────────────────────────────────────────────
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AutoUniversalFormX(
     onBack: () -> Unit,
