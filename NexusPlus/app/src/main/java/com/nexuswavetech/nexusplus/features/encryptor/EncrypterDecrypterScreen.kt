@@ -167,7 +167,7 @@ fun EncrypterDecrypterScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.semantics { contentDescription = "Mode selection. Choose Text, Image, or File." }
             ) {
-                EncryptMode.values().forEach { mode ->
+                EncryptMode.entries.forEach { mode ->
                     FilterChip(
                         selected = uiState.mode == mode,
                         onClick = { viewModel.setMode(mode) },

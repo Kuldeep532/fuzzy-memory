@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -46,7 +47,7 @@ private fun getFileIcon(file: File): ImageVector = when {
     file.extension.lowercase() in listOf("zip", "rar", "tar", "gz", "7z") -> Icons.Filled.FolderZip
     file.extension.lowercase() in listOf("apk")  -> Icons.Filled.Android
     file.extension.lowercase() in listOf("txt", "md", "log") -> Icons.Filled.Description
-    else                                          -> Icons.Filled.InsertDriveFile
+    else                                          -> Icons.AutoMirrored.Filled.InsertDriveFile
 }
 
 @OptIn(ExperimentalPermissionsApi::class)

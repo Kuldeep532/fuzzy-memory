@@ -38,7 +38,7 @@ class HashGeneratorViewModel : ViewModel() {
     fun onInputChanged(v: String) {
         input = v
         results = if (v.isBlank()) emptyList()
-        else HashAlgorithm.values().map { algo ->
+        else HashAlgorithm.entries.map { algo ->
             val digest = MessageDigest.getInstance(algo.jvmName)
             val bytes  = digest.digest(v.toByteArray(Charsets.UTF_8))
             HashResult(algo, bytes.joinToString("") { "%02x".format(it) })

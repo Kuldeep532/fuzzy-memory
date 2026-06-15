@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.RotateLeft
+import androidx.compose.material.icons.automirrored.filled.RotateRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -233,8 +235,8 @@ fun SmartImageEditorScreen(onBack: () -> Unit) {
                     Text("Rotate & Flip", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.semantics { heading() })
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(
-                            Triple("Rotate Left",  Icons.Filled.RotateLeft)  { rotation -= 90f },
-                            Triple("Rotate Right", Icons.Filled.RotateRight) { rotation += 90f },
+                            Triple("Rotate Left",  Icons.AutoMirrored.Filled.RotateLeft)  { rotation -= 90f },
+                            Triple("Rotate Right", Icons.AutoMirrored.Filled.RotateRight) { rotation += 90f },
                             Triple("Flip H",       Icons.Filled.Flip)        {
                                 originalBitmap = flipBitmap(originalBitmap!!, true)
                             },
@@ -265,7 +267,7 @@ fun SmartImageEditorScreen(onBack: () -> Unit) {
                     // Filters
                     Text("Filter", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.semantics { heading() })
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        ImageFilter.values().forEach { filter ->
+                        ImageFilter.entries.forEach { filter ->
                             FilterChip(
                                 selected = activeFilter == filter,
                                 onClick  = { activeFilter = filter; view.announceForAccessibility("${filter.label} filter applied") },

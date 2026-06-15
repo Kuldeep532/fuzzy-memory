@@ -3,10 +3,12 @@ package com.nexuswavetech.nexusplus.ui.components
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material.icons.outlined.Star
@@ -15,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
@@ -35,10 +38,6 @@ import com.nexuswavetech.nexusplus.core.FeatureItem
  *  3. Pin / Unpin from Home
  *  4. Share
  *  5. View Information
- *
- * No permanent favorite/pin button is visible on the card — this keeps the
- * UI uncluttered. A subtle icon badge appears in the top-right only when a
- * feature is already favorited or pinned.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -60,9 +59,9 @@ fun FeatureCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(MaterialTheme.shapes.medium)
                 .combinedClickable(
-                    onClick    = onTap,
+                    onClick     = onTap,
                     onLongClick = { showContextMenu = true },
                 )
                 .semantics(mergeDescendants = true) {
@@ -76,16 +75,20 @@ fun FeatureCard(
                         append(" Double tap to open. Long press for more options.")
                     }
                     customActions = listOf(
-                        CustomAccessibilityAction("Open")                { onTap(); true },
-                        CustomAccessibilityAction(favoriteLabel)         { onToggleFavorite(); true },
-                        CustomAccessibilityAction(pinLabel)              { onTogglePin(); true },
-                        CustomAccessibilityAction("Share")               { shareFeature(context, feature); true },
-                        CustomAccessibilityAction("View Information")    { showInfoDialog = true; true },
+                        CustomAccessibilityAction("Open")             { onTap(); true },
+                        CustomAccessibilityAction(favoriteLabel)      { onToggleFavorite(); true },
+                        CustomAccessibilityAction(pinLabel)           { onTogglePin(); true },
+                        CustomAccessibilityAction("Share")            { shareFeature(context, feature); true },
+                        CustomAccessibilityAction("View Information") { showInfoDialog = true; true },
                     )
                 },
-            shape  = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            shape     = MaterialTheme.shapes.medium,
+            colors    = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation  = 1.dp,
+                pressedElevation  = 4.dp,
+                hoveredElevation  = 3.dp,
+            ),
         ) {
             Column(
                 modifier            = Modifier.padding(16.dp),
@@ -97,37 +100,44 @@ fun FeatureCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically,
                 ) {
-                    // Feature icon in tinted surface
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-                        modifier = Modifier.size(40.dp),
+                    // Feature icon in gradient tinted surface
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(
+                                Brush.linearGradientBrush(
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
+                                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f),
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector        = feature.icon,
-                                contentDescription = null,
-                                tint               = MaterialTheme.colorScheme.primary,
-                                modifier           = Modifier.size(22.dp),
-                            )
-                        }
+                        Icon(
+                            imageVector        = feature.icon,
+                            contentDescription = null,
+                            tint               = MaterialTheme.colorScheme.primary,
+                            modifier           = Modifier.size(24.dp),
+                        )
                     }
 
-                    // Subtle status badges — no interactive buttons
+                    // Subtle status badges
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment     = Alignment.CenterVertically,
                     ) {
                         if (feature.isNew) {
                             Surface(
-                                shape = RoundedCornerShape(4.dp),
+                                shape = RoundedCornerShape(6.dp),
                                 color = MaterialTheme.colorScheme.tertiary,
                             ) {
                                 Text(
-                                    text  = "NEW",
-                                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
-                                    color = MaterialTheme.colorScheme.onTertiary,
-                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                    text     = "NEW",
+                                    style    = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.ExtraBold),
+                                    color    = MaterialTheme.colorScheme.onTertiary,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                 )
                             }
                         }
@@ -135,7 +145,7 @@ fun FeatureCard(
                             Icon(
                                 imageVector        = Icons.Filled.PushPin,
                                 contentDescription = null,
-                                tint               = MaterialTheme.colorScheme.primary.copy(alpha = 0.65f),
+                                tint               = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                                 modifier           = Modifier.size(14.dp),
                             )
                         }
@@ -143,7 +153,7 @@ fun FeatureCard(
                             Icon(
                                 imageVector        = Icons.Filled.Star,
                                 contentDescription = null,
-                                tint               = MaterialTheme.colorScheme.secondary.copy(alpha = 0.75f),
+                                tint               = MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
                                 modifier           = Modifier.size(14.dp),
                             )
                         }
@@ -152,28 +162,28 @@ fun FeatureCard(
 
                 // ── Feature name ──────────────────────────────────────────
                 Text(
-                    text  = feature.name,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text     = feature.name,
+                    style    = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color    = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                 )
 
                 // ── Description ───────────────────────────────────────────
                 Text(
-                    text  = feature.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text     = feature.description,
+                    style    = MaterialTheme.typography.bodySmall,
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                 )
 
                 // ── Category chip ─────────────────────────────────────────
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                 ) {
                     Text(
                         text     = feature.category.label,
-                        style    = MaterialTheme.typography.labelSmall,
+                        style    = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                         color    = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                     )
@@ -183,18 +193,18 @@ fun FeatureCard(
 
         // ── Context menu ──────────────────────────────────────────────────
         DropdownMenu(
-            expanded          = showContextMenu,
-            onDismissRequest  = { showContextMenu = false },
+            expanded         = showContextMenu,
+            onDismissRequest = { showContextMenu = false },
         ) {
             DropdownMenuItem(
-                text          = { Text("Open") },
-                leadingIcon   = { Icon(Icons.Filled.OpenInNew, contentDescription = null) },
-                onClick       = { showContextMenu = false; onTap() },
+                text        = { Text("Open") },
+                leadingIcon = { Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = null) },
+                onClick     = { showContextMenu = false; onTap() },
             )
             HorizontalDivider()
             DropdownMenuItem(
-                text          = { Text(favoriteLabel) },
-                leadingIcon   = {
+                text        = { Text(favoriteLabel) },
+                leadingIcon = {
                     Icon(
                         if (feature.isFavorite) Icons.Filled.Star else Icons.Outlined.Star,
                         contentDescription = null,
@@ -202,11 +212,11 @@ fun FeatureCard(
                                else LocalContentColor.current,
                     )
                 },
-                onClick       = { onToggleFavorite(); showContextMenu = false },
+                onClick = { onToggleFavorite(); showContextMenu = false },
             )
             DropdownMenuItem(
-                text          = { Text(pinLabel) },
-                leadingIcon   = {
+                text        = { Text(pinLabel) },
+                leadingIcon = {
                     Icon(
                         if (feature.isPinned) Icons.Filled.PushPin else Icons.Outlined.PushPin,
                         contentDescription = null,
@@ -214,18 +224,18 @@ fun FeatureCard(
                                else LocalContentColor.current,
                     )
                 },
-                onClick       = { onTogglePin(); showContextMenu = false },
+                onClick = { onTogglePin(); showContextMenu = false },
             )
             HorizontalDivider()
             DropdownMenuItem(
-                text          = { Text("Share") },
-                leadingIcon   = { Icon(Icons.Filled.Share, contentDescription = null) },
-                onClick       = { shareFeature(context, feature); showContextMenu = false },
+                text        = { Text("Share") },
+                leadingIcon = { Icon(Icons.Filled.Share, contentDescription = null) },
+                onClick     = { shareFeature(context, feature); showContextMenu = false },
             )
             DropdownMenuItem(
-                text          = { Text("Info") },
-                leadingIcon   = { Icon(Icons.Filled.Info, contentDescription = null) },
-                onClick       = { showInfoDialog = true; showContextMenu = false },
+                text        = { Text("Info") },
+                leadingIcon = { Icon(Icons.Filled.Info, contentDescription = null) },
+                onClick     = { showInfoDialog = true; showContextMenu = false },
             )
         }
     }
@@ -237,10 +247,10 @@ fun FeatureCard(
             icon             = {
                 Icon(feature.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             },
-            title            = {
+            title = {
                 Text(feature.name, modifier = Modifier.semantics { heading() })
             },
-            text             = {
+            text  = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         text  = feature.description,
@@ -252,9 +262,9 @@ fun FeatureCard(
                         color = MaterialTheme.colorScheme.primaryContainer,
                     ) {
                         Text(
-                            text  = feature.category.label,
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            text     = feature.category.label,
+                            style    = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color    = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         )
                     }
@@ -269,15 +279,15 @@ fun FeatureCard(
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (feature.isFavorite) {
                                 AssistChip(
-                                    onClick = {},
-                                    label   = { Text("Favorited") },
+                                    onClick     = {},
+                                    label       = { Text("Favorited") },
                                     leadingIcon = { Icon(Icons.Filled.Star, null, modifier = Modifier.size(16.dp)) },
                                 )
                             }
                             if (feature.isPinned) {
                                 AssistChip(
-                                    onClick = {},
-                                    label   = { Text("Pinned") },
+                                    onClick     = {},
+                                    label       = { Text("Pinned") },
                                     leadingIcon = { Icon(Icons.Filled.PushPin, null, modifier = Modifier.size(16.dp)) },
                                 )
                             }
@@ -310,3 +320,8 @@ private fun shareFeature(context: Context, feature: FeatureItem) {
     }
     context.startActivity(Intent.createChooser(intent, "Share ${feature.name} via…"))
 }
+
+// Helper extension for gradient brush (avoids import clash with Brush.linearGradient)
+private fun Brush.Companion.linearGradientBrush(
+    colors: List<androidx.compose.ui.graphics.Color>,
+): Brush = Brush.linearGradient(colors)

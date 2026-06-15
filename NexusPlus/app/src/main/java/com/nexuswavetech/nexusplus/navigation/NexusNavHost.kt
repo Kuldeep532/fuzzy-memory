@@ -1,5 +1,10 @@
 package com.nexuswavetech.nexusplus.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -61,11 +66,34 @@ import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
 
+private const val ANIM_DURATION     = 320
+private const val ANIM_DURATION_OUT = 200
+private const val SLIDE_FRACTION    = 6
+
 @Composable
 fun NexusNavHost() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = Screen.Welcome.route) {
+    NavHost(
+        navController    = navController,
+        startDestination = Screen.Welcome.route,
+        enterTransition  = {
+            fadeIn(tween(ANIM_DURATION)) +
+            slideInHorizontally(tween(ANIM_DURATION)) { it / SLIDE_FRACTION }
+        },
+        exitTransition   = {
+            fadeOut(tween(ANIM_DURATION_OUT)) +
+            slideOutHorizontally(tween(ANIM_DURATION)) { -it / SLIDE_FRACTION }
+        },
+        popEnterTransition = {
+            fadeIn(tween(ANIM_DURATION)) +
+            slideInHorizontally(tween(ANIM_DURATION)) { -it / SLIDE_FRACTION }
+        },
+        popExitTransition  = {
+            fadeOut(tween(ANIM_DURATION_OUT)) +
+            slideOutHorizontally(tween(ANIM_DURATION)) { it / SLIDE_FRACTION }
+        },
+    ) {
 
         composable(Screen.Welcome.route) {
             WelcomeScreen(
@@ -125,7 +153,7 @@ fun NexusNavHost() {
         composable(Screen.MyReminder.route)       { MyReminderScreen      (onBack = { navController.popBackStack() }) }
         composable(Screen.QrCode.route)           { QrCodeScreen          (onBack = { navController.popBackStack() }) }
 
-        // ── New Utility Implementations (previously stubs) ────────────────
+        // ── New Utility Implementations ───────────────────────────────────
         composable(Screen.Flashlight.route)        { FlashlightScreen       (onBack = { navController.popBackStack() }) }
         composable(Screen.Stopwatch.route)         { StopwatchScreen        (onBack = { navController.popBackStack() }) }
         composable(Screen.WorldClock.route)        { WorldClockScreen       (onBack = { navController.popBackStack() }) }

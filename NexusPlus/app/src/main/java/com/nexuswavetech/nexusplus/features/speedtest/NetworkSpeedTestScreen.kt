@@ -28,7 +28,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.concurrent.TimeUnit
 import kotlin.math.min
 
@@ -89,7 +89,7 @@ fun NetworkSpeedTestScreen(onBack: () -> Unit) {
         uploadMbps = withContext(Dispatchers.IO) {
             runCatching {
                 val payload = ByteArray(256_000) { it.toByte() }    // 256 KB
-                val body    = RequestBody.create("application/octet-stream".toMediaType(), payload)
+                val body    = payload.toRequestBody("application/octet-stream".toMediaType())
                 val t0      = System.currentTimeMillis()
                 client.newCall(Request.Builder().url("https://httpbin.org/post").post(body).build()).execute().use {}
                 val elapsed = (System.currentTimeMillis() - t0).coerceAtLeast(1)

@@ -198,7 +198,7 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
                         readOnly  = true,
                         label     = { Text("Category") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(catExpanded) },
-                        modifier  = Modifier.fillMaxWidth().menuAnchor(),
+                        modifier  = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, true),
                     )
                     ExposedDropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
                         categories.forEach { cat ->

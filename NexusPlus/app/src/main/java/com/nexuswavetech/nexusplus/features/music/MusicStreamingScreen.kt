@@ -241,7 +241,7 @@ fun MusicStreamingScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            MusicMode.values().forEach { mode ->
+            MusicMode.entries.forEach { mode ->
                 FilterChip(
                     selected = uiState.mode == mode,
                     onClick = { viewModel.setMode(mode) },

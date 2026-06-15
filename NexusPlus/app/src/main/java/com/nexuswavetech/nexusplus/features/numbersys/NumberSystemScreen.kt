@@ -52,7 +52,7 @@ class NumberSystemViewModel : ViewModel() {
             error = "Invalid ${sourceBase.label} number"
             return
         }
-        results = NumberBase.values()
+        results = NumberBase.entries.toList()
             .filter { it != sourceBase }
             .map { base -> ConversionResult(base, decimal.toString(base.radix).uppercase()) }
     }
@@ -76,7 +76,7 @@ fun NumberSystemScreen(onBack: () -> Unit, viewModel: NumberSystemViewModel = ko
             // Source base selector
             Text("Input Base", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), modifier = Modifier.semantics { heading() })
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                NumberBase.values().forEach { base ->
+                NumberBase.entries.forEach { base ->
                     Row(
                         Modifier
                             .fillMaxWidth()

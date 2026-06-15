@@ -222,7 +222,7 @@ private fun CurrencyDropdown(
             readOnly      = true,
             label         = { Text(label) },
             trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier      = Modifier.menuAnchor().fillMaxWidth(),
+            modifier      = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
             singleLine    = true,
         )
         ExposedDropdownMenu(

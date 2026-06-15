@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -97,7 +98,7 @@ fun JsonFormatterScreen(onBack: () -> Unit, viewModel: JsonFormatterViewModel = 
             // Action buttons
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(
-                    Triple("Format",   JsonAction.FORMAT,   Icons.Filled.FormatAlignLeft),
+                    Triple("Format",   JsonAction.FORMAT,   Icons.AutoMirrored.Filled.FormatAlignLeft),
                     Triple("Minify",   JsonAction.MINIFY,   Icons.Filled.Compress),
                     Triple("Validate", JsonAction.VALIDATE, Icons.Filled.CheckCircle)
                 ).forEach { (label, action, icon) ->

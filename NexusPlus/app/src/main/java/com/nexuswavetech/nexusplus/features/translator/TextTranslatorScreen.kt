@@ -300,7 +300,7 @@ private fun LanguageDropdown(
             label             = { Text(label) },
             trailingIcon      = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier          = Modifier
-                .menuAnchor()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 .fillMaxWidth()
                 .semantics { contentDescription = "$label language: ${selected.displayName}. Double tap to change." },
             singleLine        = true

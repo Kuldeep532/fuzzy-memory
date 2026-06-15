@@ -1,12 +1,15 @@
 package com.nexuswavetech.nexusplus.ui.components
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,28 +21,34 @@ fun NexusTopBar(
     TopAppBar(
         title = {
             Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge
+                text      = title,
+                style     = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color     = MaterialTheme.colorScheme.onSurface,
             )
         },
         navigationIcon = {
             if (onBack != null) {
                 IconButton(
-                    onClick = onBack,
+                    onClick  = onBack,
                     modifier = Modifier.semantics {
                         contentDescription = "Navigate back to previous screen"
                     }
                 ) {
                     Icon(
-                        Icons.Filled.ArrowBack,
-                        contentDescription = null
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint               = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
         },
         actions = { actions() },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        )
+        colors  = TopAppBarDefaults.topAppBarColors(
+            containerColor        = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor     = MaterialTheme.colorScheme.onSurfaceVariant,
+        ),
+        windowInsets = TopAppBarDefaults.windowInsets,
     )
 }

@@ -41,14 +41,20 @@ fun AllFeaturesScreen(
 
         // ── Search bar ─────────────────────────────────────────────────────
         SearchBar(
-            query          = uiState.searchQuery,
-            onQueryChange  = viewModel::onSearchChanged,
-            onSearch       = {},
-            active         = false,
-            onActiveChange = {},
-            placeholder    = { Text("Search all features…") },
-            leadingIcon    = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-            modifier       = Modifier
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query            = uiState.searchQuery,
+                    onQueryChange    = viewModel::onSearchChanged,
+                    onSearch         = {},
+                    expanded         = false,
+                    onExpandedChange = {},
+                    placeholder      = { Text("Search all features…") },
+                    leadingIcon      = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                )
+            },
+            expanded         = false,
+            onExpandedChange = {},
+            modifier         = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .semantics { contentDescription = "Search features. Type to filter the list." },

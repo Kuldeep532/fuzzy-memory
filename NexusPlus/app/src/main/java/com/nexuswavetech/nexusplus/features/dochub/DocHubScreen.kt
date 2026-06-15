@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -66,7 +68,7 @@ fun DocHubScreen(onBack: () -> Unit) {
         mime.contains("video") -> Icons.Filled.VideoFile
         mime.contains("text") || mime.contains("document") || mime.contains("word") -> Icons.Filled.Description
         mime.contains("spreadsheet") || mime.contains("excel") -> Icons.Filled.TableChart
-        else -> Icons.Filled.InsertDriveFile
+        else -> Icons.AutoMirrored.Filled.InsertDriveFile
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -169,7 +171,7 @@ fun DocHubScreen(onBack: () -> Unit) {
                                             }
                                             runCatching { context.startActivity(intent) }
                                         }) {
-                                            Icon(Icons.Filled.OpenInNew, contentDescription = "Open ${doc.name}")
+                                            Icon(Icons.AutoMirrored.Filled.OpenInNew, contentDescription = "Open ${doc.name}")
                                         }
                                         IconButton(onClick = {
                                             docs = docs.filter { it.uri != doc.uri }

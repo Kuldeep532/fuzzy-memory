@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Share
@@ -109,7 +109,7 @@ fun SocialMediaLinksSection(modifier: Modifier = Modifier) {
                         imageVector = when (link.label) {
                             "Instagram"       -> Icons.Filled.PhotoCamera
                             "Facebook"        -> Icons.Filled.People
-                            "Telegram"        -> Icons.Filled.Message
+                            "Telegram"        -> Icons.AutoMirrored.Filled.Message
                             "WhatsApp Channel"-> Icons.Filled.Forum
                             "Discord"         -> Icons.Filled.Forum
                             "GitHub"          -> Icons.Filled.Code

@@ -1,6 +1,8 @@
 package com.nexuswavetech.nexusplus.core
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.ScreenShare
 import androidx.compose.material.icons.filled.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 
@@ -235,7 +237,7 @@ object FeatureCatalog {
             id          = FeatureId.FORM_X,
             name        = "Form X",
             description = "Universal reactive form with auto-validation",
-            icon        = Icons.Filled.Assignment,
+            icon        = Icons.AutoMirrored.Filled.Assignment,
             route       = Screen.FormX.route,
             category    = FeatureCategory.UTILITIES,
             keywords    = listOf("form", "input", "validate", "email", "password", "field"),
@@ -356,7 +358,7 @@ object FeatureCatalog {
             id          = FeatureId.SCREEN_RECORDER,
             name        = "Screen Recorder",
             description = "Record your screen with audio overlay",
-            icon        = Icons.Filled.ScreenShare,
+            icon        = Icons.AutoMirrored.Filled.ScreenShare,
             route       = Screen.Stub.route + "/screenrecorder",
             category    = FeatureCategory.TOOLS,
             keywords    = listOf("screen", "record", "capture", "video", "overlay"),

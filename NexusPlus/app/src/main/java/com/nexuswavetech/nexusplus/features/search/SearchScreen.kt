@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -91,7 +92,7 @@ fun SearchScreen(rootNavController: NavController) {
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Icon(
-                            Icons.Filled.ManageSearch,
+                            Icons.AutoMirrored.Filled.ManageSearch,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),

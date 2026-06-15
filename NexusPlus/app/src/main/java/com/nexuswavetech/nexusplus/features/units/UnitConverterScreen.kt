@@ -159,7 +159,7 @@ fun UnitConverterScreen(onBack: () -> Unit) {
                     readOnly         = true,
                     label            = { Text("Category") },
                     trailingIcon     = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier         = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier         = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     categories.forEachIndexed { i, cat ->
@@ -281,7 +281,7 @@ private fun UnitDropdown(
             readOnly      = true,
             label         = { Text(label) },
             trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier      = Modifier.menuAnchor().fillMaxWidth(),
+            modifier      = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             units.forEachIndexed { i, unit ->

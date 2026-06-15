@@ -12,7 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
@@ -170,7 +170,7 @@ fun IptvPlayerScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.semantics { contentDescription = "Region selection. Swipe to browse." }
         ) {
-            items(IptvRegion.values().toList()) { region ->
+            items(IptvRegion.entries.toList()) { region ->
                 FilterChip(
                     selected = uiState.selectedRegion == region,
                     onClick = {

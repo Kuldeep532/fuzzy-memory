@@ -88,7 +88,7 @@ fun BarcodeGeneratorScreen(onBack: () -> Unit) {
                     readOnly      = true,
                     label         = { Text("Barcode Format") },
                     trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier      = Modifier.menuAnchor().fillMaxWidth(),
+                    modifier      = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     formats.forEachIndexed { i, (name, _) ->

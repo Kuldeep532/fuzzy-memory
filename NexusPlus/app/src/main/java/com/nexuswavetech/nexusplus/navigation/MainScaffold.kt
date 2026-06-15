@@ -1,5 +1,9 @@
 package com.nexuswavetech.nexusplus.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Favorite
@@ -9,7 +13,6 @@ import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.MoreHoriz
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -68,7 +71,10 @@ fun MainScaffold(rootNavController: NavController) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                tonalElevation = 0.dp,
+            ) {
                 tabs.forEach { item ->
                     val selected = currentRoute == item.tab.route
                     NavigationBarItem(
@@ -89,6 +95,13 @@ fun MainScaffold(rootNavController: NavController) {
                             )
                         },
                         label     = { Text(item.tab.label) },
+                        colors    = NavigationBarItemDefaults.colors(
+                            selectedIconColor      = MaterialTheme.colorScheme.onPrimaryContainer,
+                            selectedTextColor      = MaterialTheme.colorScheme.primary,
+                            indicatorColor         = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor    = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor    = MaterialTheme.colorScheme.onSurfaceVariant,
+                        ),
                         modifier  = Modifier.semantics {
                             contentDescription = item.contentDesc +
                                 if (selected) " Currently selected." else " Double tap to switch."
@@ -102,6 +115,10 @@ fun MainScaffold(rootNavController: NavController) {
             navController    = tabNavController,
             startDestination = BottomTab.Home.route,
             modifier         = Modifier.padding(innerPadding),
+            enterTransition  = { fadeIn(tween(220)) },
+            exitTransition   = { fadeOut(tween(150)) },
+            popEnterTransition  = { fadeIn(tween(220)) },
+            popExitTransition   = { fadeOut(tween(150)) },
         ) {
             composable(BottomTab.Home.route) {
                 HomeScreen(rootNavController = rootNavController)

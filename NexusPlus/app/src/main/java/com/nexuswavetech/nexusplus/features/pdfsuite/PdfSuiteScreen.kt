@@ -18,6 +18,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.CallMerge
+import androidx.compose.material.icons.automirrored.filled.CallSplit
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -38,11 +43,11 @@ import java.io.File
 import java.io.FileOutputStream
 
 enum class PdfTool(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    READ("Read PDF", Icons.Filled.MenuBook),
+    READ("Read PDF", Icons.AutoMirrored.Filled.MenuBook),
     IMAGES_TO_PDF("Images → PDF", Icons.Filled.PhotoLibrary),
     TEXT_TO_PDF("Text → PDF", Icons.Filled.TextFields),
-    MERGE("Merge PDFs", Icons.Filled.CallMerge),
-    SPLIT("Split PDF", Icons.Filled.CallSplit),
+    MERGE("Merge PDFs", Icons.AutoMirrored.Filled.CallMerge),
+    SPLIT("Split PDF", Icons.AutoMirrored.Filled.CallSplit),
     REORDER("Reorder Pages", Icons.Filled.SwapVert)
 }
 
@@ -70,7 +75,7 @@ fun PdfSuiteScreen(onBack: () -> Unit) {
                     )
                     Spacer(Modifier.height(8.dp))
                 }
-                items(PdfTool.values()) { tool ->
+                items(PdfTool.entries.toList()) { tool ->
                     Card(
                         onClick = { selectedTool = tool },
                         modifier = Modifier
@@ -134,9 +139,9 @@ fun ReadPdfTool(context: Context) {
         if (isLoading) Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         if (pages.isNotEmpty()) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = { if (currentPage > 0) currentPage-- }, enabled = currentPage > 0) { Icon(Icons.Filled.NavigateBefore, "Previous page") }
+                IconButton(onClick = { if (currentPage > 0) currentPage-- }, enabled = currentPage > 0) { Icon(Icons.AutoMirrored.Filled.NavigateBefore, "Previous page") }
                 Text("Page ${currentPage + 1} / ${pages.size}", style = MaterialTheme.typography.bodyMedium)
-                IconButton(onClick = { if (currentPage < pages.size - 1) currentPage++ }, enabled = currentPage < pages.size - 1) { Icon(Icons.Filled.NavigateNext, "Next page") }
+                IconButton(onClick = { if (currentPage < pages.size - 1) currentPage++ }, enabled = currentPage < pages.size - 1) { Icon(Icons.AutoMirrored.Filled.NavigateNext, "Next page") }
             }
             Card(modifier = Modifier.fillMaxWidth().semantics { contentDescription = "PDF page ${currentPage + 1}" }) {
                 Image(bitmap = pages[currentPage].asImageBitmap(), contentDescription = "PDF page ${currentPage + 1}", modifier = Modifier.fillMaxWidth())
@@ -341,7 +346,7 @@ fun MergePdfTool(context: Context) {
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 if (isLoading) { CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp); Spacer(Modifier.width(8.dp)); Text("Merging…") }
-                else           { Icon(Icons.Filled.CallMerge, null); Spacer(Modifier.width(8.dp)); Text("Merge PDFs") }
+                else           { Icon(Icons.AutoMirrored.Filled.CallMerge, null); Spacer(Modifier.width(8.dp)); Text("Merge PDFs") }
             }
         }
         if (pdfUris.size == 1) Text("Select at least 2 PDFs to merge", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -462,7 +467,7 @@ fun SplitPdfTool(context: Context) {
                 enabled = !isLoading, modifier = Modifier.fillMaxWidth()
             ) {
                 if (isLoading) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                else { Icon(Icons.Filled.CallSplit, null); Spacer(Modifier.width(8.dp)); Text("Extract Pages") }
+                else { Icon(Icons.AutoMirrored.Filled.CallSplit, null); Spacer(Modifier.width(8.dp)); Text("Extract Pages") }
             }
         }
         if (result.isNotBlank()) Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer), modifier = Modifier.fillMaxWidth()) {

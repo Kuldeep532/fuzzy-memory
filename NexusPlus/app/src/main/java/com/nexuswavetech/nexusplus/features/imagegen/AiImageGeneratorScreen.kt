@@ -173,7 +173,7 @@ fun AiImageGeneratorScreen(
             )
 
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ImageStyle.values().forEach { style ->
+                ImageStyle.entries.forEach { style ->
                     FilterChip(
                         selected = uiState.style == style,
                         onClick = { viewModel.onStyleSelected(style) },

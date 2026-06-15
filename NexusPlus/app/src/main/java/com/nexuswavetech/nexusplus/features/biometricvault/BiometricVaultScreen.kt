@@ -14,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StickyNote2
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -43,7 +44,7 @@ import org.koin.compose.koinInject
 
 enum class VaultCategory(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     PASSWORD("Passwords",  Icons.Filled.Key),
-    NOTE    ("Notes",      Icons.Filled.StickyNote2),
+    NOTE    ("Notes",      Icons.AutoMirrored.Filled.StickyNote2),
     CARD    ("Cards",      Icons.Filled.CreditCard),
     DOCUMENT("Documents",  Icons.Filled.Description),
 }
@@ -230,7 +231,7 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
                                 label    = { Text("All (${state.items.size})") },
                             )
                         }
-                        items(VaultCategory.values().toList()) { cat ->
+                        items(VaultCategory.entries.toList()) { cat ->
                             val count = state.items.count { it.category == cat }
                             FilterChip(
                                 selected = state.selectedCategory == cat,
@@ -381,7 +382,7 @@ private fun AddVaultItemSheet(onDismiss: () -> Unit, onSave: (VaultItem) -> Unit
 
             // Category selector
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(VaultCategory.values().toList()) { cat ->
+                items(VaultCategory.entries.toList()) { cat ->
                     FilterChip(
                         selected    = category == cat,
                         onClick     = { category = cat },
@@ -450,7 +451,7 @@ private fun AddVaultItemSheet(onDismiss: () -> Unit, onSave: (VaultItem) -> Unit
                             readOnly      = true,
                             label         = { Text("Document Type") },
                             trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(docExpanded) },
-                            modifier      = Modifier.menuAnchor().fillMaxWidth(),
+                            modifier      = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth(),
                         )
                         ExposedDropdownMenu(expanded = docExpanded, onDismissRequest = { docExpanded = false }, modifier = Modifier.heightIn(max = 280.dp)) {
                             documentSubTypes.forEach { type ->

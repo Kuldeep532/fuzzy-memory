@@ -140,7 +140,7 @@ fun CalculatorCenterScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            CalcTab.values().forEach { tab ->
+            CalcTab.entries.forEach { tab ->
                 FilterChip(
                     selected = uiState.tab == tab,
                     onClick = { viewModel.setTab(tab) },

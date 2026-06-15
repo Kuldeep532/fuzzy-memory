@@ -78,7 +78,7 @@ fun WifiAnalyzerScreen(onBack: () -> Unit) {
             val cached = wifiManager.scanResults
             networks  = cached.map {
                 NetworkInfo(
-                    ssid         = if (it.wifiSsid != null) it.wifiSsid.toString().removeSurrounding("\"") else it.SSID.removeSurrounding("\""),
+                    ssid         = if (it.wifiSsid != null) it.wifiSsid.toString().removeSurrounding("\"") else @Suppress("DEPRECATION") it.SSID.removeSurrounding("\""),
                     bssid        = it.BSSID,
                     rssi         = it.level,
                     frequency    = it.frequency,
@@ -98,7 +98,7 @@ fun WifiAnalyzerScreen(onBack: () -> Unit) {
                     NetworkInfo(
                         ssid         = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && it.wifiSsid != null)
                                            it.wifiSsid.toString().removeSurrounding("\"")
-                                       else it.SSID.removeSurrounding("\""),
+                                       else @Suppress("DEPRECATION") it.SSID.removeSurrounding("\""),
                         bssid        = it.BSSID,
                         rssi         = it.level,
                         frequency    = it.frequency,
@@ -149,6 +149,7 @@ fun WifiAnalyzerScreen(onBack: () -> Unit) {
             }
 
             // Connected network banner
+            @Suppress("DEPRECATION")
             val connInfo = wifiManager.connectionInfo
             if (connInfo != null && connInfo.ssid.isNotBlank() && connInfo.ssid != "<unknown ssid>") {
                 Card(

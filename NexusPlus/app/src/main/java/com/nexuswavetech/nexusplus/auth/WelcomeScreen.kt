@@ -168,7 +168,7 @@ fun WelcomeScreen(
                     contentColor         = MaterialTheme.colorScheme.onPrimary,
                     disabledContentColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.4f),
                 ),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
+                border = ButtonDefaults.outlinedButtonBorder(enabled = consentGranted).copy(
                     brush = Brush.horizontalGradient(
                         listOf(
                             MaterialTheme.colorScheme.onPrimary.copy(alpha = if (consentGranted) 0.6f else 0.25f),

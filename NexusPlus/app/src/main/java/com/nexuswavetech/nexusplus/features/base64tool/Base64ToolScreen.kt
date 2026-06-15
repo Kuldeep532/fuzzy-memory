@@ -55,7 +55,7 @@ fun Base64ToolScreen(onBack: () -> Unit) {
         ) {
             // Mode chips
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Base64Mode.values().forEach { m ->
+                Base64Mode.entries.forEach { m ->
                     FilterChip(
                         selected = mode == m,
                         onClick  = { mode = m; output = ""; error = null },

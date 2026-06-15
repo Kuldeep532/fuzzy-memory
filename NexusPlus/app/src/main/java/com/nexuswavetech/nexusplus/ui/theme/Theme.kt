@@ -6,8 +6,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
@@ -52,14 +50,14 @@ private val LightColorScheme = lightColorScheme(
     onBackground         = NexusOnSurfaceLight,
     surface              = NexusSurfaceLight,
     onSurface            = NexusOnSurfaceLight,
-    surfaceVariant       = Color(0xFFE8E8FF),
-    onSurfaceVariant     = Color(0xFF4A4A6A),
-    surfaceContainer     = Color(0xFFF0F0FF),
-    outline              = Color(0xFF9090BB),
+    surfaceVariant       = NexusSurfaceVariantLight,
+    onSurfaceVariant     = NexusOnSurfaceVariantLight,
+    surfaceContainer     = NexusSurfaceContainerLight,
+    outline              = NexusOutlineLight,
     error                = NexusError,
     onError              = NexusOnError,
-    errorContainer       = Color(0xFFFFCDD2),
-    onErrorContainer     = Color(0xFF3D1A1A),
+    errorContainer       = NexusErrorContainerLight,
+    onErrorContainer     = NexusOnErrorContainerLight,
 )
 
 /**
@@ -68,13 +66,11 @@ private val LightColorScheme = lightColorScheme(
  * Key properties:
  *  - Shape tokens:   [NexusShapes]
  *  - Typography:     [NexusTypography]
- *  - Dynamic color:  off by default (preserves Nexus brand identity)
- *                    expose a Settings toggle to set dynamicColor = true at runtime.
+ *  - Dynamic color:  off by default (preserves Nexus brand identity).
  *  - Dark mode:      follows system — no manual toggle needed.
- *  - System bars:    transparent + icon brightness matched to theme.
- *                    SideEffect ensures the assignment runs after composition,
- *                    before the frame is drawn — eliminating status-bar flicker
- *                    on theme switch.
+ *  - System bars:    MainActivity calls enableEdgeToEdge(); this SideEffect
+ *                    only adjusts the icon brightness to match the theme,
+ *                    with no deprecated color assignments.
  */
 @Composable
 fun NexusPlusTheme(
@@ -91,13 +87,10 @@ fun NexusPlusTheme(
         else      -> LightColorScheme
     }
 
-    // Flicker-free system bar sync — runs imperatively after each recomposition.
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
-            window.statusBarColor     = Color.Transparent.toArgb()
-            window.navigationBarColor = Color.Transparent.toArgb()
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars     = !darkTheme
                 isAppearanceLightNavigationBars = !darkTheme

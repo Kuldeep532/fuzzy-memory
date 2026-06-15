@@ -125,7 +125,7 @@ fun QrCodeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.semantics { contentDescription = "QR type selection" }
             ) {
-                QrType.values().forEach { type ->
+                QrType.entries.forEach { type ->
                     FilterChip(
                         selected = uiState.qrType == type,
                         onClick = { viewModel.setQrType(type) },
