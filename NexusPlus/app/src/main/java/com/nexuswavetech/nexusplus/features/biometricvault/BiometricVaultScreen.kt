@@ -33,11 +33,13 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 // ── Domain model ─────────────────────────────────────────────────────────────
 
@@ -76,9 +78,12 @@ data class VaultItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BiometricVaultScreen(onBack: () -> Unit) {
-    val context = LocalContext.current
-    val view    = LocalView.current
-    val scope   = rememberCoroutineScope()
+    val context  = LocalContext.current
+    val view     = LocalView.current
+    val scope    = rememberCoroutineScope()
+    val haptic   = koinInject<HapticHelper>()
+    val settings = koinInject<SettingsRepository>()
+    val hapticEnabled by settings.touchVibration.collectAsState(initial = true)
     // Activity-scoped so the ViewModel survives navigation back/forward within the same task.
     // Previously per-backstack-entry, which caused a re-lock on every navigate().
     val activity = context as ComponentActivity
@@ -94,14 +99,15 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
     }
 
     // Auto-lock when the app is sent to the background (ON_STOP).
-    // ON_PAUSE fires for dialogs/overlays too, so ON_STOP is the correct event.
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle) {
+    // Uses activity.lifecycle — NOT LocalLifecycleOwner — so navigating between
+    // destinations within the same Activity does NOT trigger ON_STOP and re-lock.
+    // Only true app-backgrounding (Home press, screen-off, new Activity) locks the vault.
+    DisposableEffect(activity) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP) vm.lock()
         }
-        lifecycle.addObserver(observer)
-        onDispose { lifecycle.removeObserver(observer) }
+        activity.lifecycle.addObserver(observer)
+        onDispose { activity.lifecycle.removeObserver(observer) }
     }
 
     var showAddSheet by remember { mutableStateOf(false) }
@@ -202,7 +208,7 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
                         Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                     }
 
-                    Button(onClick = ::launchBiometric, modifier = Modifier.semantics { contentDescription = "Unlock vault with biometrics or device PIN" }) {
+                    Button(onClick = { haptic.click(view, hapticEnabled); launchBiometric() }, modifier = Modifier.semantics { contentDescription = "Unlock vault with biometrics or device PIN" }) {
                         Icon(Icons.Filled.Fingerprint, null)
                         Spacer(Modifier.width(8.dp))
                         Text("Unlock Vault")
@@ -220,7 +226,7 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
             Scaffold(
                 floatingActionButton = {
                     ExtendedFloatingActionButton(
-                        onClick  = { showAddSheet = true; vm.onUserActivity() },
+                        onClick  = { haptic.click(view, hapticEnabled); showAddSheet = true; vm.onUserActivity() },
                         icon     = { Icon(Icons.Filled.Add, null) },
                         text     = { Text("Add Item") },
                         modifier = Modifier.semantics { contentDescription = "Add new vault item" },

@@ -16,10 +16,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import okhttp3.*
+import org.koin.compose.koinInject
 import org.json.JSONArray
 import org.koin.androidx.compose.koinViewModel
 import java.io.IOException
@@ -125,6 +128,9 @@ fun RadioPlayerScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
     val view = LocalView.current
+    val haptic   = koinInject<HapticHelper>()
+    val settings = koinInject<SettingsRepository>()
+    val hapticEnabled by settings.touchVibration.collectAsState(initial = true)
 
     val filteredStations = remember(uiState.stations, uiState.searchQuery) {
         uiState.stations.filter {
@@ -173,6 +179,7 @@ fun RadioPlayerScreen(
                         }
                         IconButton(
                             onClick = {
+                                haptic.click(view, hapticEnabled)
                                 viewModel.onPlayPauseToggled()
                                 val msg = if (uiState.isPlaying) "${station.name} paused" else "${station.name} playing"
                                 view.announceForAccessibility(msg)
@@ -229,6 +236,7 @@ fun RadioPlayerScreen(
                         station = station,
                         isPlaying = uiState.currentStation?.stationUuid == station.stationUuid && uiState.isPlaying,
                         onClick = {
+                            haptic.click(view, hapticEnabled)
                             view.announceForAccessibility("Playing ${station.name}")
                             viewModel.onStationSelected(station, context)
                         }

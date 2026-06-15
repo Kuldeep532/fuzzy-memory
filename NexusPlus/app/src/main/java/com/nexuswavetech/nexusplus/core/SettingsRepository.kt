@@ -33,6 +33,7 @@ class SettingsRepository(private val context: Context) {
 
         // Feature — TTS
         private val KEY_TTS_SPEECH_RATE     = floatPreferencesKey("tts_speech_rate")
+        private val KEY_TTS_LANGUAGE        = stringPreferencesKey("tts_language")
 
         // Feature — Morse Code
         private val KEY_MORSE_VIB_SPEED     = stringPreferencesKey("morse_vibration_speed")
@@ -60,8 +61,21 @@ class SettingsRepository(private val context: Context) {
         const val FONT_XLARGE = "XLARGE"
 
         // Vault auto-lock options (minutes; 0 = Never)
-        val VAULT_LOCK_OPTIONS = listOf(0, 1, 2, 5, 10, 15, 30)
+        val VAULT_LOCK_OPTIONS = listOf(0, 5, 15, 30, 60)
         const val VAULT_LOCK_DEFAULT = 5
+
+        // TTS language (BCP-47 tag; AUTO = system locale)
+        const val TTS_LANG_AUTO = "AUTO"
+        const val TTS_LANG_EN   = "en"
+        const val TTS_LANG_HI   = "hi"
+        const val TTS_LANG_ES   = "es"
+        const val TTS_LANG_FR   = "fr"
+        const val TTS_LANG_DE   = "de"
+        const val TTS_LANG_ZH   = "zh"
+        const val TTS_LANG_AR   = "ar"
+        const val TTS_LANG_PT   = "pt"
+        const val TTS_LANG_RU   = "ru"
+        const val TTS_LANG_JA   = "ja"
 
         // Morse vibration speed
         const val MORSE_SPEED_SLOW   = "SLOW"
@@ -104,6 +118,9 @@ class SettingsRepository(private val context: Context) {
     val ttsDefaultRate: Flow<Float> = context.settingsDataStore.data.map {
         it[KEY_TTS_SPEECH_RATE] ?: 1.0f
     }
+    val ttsDefaultLanguage: Flow<String> = context.settingsDataStore.data.map {
+        it[KEY_TTS_LANGUAGE] ?: TTS_LANG_AUTO
+    }
 
     // ── Feature: Morse Code ───────────────────────────────────────────────────
     val morseVibrationSpeed: Flow<String> = context.settingsDataStore.data.map {
@@ -139,6 +156,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setVaultAutoLockMinutes(v: Int)    { context.settingsDataStore.edit { it[KEY_VAULT_AUTO_LOCK_MIN] = v } }
     suspend fun setTouchVibration(v: Boolean)      { context.settingsDataStore.edit { it[KEY_TOUCH_VIBRATION] = v } }
     suspend fun setTtsDefaultRate(v: Float)        { context.settingsDataStore.edit { it[KEY_TTS_SPEECH_RATE] = v } }
+    suspend fun setTtsDefaultLanguage(v: String)   { context.settingsDataStore.edit { it[KEY_TTS_LANGUAGE] = v } }
     suspend fun setMorseVibrationSpeed(v: String)  { context.settingsDataStore.edit { it[KEY_MORSE_VIB_SPEED] = v } }
     suspend fun setBufferQuality(v: String)        { context.settingsDataStore.edit { it[KEY_BUFFER_QUALITY] = v } }
     suspend fun setTranslatorAutoDetect(v: Boolean){ context.settingsDataStore.edit { it[KEY_TRANSLATOR_AUTO] = v } }

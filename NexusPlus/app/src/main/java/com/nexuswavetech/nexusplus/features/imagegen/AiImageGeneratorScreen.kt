@@ -27,12 +27,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nexuswavetech.nexusplus.core.HapticHelper
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import java.net.URLEncoder
 
 data class AiImageUiState(
@@ -128,6 +131,9 @@ fun AiImageGeneratorScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val view = LocalView.current
+    val haptic   = koinInject<HapticHelper>()
+    val settings = koinInject<SettingsRepository>()
+    val hapticEnabled by settings.touchVibration.collectAsState(initial = true)
 
     LaunchedEffect(uiState.isGenerating) {
         if (uiState.isGenerating) view.announceForAccessibility("Generating AI image. Please wait.")
@@ -181,6 +187,7 @@ fun AiImageGeneratorScreen(
 
             Button(
                 onClick = {
+                    haptic.click(view, hapticEnabled)
                     view.announceForAccessibility("Generating image for prompt: ${uiState.prompt}")
                     viewModel.generateImage()
                 },

@@ -39,6 +39,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 
     // ── Feature settings ────────────────────────────────────────────────────
     val ttsRate             by settings.ttsDefaultRate.collectAsState(initial = 1.0f)
+    val ttsLang             by settings.ttsDefaultLanguage.collectAsState(initial = SettingsRepository.TTS_LANG_AUTO)
     val morseSpeed          by settings.morseVibrationSpeed.collectAsState(initial = SettingsRepository.MORSE_SPEED_NORMAL)
     val bufferQuality       by settings.bufferQuality.collectAsState(initial = SettingsRepository.BUFFER_NORMAL)
     val translatorAuto      by settings.translatorAutoDetect.collectAsState(initial = true)
@@ -207,7 +208,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                             modifier = Modifier.padding(start = 4.dp),
                         )
                         SettingsRepository.VAULT_LOCK_OPTIONS.forEach { mins ->
-                            val label = if (mins == 0) "Never" else "$mins min${if (mins != 1) "s" else ""}"
+                            val label = when {
+                                mins == 0  -> "Never"
+                                mins == 60 -> "1 hr"
+                                else       -> "$mins min${if (mins != 1) "s" else ""}"
+                            }
                             Row(
                                 modifier              = Modifier
                                     .fillMaxWidth()
@@ -277,6 +282,39 @@ fun SettingsScreen(onBack: () -> Unit) {
                             steps         = 27,
                             modifier      = Modifier.semantics { contentDescription = "TTS default speed slider. Current: ${"%.1f".format(ttsRate)}x" },
                         )
+
+                        Spacer(Modifier.height(4.dp))
+                        Text("Default language", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        listOf(
+                            SettingsRepository.TTS_LANG_AUTO to "Auto (System locale)",
+                            SettingsRepository.TTS_LANG_EN   to "English",
+                            SettingsRepository.TTS_LANG_HI   to "Hindi",
+                            SettingsRepository.TTS_LANG_ES   to "Spanish",
+                            SettingsRepository.TTS_LANG_FR   to "French",
+                            SettingsRepository.TTS_LANG_DE   to "German",
+                            SettingsRepository.TTS_LANG_ZH   to "Chinese",
+                            SettingsRepository.TTS_LANG_AR   to "Arabic",
+                            SettingsRepository.TTS_LANG_PT   to "Portuguese",
+                            SettingsRepository.TTS_LANG_RU   to "Russian",
+                            SettingsRepository.TTS_LANG_JA   to "Japanese",
+                        ).forEach { (value, label) ->
+                            Row(
+                                modifier              = Modifier
+                                    .fillMaxWidth()
+                                    .semantics(mergeDescendants = true) {
+                                        contentDescription = "TTS language: $label. " +
+                                            if (ttsLang == value) "Currently selected." else "Double tap to select."
+                                    },
+                                verticalAlignment     = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                                RadioButton(
+                                    selected = ttsLang == value,
+                                    onClick  = { scope.launch { settings.setTtsDefaultLanguage(value) } },
+                                )
+                            }
+                        }
                     }
                 }
             }
