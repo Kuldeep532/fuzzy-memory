@@ -138,10 +138,7 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(
             title   = "Biometric Vault",
-            onBack  = {
-                if (state.isUnlocked) vm.lock()
-                onBack()
-            },
+            onBack  = onBack,
             actions = {
                 if (state.isUnlocked) {
                     if (state.sessionSecsLeft >= 0) {
