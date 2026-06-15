@@ -15,12 +15,14 @@ jobs:
         working-directory: NexusPlus
 
     env:
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Java 17
@@ -35,95 +37,37 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Validate Required Secrets
-        shell: bash
+      - name: Validate Secrets
         run: |
-          [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ] || exit 1
-          [ -n "${{ secrets.KEYSTORE_BASE64 }}" ] || exit 1
-          [ -n "${{ secrets.KEYSTORE_PASSWORD }}" ] || exit 1
-          [ -n "${{ secrets.KEY_ALIAS }}" ] || exit 1
-          [ -n "${{ secrets.KEY_PASSWORD }}" ] || exit 1
-
-      - name: Restore google-services.json
-        shell: bash
-        run: |
-          mkdir -p app
-          printf '%s' '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
-
-      - name: Restore Release Keystore
-        shell: bash
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release.keystore
-
-          if [ ! -s release.keystore ]; then
-            echo "ERROR: release.keystore not generated"
-            exit 1
-          fi
-
-      - name: Verify Keystore
-        shell: bash
-        run: |
-          keytool -list \
-            -keystore release.keystore \
-            -storepass "$KEYSTORE_PASSWORD" \
-            > /dev/null
-
-      - name: Create key.properties
-        shell: bash
-        # Humne env ko yahan explicit pass kiya hai aur path ko optimize kiya hai
-        env:
-          K_STOREPASS: ${{ secrets.KEYSTORE_PASSWORD }}
-          K_ALIAS: ${{ secrets.KEY_ALIAS }}
-          K_PASS: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          cat > key.properties <<EOF
-          storeFile=../release.keystore
-          storePassword=$K_STOREPASS
-          keyAlias=$K_ALIAS
-          keyPassword=$K_PASS
-          EOF
-          
-          # Ek copy app folder ke andar bhi bhej dete hain taaki Gradle ko asaani se mile
-          cp key.properties app/key.properties
-          cp release.keystore app/release.keystore
-
-      - name: Verify Required Files
-        shell: bash
-        run: |
-          test -f release.keystore
-          test -f key.properties
-          test -f app/google-services.json
+          test -n "$GOOGLE_SERVICES_JSON"
+          test -n "$KEYSTORE_BASE64"
+          test -n "$KEYSTORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
 
       - name: Grant Gradle Permission
-        shell: bash
         run: chmod +x gradlew
 
       - name: Build Release APK
-        shell: bash
         run: |
-          ./gradlew assembleRelease \
-          --no-daemon \
-          --stacktrace \
-          --warning-mode none
+          ./gradlew clean assembleRelease \
+            --stacktrace \
+            --no-daemon
 
-      - name: Find APK
+      - name: Locate APK
         id: apk
-        shell: bash
         run: |
-          APK_PATH=$(find app/build/outputs -type f -name "*.apk" | sort | tail -n 1)
+          APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
 
-          if [ -z "$APK_PATH" ]; then
-            echo "ERROR: APK not found"
+          if [ -z "$APK" ]; then
+            echo "APK not found"
             exit 1
           fi
 
-          echo "APK_PATH=$APK_PATH" >> $GITHUB_ENV
-          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
+          echo "apk=$APK" >> $GITHUB_OUTPUT
 
-      - name: Upload Release APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release
-          path: ${{ steps.apk.outputs.apk_path }}
-          if-no-files-found: error
-          retention-days: 30
+          path: ${{ steps.apk.outputs.apk }}
