@@ -513,6 +513,7 @@ private fun FileItem(
 // ─── Multi-select top bar ─────────────────────────────────────────────────────
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun MultiSelectTopBar(
     count:        Int,
     total:        Int,
