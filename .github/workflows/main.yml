@@ -31,11 +31,11 @@ jobs:
 
       - name: Validate Required Secrets
         run: |
-          test -n "${{ secrets.GOOGLE_SERVICES_JSON }}" || (echo "Missing GOOGLE_SERVICES_JSON" && exit 1)
-          test -n "${{ secrets.KEYSTORE_BASE64 }}" || (echo "Missing KEYSTORE_BASE64" && exit 1)
-          test -n "${{ secrets.KEYSTORE_PASSWORD }}" || (echo "Missing KEYSTORE_PASSWORD" && exit 1)
-          test -n "${{ secrets.KEY_ALIAS }}" || (echo "Missing KEY_ALIAS" && exit 1)
-          test -n "${{ secrets.KEY_PASSWORD }}" || (echo "Missing KEY_PASSWORD" && exit 1)
+          test -n "${{ secrets.GOOGLE_SERVICES_JSON }}" || (echo "ERROR: Missing GOOGLE_SERVICES_JSON secret" && exit 1)
+          test -n "${{ secrets.KEYSTORE_BASE64 }}"      || (echo "ERROR: Missing KEYSTORE_BASE64 secret"      && exit 1)
+          test -n "${{ secrets.KEYSTORE_PASSWORD }}"    || (echo "ERROR: Missing KEYSTORE_PASSWORD secret"    && exit 1)
+          test -n "${{ secrets.KEY_ALIAS }}"            || (echo "ERROR: Missing KEY_ALIAS secret"            && exit 1)
+          test -n "${{ secrets.KEY_PASSWORD }}"         || (echo "ERROR: Missing KEY_PASSWORD secret"         && exit 1)
 
       - name: Restore google-services.json
         run: |
@@ -48,38 +48,47 @@ jobs:
 
       - name: Create key.properties
         run: |
-          cat > key.properties <<EOF_PROPERTIES
-          storeFile=release.keystore
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          EOF_PROPERTIES
+          printf 'storeFile=release.keystore\n'               > key.properties
+          printf 'storePassword=%s\n' "${{ secrets.KEYSTORE_PASSWORD }}" >> key.properties
+          printf 'keyAlias=%s\n'      "${{ secrets.KEY_ALIAS }}"         >> key.properties
+          printf 'keyPassword=%s\n'   "${{ secrets.KEY_PASSWORD }}"      >> key.properties
 
       - name: Diagnostics
         run: |
           java -version
           ./gradlew --version
-          test -f key.properties
-          test -f release.keystore
-          test -f app/google-services.json
+          test -f key.properties    && echo "key.properties OK"
+          test -f release.keystore  && echo "release.keystore OK"
+          test -f app/google-services.json && echo "google-services.json OK"
 
       - name: Grant Gradle Permission
         run: chmod +x gradlew
 
+      # Build debug first, then release — NO 'clean' between them.
+      # A fresh CI runner has no stale cache; 'clean' would delete the
+      # already-built debug APK before it can be uploaded.
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace --warning-mode all --no-daemon
 
       - name: Build Release APK
-        run: ./gradlew clean assembleRelease --stacktrace --info --warning-mode all --no-daemon
+        run: ./gradlew assembleRelease --stacktrace --warning-mode all --no-daemon
 
+      # if: always() ensures both uploads run even if one build step fails,
+      # so you always get whatever was successfully built.
       - name: Upload Debug APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Debug
           path: NexusPlus/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+          retention-days: 30
 
       - name: Upload Release APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Production
           path: NexusPlus/app/build/outputs/apk/release/*.apk
+          if-no-files-found: warn
+          retention-days: 30
