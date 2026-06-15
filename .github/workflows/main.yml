@@ -8,17 +8,6 @@ build:
 runs-on: ubuntu-latest
 
 ```
-defaults:
-  run:
-    working-directory: NexusPlus
-
-env:
-  GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-  KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-  KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-  KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-
 steps:
   - name: Checkout
     uses: actions/checkout@v4
@@ -27,43 +16,17 @@ steps:
     uses: actions/setup-java@v4
     with:
       distribution: temurin
-      java-version: 17
-
-  - name: Setup Android SDK
-    uses: android-actions/setup-android@v3
-
-  - name: Setup Gradle
-    uses: gradle/actions/setup-gradle@v4
-
-  - name: Validate Secrets
-    run: |
-      test -n "$GOOGLE_SERVICES_JSON"
-      test -n "$KEYSTORE_BASE64"
-      test -n "$KEYSTORE_PASSWORD"
-      test -n "$KEY_ALIAS"
-      test -n "$KEY_PASSWORD"
+      java-version: "17"
 
   - name: Grant Gradle Permission
-    run: chmod +x gradlew
+    run: chmod +x ./gradlew
 
-  - name: Build Release APK
+  - name: Build APK
     run: ./gradlew assembleRelease --no-daemon
-
-  - name: Locate APK
-    id: apk
-    run: |
-      APK=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
-
-      if [ -z "$APK" ]; then
-        echo "APK not found"
-        exit 1
-      fi
-
-      echo "apk=$APK" >> $GITHUB_OUTPUT
 
   - name: Upload APK
     uses: actions/upload-artifact@v4
     with:
       name: NexusPlus-Release
-      path: ${{ steps.apk.outputs.apk }}
+      path: app/build/outputs/apk/release/*.apk
 ```
