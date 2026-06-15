@@ -65,7 +65,6 @@ class NseViewModel(
     // ── Derived convenience ────────────────────────────────────────────────
 
     val isSpeaking: StateFlow<Boolean> = repository.state
-        .distinctUntilChanged()
         .let { flow ->
             MutableStateFlow(false).also { sf ->
                 flow.onEach { sf.value = it == NseState.Speaking }.launchIn(viewModelScope)
@@ -73,7 +72,6 @@ class NseViewModel(
         }
 
     val isReady: StateFlow<Boolean> = repository.state
-        .distinctUntilChanged()
         .let { flow ->
             MutableStateFlow(false).also { sf ->
                 flow.onEach { sf.value = it == NseState.Ready }.launchIn(viewModelScope)

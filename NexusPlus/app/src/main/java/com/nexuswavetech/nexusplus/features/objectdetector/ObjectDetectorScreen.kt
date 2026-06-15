@@ -1,11 +1,9 @@
 package com.nexuswavetech.nexusplus.features.objectdetector
 
 import android.Manifest
-import android.graphics.RectF
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,10 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.platform.LocalView
@@ -26,8 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.objects.ObjectDetection
-import com.google.mlkit.vision.objects.defaults.ObjectDetectorOptions
+import com.google.mlkit.vision.label.ImageLabeling
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -36,31 +30,23 @@ import com.google.accompanist.permissions.rememberPermissionState
 data class DetectedObject(
     val label: String,
     val confidence: Float,
-    val boundingBox: RectF
 )
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ObjectDetectorScreen(onBack: () -> Unit) {
-    val context       = LocalContext.current
+    val context        = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val view          = LocalView.current
+    val view           = LocalView.current
     val cameraPermission = rememberPermissionState(Manifest.permission.CAMERA)
 
     var detectedObjects by remember { mutableStateOf<List<DetectedObject>>(emptyList()) }
-    var previewSize     by remember { mutableStateOf(Size(1f, 1f)) }
 
-    // MLKit detector — streaming mode
-    val detector = remember {
-        val options = ObjectDetectorOptions.Builder()
-            .setDetectorMode(ObjectDetectorOptions.STREAM_MODE)
-            .enableMultipleObjects()
-            .enableClassification()
-            .build()
-        ObjectDetection.getClient(options)
+    val labeler = remember {
+        ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS)
     }
 
-    DisposableEffect(Unit) { onDispose { detector.close() } }
+    DisposableEffect(Unit) { onDispose { labeler.close() } }
 
     Column(Modifier.fillMaxSize()) {
         NexusTopBar(title = "Object Detector", onBack = onBack)
@@ -69,7 +55,6 @@ fun ObjectDetectorScreen(onBack: () -> Unit) {
             CameraPermissionRequest(onRequest = { cameraPermission.launchPermissionRequest() })
         } else {
             Box(Modifier.fillMaxSize()) {
-                // Camera preview
                 AndroidView(
                     factory = { ctx ->
                         PreviewView(ctx).also { pv ->
@@ -88,27 +73,13 @@ fun ObjectDetectorScreen(onBack: () -> Unit) {
                                                 proxy.image!!,
                                                 proxy.imageInfo.rotationDegrees
                                             )
-                                            detector.process(image)
-                                                .addOnSuccessListener { objects ->
-                                                    detectedObjects = objects.map { obj ->
-                                                        DetectedObject(
-                                                            label      = obj.labels.firstOrNull()?.text ?: "Object",
-                                                            confidence = obj.labels.firstOrNull()?.confidence ?: 0f,
-                                                            boundingBox = obj.boundingBox?.let {
-                                                                RectF(
-                                                                    it.left.toFloat(),
-                                                                    it.top.toFloat(),
-                                                                    it.right.toFloat(),
-                                                                    it.bottom.toFloat()
-                                                                )
-                                                            } ?: RectF()
-                                                        )
-                                                    }
-                                                    if (objects.isNotEmpty()) {
-                                                        val announcement = objects.firstOrNull()?.labels?.firstOrNull()?.text
-                                                        if (announcement != null) {
-                                                            view.announceForAccessibility("Detected: $announcement")
-                                                        }
+                                            labeler.process(image)
+                                                .addOnSuccessListener { labels ->
+                                                    detectedObjects = labels
+                                                        .filter { it.confidence >= 0.65f }
+                                                        .map { DetectedObject(it.text, it.confidence) }
+                                                    labels.firstOrNull()?.let {
+                                                        view.announceForAccessibility("Detected: ${it.text}")
                                                     }
                                                     proxy.close()
                                                 }
@@ -127,32 +98,8 @@ fun ObjectDetectorScreen(onBack: () -> Unit) {
                     },
                     modifier = Modifier
                         .fillMaxSize()
-                        .semantics { contentDescription = "Camera preview for object detection. Detected objects are announced." }
+                        .semantics { contentDescription = "Camera preview for object detection. Detected labels are announced." }
                 )
-
-                // Bounding box overlay
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .semantics { contentDescription = "${detectedObjects.size} objects detected on screen." }
-                ) {
-                    previewSize = Size(size.width, size.height)
-                    detectedObjects.forEach { obj ->
-                        val scaleX = size.width  / 480f
-                        val scaleY = size.height / 640f
-                        val left   = obj.boundingBox.left  * scaleX
-                        val top    = obj.boundingBox.top   * scaleY
-                        val width  = (obj.boundingBox.right  - obj.boundingBox.left) * scaleX
-                        val height = (obj.boundingBox.bottom - obj.boundingBox.top)  * scaleY
-
-                        drawRect(
-                            color   = Color(0xFF4A3AFF),
-                            topLeft = Offset(left, top),
-                            size    = Size(width, height),
-                            style   = Stroke(width = 4f)
-                        )
-                    }
-                }
 
                 // Labels overlay
                 Column(
@@ -219,7 +166,10 @@ private fun CameraPermissionRequest(onRequest: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Button(onClick = onRequest, modifier = Modifier.semantics { contentDescription = "Grant camera permission for object detection" }) {
+            Button(
+                onClick = onRequest,
+                modifier = Modifier.semantics { contentDescription = "Grant camera permission for object detection" }
+            ) {
                 Text("Grant Permission")
             }
         }

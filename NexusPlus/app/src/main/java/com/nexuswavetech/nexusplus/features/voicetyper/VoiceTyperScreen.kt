@@ -32,7 +32,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import java.util.Locale
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun VoiceTyperScreen(onBack: () -> Unit) {
     val context = LocalContext.current

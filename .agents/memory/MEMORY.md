@@ -7,3 +7,4 @@
 - [Duplicate hub cleanup](duplicate-hub-cleanup.md) — NexusIntelligence/Automation/DevKit were hub-within-hub duplicates; removed. 52 real features remain (after v1.2 additions).
 - [Firebase + security upgrade](firebase-security.md) — Firebase Auth/Firestore integration, biometric Health Vault, admin notifications, TOTP, Speed Test.
 - [Vault ViewModel scoping fix](vault-vm-scoping.md) — BiometricVaultViewModel must be activity-scoped to survive nav; also locks on ON_STOP lifecycle event.
+- [Kotlin 2.0 + BOM 2025.02.00 compile fixes](kotlin2-bom2025-fixes.md) — 8 real compile errors found from actual CI build logs; root causes and fixes.

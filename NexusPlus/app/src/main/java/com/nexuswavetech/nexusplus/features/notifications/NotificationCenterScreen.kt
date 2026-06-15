@@ -121,19 +121,20 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                     val icon  = categoryIcon(notif.category)
                     val color = categoryColor(notif.category)
 
-                    val dismissState = rememberDismissState(
+                    val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = { value ->
-                            if (value == DismissValue.DismissedToStart) {
+                            if (value == SwipeToDismissBoxValue.EndToStart) {
                                 scope.launch { repository.deleteNotification(notif.id) }
                                 true
                             } else false
                         }
                     )
 
-                    SwipeToDismiss(
-                        state      = dismissState,
-                        directions = setOf(DismissDirection.EndToStart),
-                        background = {
+                    SwipeToDismissBox(
+                        state                    = dismissState,
+                        enableDismissFromStartToEnd = false,
+                        enableDismissFromEndToStart = true,
+                        backgroundContent = {
                             Box(
                                 modifier         = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                                 contentAlignment = Alignment.CenterEnd,
@@ -141,60 +142,59 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                                 Icon(Icons.Filled.Delete, contentDescription = "Delete notification", tint = MaterialTheme.colorScheme.error)
                             }
                         },
-                        dismissContent = {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .semantics {
-                                        contentDescription = "${notif.title}. ${notif.body}. ${if (notif.isRead) "Read." else "Unread."} ${sdf.format(Date(notif.timestampMs))}."
-                                    },
-                                colors   = CardDefaults.cardColors(
-                                    containerColor = if (notif.isRead) MaterialTheme.colorScheme.surfaceVariant
-                                                     else MaterialTheme.colorScheme.secondaryContainer,
-                                ),
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics {
+                                    contentDescription = "${notif.title}. ${notif.body}. ${if (notif.isRead) "Read." else "Unread."} ${sdf.format(Date(notif.timestampMs))}."
+                                },
+                            colors   = CardDefaults.cardColors(
+                                containerColor = if (notif.isRead) MaterialTheme.colorScheme.surfaceVariant
+                                                 else MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Row(
+                                modifier          = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
-                                Row(
-                                    modifier          = Modifier.fillMaxWidth().padding(16.dp),
-                                    verticalAlignment = Alignment.Top,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .padding(top = 2.dp),
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .padding(top = 2.dp),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Icon(icon, null, tint = color, modifier = Modifier.size(28.dp))
-                                    }
-                                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            Text(
-                                                notif.title,
-                                                style    = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (!notif.isRead) FontWeight.Bold else FontWeight.SemiBold),
-                                                modifier = Modifier.weight(1f),
-                                            )
-                                            if (!notif.isRead) {
-                                                Badge(containerColor = MaterialTheme.colorScheme.primary) {}
-                                            }
-                                        }
-                                        Text(notif.body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                        Text(sdf.format(Date(notif.timestampMs)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
-                                    }
-                                    IconButton(
-                                        onClick  = { scope.launch { repository.markAsRead(notif.id) } },
-                                        enabled  = !notif.isRead,
-                                        modifier = Modifier.size(32.dp),
-                                    ) {
-                                        Icon(
-                                            if (notif.isRead) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
-                                            contentDescription = if (notif.isRead) "Already read" else "Mark as read",
-                                            tint               = if (notif.isRead) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    Icon(icon, null, tint = color, modifier = Modifier.size(28.dp))
+                                }
+                                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text(
+                                            notif.title,
+                                            style    = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (!notif.isRead) FontWeight.Bold else FontWeight.SemiBold),
+                                            modifier = Modifier.weight(1f),
                                         )
+                                        if (!notif.isRead) {
+                                            Badge(containerColor = MaterialTheme.colorScheme.primary) {}
+                                        }
                                     }
+                                    Text(notif.body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(sdf.format(Date(notif.timestampMs)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                                }
+                                IconButton(
+                                    onClick  = { scope.launch { repository.markAsRead(notif.id) } },
+                                    enabled  = !notif.isRead,
+                                    modifier = Modifier.size(32.dp),
+                                ) {
+                                    Icon(
+                                        if (notif.isRead) Icons.Filled.CheckCircle else Icons.Filled.RadioButtonUnchecked,
+                                        contentDescription = if (notif.isRead) "Already read" else "Mark as read",
+                                        tint               = if (notif.isRead) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
                             }
-                        },
-                    )
+                        }
+                    }
                 }
 
                 item {
@@ -209,12 +209,13 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                 }
             }
         }
+    }
     } // end Scaffold
 
     // ── Admin: Compose notification dialog ─────────────────────────────────
     if (showComposeDialog) {
         AdminNotifDialog(
-            onSend = { title, body, category ->
+            onSend = { title: String, body: String, category: String ->
                 scope.launch {
                     val sent = repository.sendAdminNotification(title, body, category, session)
                     if (!sent) { /* session expired / not admin — dialog handles state */ }
@@ -229,7 +230,7 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdminNotifDialog(
-    onSend:   (String, String, String) -> Unit,
+    onSend: (String, String, String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     var title    by remember { mutableStateOf("") }
