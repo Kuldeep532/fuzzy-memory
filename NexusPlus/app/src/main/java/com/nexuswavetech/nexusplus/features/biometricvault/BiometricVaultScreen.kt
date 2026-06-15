@@ -31,8 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexuswavetech.nexusplus.core.HapticHelper
 import com.nexuswavetech.nexusplus.core.SettingsRepository
@@ -96,18 +94,6 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
         onDispose {
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
-    }
-
-    // Auto-lock when the app is sent to the background (ON_STOP).
-    // Uses activity.lifecycle — NOT LocalLifecycleOwner — so navigating between
-    // destinations within the same Activity does NOT trigger ON_STOP and re-lock.
-    // Only true app-backgrounding (Home press, screen-off, new Activity) locks the vault.
-    DisposableEffect(activity) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP) vm.lock()
-        }
-        activity.lifecycle.addObserver(observer)
-        onDispose { activity.lifecycle.removeObserver(observer) }
     }
 
     var showAddSheet by remember { mutableStateOf(false) }

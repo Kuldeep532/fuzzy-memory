@@ -1,5 +1,8 @@
 package com.nexuswavetech.nexusplus.features.biometricvault
 
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.nexuswavetech.nexusplus.core.SettingsRepository
@@ -31,7 +34,20 @@ class BiometricVaultViewModel(
 
     private var timeoutJob: Job? = null
 
+    // Locks the vault whenever the *entire app* goes to background — active for
+    // the full lifetime of this activity-scoped ViewModel, not just while
+    // BiometricVaultScreen is composed. This prevents a window where the user
+    // unlocks the vault, navigates to another screen, backgrounds the app, and
+    // returns to find the vault still open.
+    private val appBackgroundObserver = object : DefaultLifecycleObserver {
+        override fun onStop(owner: LifecycleOwner) {
+            lock()
+        }
+    }
+
     init {
+        ProcessLifecycleOwner.get().lifecycle.addObserver(appBackgroundObserver)
+
         viewModelScope.launch {
             repository.itemsFlow.collect { items ->
                 _state.update { it.copy(items = items) }
@@ -102,8 +118,9 @@ class BiometricVaultViewModel(
     }
 
     override fun onCleared() {
-        super.onCleared()
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(appBackgroundObserver)
         timeoutJob?.cancel()
         _state.update { it.copy(isUnlocked = false) }
+        super.onCleared()
     }
 }
