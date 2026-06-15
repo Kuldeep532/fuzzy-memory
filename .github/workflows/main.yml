@@ -1,10 +1,7 @@
 name: Build NexusPlus APK
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+  workflow_dispatch: # Ab ye workflow sirf aapke manually start karne par chalega
 
 jobs:
   build:
@@ -67,10 +64,12 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace --warning-mode all --no-daemon
+        # --warning-mode none aur --quiet lagaya hai taaki faltu warnings na dikhein
+        run: ./gradlew assembleDebug --quiet --warning-mode none --no-daemon
 
       - name: Build Release APK
-        run: ./gradlew clean assembleRelease --stacktrace --info --warning-mode all --no-daemon
+        # --info hata kar --quiet aur --warning-mode none kiya hai taaki sirf main error dikhe
+        run: ./gradlew clean assembleRelease --quiet --warning-mode none --no-daemon
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
