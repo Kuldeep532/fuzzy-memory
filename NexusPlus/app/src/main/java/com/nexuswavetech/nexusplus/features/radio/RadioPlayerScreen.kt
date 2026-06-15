@@ -3,6 +3,7 @@ package com.nexuswavetech.nexusplus.features.radio
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
@@ -22,12 +24,10 @@ import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import okhttp3.*
-import org.koin.compose.koinInject
 import org.json.JSONArray
+import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
 import java.io.IOException
-
-// ── Data model ──────────────────────────────────────────────────────────────
 
 data class RadioStation(
     val stationUuid: String,
@@ -36,10 +36,22 @@ data class RadioStation(
     val country: String,
     val language: String,
     val tags: String,
-    val votes: Int
+    val votes: Int,
+    val isFavorite: Boolean = false
 )
 
-// ── ViewModel ────────────────────────────────────────────────────────────────
+enum class IndianRadioCategory(val label: String, val tag: String) {
+    ALL("All 🇮🇳", ""),
+    HINDI("Hindi", "hindi"),
+    NEWS("News", "news"),
+    DEVOTIONAL("Devotional", "devotional"),
+    CLASSICAL("Classical", "classical"),
+    BOLLYWOOD("Bollywood", "bollywood"),
+    REGIONAL("Regional", "regional"),
+    ENGLISH("English", "english"),
+    PUNJABI("Punjabi", "punjabi"),
+    TAMIL("Tamil", "tamil")
+}
 
 data class RadioUiState(
     val stations: List<RadioStation> = emptyList(),
@@ -47,7 +59,9 @@ data class RadioUiState(
     val isPlaying: Boolean = false,
     val isLoading: Boolean = false,
     val searchQuery: String = "",
-    val error: String? = null
+    val selectedCategory: IndianRadioCategory = IndianRadioCategory.ALL,
+    val error: String? = null,
+    val favoriteIds: Set<String> = emptySet()
 )
 
 class RadioViewModel : ViewModel() {
@@ -58,33 +72,38 @@ class RadioViewModel : ViewModel() {
     private val client = OkHttpClient()
     private var exoPlayer: androidx.media3.exoplayer.ExoPlayer? = null
 
-    init { fetchStations() }
+    init { fetchIndianStations() }
 
-    fun fetchStations(query: String = "top100") {
+    fun fetchIndianStations(category: IndianRadioCategory = _uiState.value.selectedCategory) {
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            val url = "https://at1.api.radio-browser.info/json/stations/search" +
-                "?limit=50&order=votes&reverse=true&hidebroken=true"
-            val request = Request.Builder().url(url).build()
+            _uiState.update { it.copy(isLoading = true, error = null, selectedCategory = category) }
             try {
+                val tagParam = if (category.tag.isNotBlank()) "&tag=${category.tag}" else ""
+                val url = "https://at1.api.radio-browser.info/json/stations/search" +
+                    "?limit=100&countrycode=IN&order=votes&reverse=true&hidebroken=true$tagParam"
+                val request = Request.Builder().url(url).build()
                 val response = client.newCall(request).execute()
                 val body = response.body?.string() ?: "[]"
                 val json = JSONArray(body)
+                val favorites = _uiState.value.favoriteIds
                 val stations = (0 until json.length()).map { i ->
                     val obj = json.getJSONObject(i)
                     RadioStation(
                         stationUuid = obj.optString("stationuuid"),
-                        name = obj.optString("name"),
-                        url = obj.optString("url_resolved"),
-                        country = obj.optString("country"),
-                        language = obj.optString("language"),
-                        tags = obj.optString("tags"),
-                        votes = obj.optInt("votes")
+                        name        = obj.optString("name").trim(),
+                        url         = obj.optString("url_resolved"),
+                        country     = obj.optString("country"),
+                        language    = obj.optString("language"),
+                        tags        = obj.optString("tags"),
+                        votes       = obj.optInt("votes"),
+                        isFavorite  = obj.optString("stationuuid") in favorites
                     )
-                }.filter { it.url.isNotBlank() }
+                }.filter { it.url.isNotBlank() && it.name.isNotBlank() }
                 _uiState.update { it.copy(stations = stations, isLoading = false) }
             } catch (e: IOException) {
-                _uiState.update { it.copy(error = "Network error: ${e.message}", isLoading = false) }
+                _uiState.update { it.copy(error = "Could not load Indian radio stations. Check your connection.", isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Failed: ${e.message}", isLoading = false) }
             }
         }
     }
@@ -107,8 +126,15 @@ class RadioViewModel : ViewModel() {
         _uiState.update { it.copy(isPlaying = player.isPlaying) }
     }
 
-    fun onSearchChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
+    fun onSearchChanged(query: String) = _uiState.update { it.copy(searchQuery = query) }
+
+    fun toggleFavorite(stationUuid: String) {
+        val current = _uiState.value.favoriteIds.toMutableSet()
+        if (stationUuid in current) current.remove(stationUuid) else current.add(stationUuid)
+        val updated = _uiState.value.stations.map { s ->
+            s.copy(isFavorite = s.stationUuid in current)
+        }
+        _uiState.update { it.copy(favoriteIds = current, stations = updated) }
     }
 
     override fun onCleared() {
@@ -118,30 +144,59 @@ class RadioViewModel : ViewModel() {
     }
 }
 
-// ── Screen ───────────────────────────────────────────────────────────────────
-
 @Composable
 fun RadioPlayerScreen(
     onBack: () -> Unit,
     viewModel: RadioViewModel = koinViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val view = LocalView.current
+    val uiState  by viewModel.uiState.collectAsState()
+    val context  = LocalContext.current
+    val view     = LocalView.current
     val haptic   = koinInject<HapticHelper>()
     val settings = koinInject<SettingsRepository>()
     val hapticEnabled by settings.touchVibration.collectAsState(initial = true)
 
-    val filteredStations = remember(uiState.stations, uiState.searchQuery) {
-        uiState.stations.filter {
-            uiState.searchQuery.isBlank() ||
-            it.name.contains(uiState.searchQuery, ignoreCase = true) ||
-            it.country.contains(uiState.searchQuery, ignoreCase = true)
+    var showFavoritesOnly by remember { mutableStateOf(false) }
+
+    val displayedStations = remember(uiState.stations, uiState.searchQuery, showFavoritesOnly) {
+        uiState.stations.filter { station ->
+            val matchesSearch = uiState.searchQuery.isBlank() ||
+                station.name.contains(uiState.searchQuery, ignoreCase = true) ||
+                station.language.contains(uiState.searchQuery, ignoreCase = true) ||
+                station.tags.contains(uiState.searchQuery, ignoreCase = true)
+            val matchesFav = !showFavoritesOnly || station.isFavorite
+            matchesSearch && matchesFav
         }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NexusTopBar(title = "Online Radio", onBack = onBack)
+        NexusTopBar(
+            title = "Indian Radio",
+            onBack = onBack,
+            actions = {
+                IconButton(
+                    onClick = {
+                        haptic.click(view, hapticEnabled)
+                        showFavoritesOnly = !showFavoritesOnly
+                    },
+                    modifier = Modifier.semantics {
+                        contentDescription = if (showFavoritesOnly) "Show all stations" else "Show favorites only"
+                    }
+                ) {
+                    Icon(
+                        if (showFavoritesOnly) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = null,
+                        tint = if (showFavoritesOnly) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                IconButton(
+                    onClick = { viewModel.fetchIndianStations(uiState.selectedCategory) },
+                    modifier = Modifier.semantics { contentDescription = "Refresh stations" }
+                ) {
+                    Icon(Icons.Filled.Refresh, contentDescription = null)
+                }
+            }
+        )
 
         // Now playing bar
         AnimatedVisibility(visible = uiState.currentStation != null) {
@@ -151,46 +206,32 @@ fun RadioPlayerScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                         .semantics {
-                            contentDescription = "Now playing: ${station.name} from ${station.country}. " +
-                                if (uiState.isPlaying) "Playing. Tap play button to pause." else "Paused. Tap play button to resume."
+                            contentDescription = "Now playing: ${station.name}. ${if (uiState.isPlaying) "Playing." else "Paused."}"
                         },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                 ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        Icon(Icons.Filled.Radio, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Spacer(Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = station.name,
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = station.country,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
+                            Text(station.name, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onPrimaryContainer, maxLines = 1)
+                            if (station.language.isNotBlank()) Text(station.language, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                         }
                         IconButton(
                             onClick = {
                                 haptic.click(view, hapticEnabled)
                                 viewModel.onPlayPauseToggled()
-                                val msg = if (uiState.isPlaying) "${station.name} paused" else "${station.name} playing"
-                                view.announceForAccessibility(msg)
+                                view.announceForAccessibility(if (uiState.isPlaying) "Paused ${station.name}" else "Playing ${station.name}")
                             },
-                            modifier = Modifier.semantics {
-                                contentDescription = if (uiState.isPlaying) "Pause ${station.name}" else "Play ${station.name}"
-                            }
+                            modifier = Modifier.semantics { contentDescription = if (uiState.isPlaying) "Pause" else "Play" }
                         ) {
                             Icon(
-                                imageVector = if (uiState.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                                contentDescription = null,
+                                if (uiState.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
@@ -199,106 +240,160 @@ fun RadioPlayerScreen(
             }
         }
 
+        // Category filter chips
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.semantics { contentDescription = "Radio category filter. Swipe to browse categories." }
+        ) {
+            items(IndianRadioCategory.entries.toList()) { category ->
+                FilterChip(
+                    selected = uiState.selectedCategory == category,
+                    onClick  = {
+                        haptic.click(view, hapticEnabled)
+                        viewModel.fetchIndianStations(category)
+                    },
+                    label = { Text(category.label, style = MaterialTheme.typography.labelSmall) }
+                )
+            }
+        }
+
         // Search
         OutlinedTextField(
             value = uiState.searchQuery,
             onValueChange = viewModel::onSearchChanged,
-            label = { Text("Search stations…") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            label = { Text("Search Indian stations…") },
+            leadingIcon = { Icon(Icons.Filled.Search, null) },
+            trailingIcon = {
+                if (uiState.searchQuery.isNotBlank()) {
+                    IconButton(onClick = { viewModel.onSearchChanged("") }) {
+                        Icon(Icons.Filled.Clear, "Clear search")
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .semantics { contentDescription = "Search radio stations by name or country." },
+                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .semantics { contentDescription = "Search Indian radio stations by name, language or genre." },
             singleLine = true
         )
 
-        if (uiState.isLoading) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    modifier = Modifier.semantics { contentDescription = "Loading radio stations." }
-                )
-            }
-        } else if (uiState.error != null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(uiState.error!!, color = MaterialTheme.colorScheme.error)
-                    Spacer(Modifier.height(12.dp))
-                    Button(onClick = { viewModel.fetchStations() }) { Text("Retry") }
+        when {
+            uiState.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    CircularProgressIndicator(modifier = Modifier.semantics { contentDescription = "Loading Indian radio stations." })
+                    Text("Loading Indian stations…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(filteredStations, key = { it.stationUuid }) { station ->
-                    StationListItem(
-                        station = station,
-                        isPlaying = uiState.currentStation?.stationUuid == station.stationUuid && uiState.isPlaying,
-                        onClick = {
-                            haptic.click(view, hapticEnabled)
-                            view.announceForAccessibility("Playing ${station.name}")
-                            viewModel.onStationSelected(station, context)
-                        }
+            uiState.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(32.dp)
+                ) {
+                    Icon(Icons.Filled.WifiOff, null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.error)
+                    Text(uiState.error!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
+                    Button(onClick = { viewModel.fetchIndianStations() }) { Text("Retry") }
+                }
+            }
+            displayedStations.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    if (showFavoritesOnly) "No favorites yet. Tap ♥ on a station to add." else "No stations found.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            else -> {
+                Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    Text(
+                        "${displayedStations.size} station${if (displayedStations.size != 1) "s" else ""}",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun StationListItem(station: RadioStation, isPlaying: Boolean, onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .semantics {
-                contentDescription = "${station.name} radio station from ${station.country}." +
-                    if (isPlaying) " Currently playing." else " Double tap to play."
-            },
-        colors = CardDefaults.cardColors(
-            containerColor = if (isPlaying)
-                MaterialTheme.colorScheme.secondaryContainer
-            else
-                MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Filled.GraphicEq else Icons.Filled.Radio,
-                contentDescription = null,
-                tint = if (isPlaying) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(28.dp)
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = station.name,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                    maxLines = 1
-                )
-                Text(
-                    text = buildString {
-                        if (station.country.isNotBlank()) append(station.country)
-                        if (station.language.isNotBlank()) append(" • ${station.language}")
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
-                )
-            }
-            if (station.votes > 0) {
-                Text(
-                    text = "♥ ${station.votes}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
+                LazyColumn(
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(displayedStations, key = { it.stationUuid }) { station ->
+                        val isActive = uiState.currentStation?.stationUuid == station.stationUuid
+                        Card(
+                            onClick = {
+                                haptic.click(view, hapticEnabled)
+                                view.announceForAccessibility("Playing ${station.name}")
+                                viewModel.onStationSelected(station, context)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .semantics {
+                                    contentDescription = "${station.name}. ${station.language.ifBlank { "Indian" }} language." +
+                                        if (isActive) " Currently playing." else " Double tap to play."
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isActive) MaterialTheme.colorScheme.secondaryContainer
+                                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    if (isActive && uiState.isPlaying) Icons.Filled.GraphicEq else Icons.Filled.Radio,
+                                    null,
+                                    tint = if (isActive) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        station.name,
+                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                        maxLines = 1,
+                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                    )
+                                    val detail = buildString {
+                                        if (station.language.isNotBlank()) append(station.language)
+                                        val firstTag = station.tags.split(",").firstOrNull { it.trim().isNotBlank() }
+                                        if (firstTag != null) append(" · $firstTag")
+                                    }
+                                    if (detail.isNotBlank()) {
+                                        Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                                    }
+                                }
+                                if (station.votes > 0) {
+                                    Text(
+                                        "♥ ${station.votes}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        haptic.click(view, hapticEnabled)
+                                        viewModel.toggleFavorite(station.stationUuid)
+                                        view.announceForAccessibility(
+                                            if (station.isFavorite) "Removed ${station.name} from favorites"
+                                            else "Added ${station.name} to favorites"
+                                        )
+                                    },
+                                    modifier = Modifier.size(36.dp).semantics {
+                                        contentDescription = if (station.isFavorite) "Remove ${station.name} from favorites"
+                                                             else "Add ${station.name} to favorites"
+                                    }
+                                ) {
+                                    Icon(
+                                        if (station.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                        null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = if (station.isFavorite) MaterialTheme.colorScheme.error
+                                               else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

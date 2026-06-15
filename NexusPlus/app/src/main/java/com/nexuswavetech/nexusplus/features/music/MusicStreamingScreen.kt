@@ -232,7 +232,7 @@ fun MusicStreamingScreen(
     LaunchedEffect(Unit) { viewModel.initController(context) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NexusTopBar(title = "Music Player", onBack = onBack)
+        NexusTopBar(title = "Nexus Media Player", onBack = onBack)
 
         // Mode tabs
         Row(

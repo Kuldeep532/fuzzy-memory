@@ -19,17 +19,19 @@ sealed class Screen(val route: String) {
     object NotificationCenter : Screen("notifications")
 
     // ── Media feature screens ───────────────────────────────────────────────
-    object RadioPlayer      : Screen("feature/radio")
-    object AiImageGenerator : Screen("feature/ai_image")
-    object NexusTts         : Screen("feature/tts")
-    object IptvPlayer       : Screen("feature/iptv")
-    object MusicStreaming    : Screen("feature/music")
-    object SmartImageEditor : Screen("feature/smart_image_editor")
+    object RadioPlayer       : Screen("feature/radio")
+    object AiImageGenerator  : Screen("feature/ai_image")
+    object NexusTts          : Screen("feature/tts")
+    object IptvPlayer        : Screen("feature/iptv")
+    object MusicStreaming     : Screen("feature/music")
+    object SmartImageEditor  : Screen("feature/smart_image_editor")
+    object NexusImageViewer  : Screen("feature/image_viewer")
 
     // ── Document feature screens ────────────────────────────────────────────
-    object PdfSuite  : Screen("feature/pdf_suite")
-    object PdfReader : Screen("feature/pdf")
-    object DocHub    : Screen("feature/doc_hub")
+    object PdfSuite         : Screen("feature/pdf_suite")
+    object PdfReader        : Screen("feature/pdf")
+    object DocHub           : Screen("feature/doc_hub")
+    object NexusDocReader   : Screen("feature/nexus_doc_reader")
 
     // ── Security feature screens ────────────────────────────────────────────
     object EncrypterDecrypter : Screen("feature/encrypter_decrypter")
@@ -70,6 +72,7 @@ sealed class Screen(val route: String) {
     // ── AI / Smart Tools feature screens ────────────────────────────────────
     object ObjectDetector : Screen("feature/object_detector")
     object ColorDetector  : Screen("feature/color_detector")
+    object AiraAi         : Screen("feature/aira_ai")
 
     // ── Forms ───────────────────────────────────────────────────────────────
     object FormX : Screen("feature/form_x")

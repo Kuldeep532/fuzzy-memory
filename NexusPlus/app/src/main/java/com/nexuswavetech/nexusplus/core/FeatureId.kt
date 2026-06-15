@@ -16,6 +16,7 @@ enum class FeatureId {
     IPTV_PLAYER,
     MUSIC_STREAMING,
     SMART_IMAGE_EDITOR,
+    NEXUS_IMAGE_VIEWER,
 
     // ── Productivity ──────────────────────────────────────────────────────
     PDF_SUITE,
@@ -25,6 +26,7 @@ enum class FeatureId {
     JSON_FORMATTER,
     REGEX_TESTER,
     DOC_HUB,
+    NEXUS_DOC_READER,
 
     // ── Utilities ─────────────────────────────────────────────────────────
     NEXUS_TTS,
@@ -55,6 +57,9 @@ enum class FeatureId {
     BARCODE_GENERATOR,
     TASK_MANAGER,
     SCREEN_RECORDER,
+
+    // ── AI ────────────────────────────────────────────────────────────────
+    AIRA_AI,
 
     // ── Security & Privacy ────────────────────────────────────────────────
     BIOMETRIC_VAULT,

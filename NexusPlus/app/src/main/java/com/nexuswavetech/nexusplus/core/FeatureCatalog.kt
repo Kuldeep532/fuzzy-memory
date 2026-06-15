@@ -41,12 +41,22 @@ object FeatureCatalog {
         ),
         FeatureItem(
             id          = FeatureId.MUSIC_STREAMING,
-            name        = "Music Player",
-            description = "Stream online music or play local audio files on-device",
-            icon        = Icons.Filled.MusicNote,
+            name        = "Nexus Media Player",
+            description = "Stream online music or play local audio & video files on-device",
+            icon        = Icons.Filled.PlayCircleFilled,
             route       = Screen.MusicStreaming.route,
             category    = FeatureCategory.MEDIA,
-            keywords    = listOf("music", "audio", "player", "stream", "song", "playlist", "mp3"),
+            keywords    = listOf("music", "audio", "video", "player", "stream", "song", "playlist", "mp3", "media"),
+        ),
+        FeatureItem(
+            id          = FeatureId.NEXUS_IMAGE_VIEWER,
+            name        = "Nexus Image Viewer",
+            description = "View, zoom, rotate and share images with pinch-to-zoom support",
+            icon        = Icons.Filled.Photo,
+            route       = Screen.NexusImageViewer.route,
+            category    = FeatureCategory.MEDIA,
+            keywords    = listOf("image", "viewer", "photo", "gallery", "zoom", "rotate", "jpg", "png"),
+            isNew       = true,
         ),
         FeatureItem(
             id          = FeatureId.SMART_IMAGE_EDITOR,
@@ -122,6 +132,16 @@ object FeatureCatalog {
             route       = Screen.DocHub.route,
             category    = FeatureCategory.PRODUCTIVITY,
             keywords    = listOf("document", "storage", "organise", "files", "hub", "manage"),
+        ),
+        FeatureItem(
+            id          = FeatureId.NEXUS_DOC_READER,
+            name        = "Nexus Document Reader",
+            description = "Read PDF, TXT, DOC, DOCX and more with built-in TTS support",
+            icon        = Icons.Filled.MenuBook,
+            route       = Screen.NexusDocReader.route,
+            category    = FeatureCategory.PRODUCTIVITY,
+            keywords    = listOf("document", "reader", "pdf", "doc", "txt", "read", "tts", "nexus"),
+            isNew       = true,
         ),
 
         // ── Utilities ─────────────────────────────────────────────────────────
@@ -241,6 +261,18 @@ object FeatureCatalog {
             route       = Screen.FormX.route,
             category    = FeatureCategory.UTILITIES,
             keywords    = listOf("form", "input", "validate", "email", "password", "field"),
+            isNew       = true,
+        ),
+
+        // ── AI ────────────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.AIRA_AI,
+            name        = "Aira AI",
+            description = "Chat with Aira — your intelligent AI assistant, powered by Pollinations.ai",
+            icon        = Icons.Filled.AutoAwesome,
+            route       = Screen.AiraAi.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("ai", "chat", "aira", "assistant", "gpt", "intelligence", "pollinations", "nexus"),
             isNew       = true,
         ),
 

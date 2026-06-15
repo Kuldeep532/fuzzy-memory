@@ -52,7 +52,11 @@ enum class IptvRegion(val label: String, val m3uUrl: String) {
     INDIA("🇮🇳 India",
         "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in.m3u"),
     HINDI_NEWS("📺 Hindi News",
-        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in.m3u"),
+        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in_news.m3u"),
+    KIDS("👶 Kids & Family",
+        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in_entertainment.m3u"),
+    SPORTS("⚽ Sports",
+        "https://raw.githubusercontent.com/iptv-org/iptv/master/streams/in_sports.m3u"),
     GLOBAL("🌍 Global (Top)",
         "https://raw.githubusercontent.com/iptv-org/iptv/master/index.nsfw.m3u"),
     CUSTOM("🔗 Custom URL", "")

@@ -16,6 +16,7 @@ import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesViewModel
 import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultRepository
 import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultViewModel
+import com.nexuswavetech.nexusplus.features.aira.AiraViewModel
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageViewModel
 import com.nexuswavetech.nexusplus.features.iptv.IptvViewModel
 import com.nexuswavetech.nexusplus.features.music.MusicViewModel
@@ -79,6 +80,7 @@ val appModule = module {
     viewModel { AiImageViewModel() }
     viewModel { IptvViewModel() }
     viewModel { MusicViewModel() }
+    viewModel { AiraViewModel() }
 
     // Security
     viewModel { EncrypterDecrypterViewModel() }

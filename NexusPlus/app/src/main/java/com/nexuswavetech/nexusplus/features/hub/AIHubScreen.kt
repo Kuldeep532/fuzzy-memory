@@ -37,6 +37,7 @@ fun AIHubScreen(
     var gatekeeperBlocked by remember { mutableStateOf<String?>(null) }
 
     val aiFeatureIds = setOf(
+        FeatureId.AIRA_AI,
         FeatureId.AI_IMAGE_GENERATOR,
         FeatureId.NEXUS_TTS,
         FeatureId.TEXT_TRANSLATOR,
@@ -57,7 +58,7 @@ fun AIHubScreen(
         HubHeader(title = "AI & Intelligence", icon = FeatureHub.AI.icon, description = FeatureHub.AI.description, color = FeatureHub.AI.color, count = features.size)
 
         Text(
-            text     = "AI & Voice Tools",
+            text     = "AI & Voice Tools (incl. Aira AI)",
             style    = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).semantics { heading() },
         )

@@ -1,0 +1,6 @@
+- [NseRepository API](nse-repo-api.md) — speak/stop/initialise are NOT suspend; observe nseRepo.state (StateFlow) for speaking status
+- [FileManager viewer routing](filemanager-routing.md) — FileManagerScreen has onOpenImageViewer/onOpenDocReader lambda params; NavHost passes navigate lambdas
+- [Nexus Plus feature names](nexusplus-names.md) — canonical names: NSE=Nexus Speech Engine, Music Player→Nexus Media Player, new: Aira AI, Nexus Image Viewer, Nexus Document Reader
+- [FeatureCatalog icons](nexusplus-names.md) — PlayCircleFilled=Nexus Media Player, MenuBook=NexusDocReader, AutoAwesome=Aira AI, Photo=NexusImageViewer
+- [AppModule viewModel registration](nexusplus-names.md) — all new ViewModels (AiraViewModel, RadioViewModel) use `viewModel { }` not singleton
+- [ML Kit Object Detection](nexusplus-names.md) — intentionally removed from build.gradle.kts; do NOT re-add (caused build failures)

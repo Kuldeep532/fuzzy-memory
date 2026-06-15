@@ -15,12 +15,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import com.nexuswavetech.nexusplus.ui.components.SocialMediaLinksSection
 
 @Composable
 fun AboutUsScreen(onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
-        NexusTopBar(title = "About Us", onBack = onBack)
+        NexusTopBar(title = "About", onBack = onBack)
 
         Column(
             modifier = Modifier
@@ -30,11 +29,10 @@ fun AboutUsScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // App identity
             Icon(
                 Icons.Filled.AutoAwesome,
                 contentDescription = null,
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
 
@@ -42,43 +40,19 @@ fun AboutUsScreen(onBack: () -> Unit) {
                 text = "Nexus Plus",
                 style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold),
                 color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.semantics { heading() }
             )
 
             Text(
-                text = "Version 1.0.0",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Version 1.2.0",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
 
             HorizontalDivider()
 
-            LegalSection(
-                title = "Our Vision",
-                content = "Nexus Plus was built to be the ultimate all-in-one digital toolkit — " +
-                    "a thoughtfully designed suite of 30+ features that respect every user, " +
-                    "including those who rely on assistive technologies like TalkBack. " +
-                    "We believe powerful software should be universally accessible."
-            )
-
-            LegalSection(
-                title = "Accessibility Commitment",
-                content = "Every screen, every button, and every interaction in Nexus Plus is " +
-                    "engineered for full TalkBack screen reader compatibility. We follow " +
-                    "WCAG guidelines and Material Design 3 accessibility standards throughout " +
-                    "the entire application. Accessibility is never an afterthought — it is " +
-                    "a core design principle."
-            )
-
-            LegalSection(
-                title = "Technology",
-                content = "Nexus Plus is built natively with Jetpack Compose and Material Design 3, " +
-                    "targeting Android with a modular Compose Multiplatform architecture ready " +
-                    "for future cross-platform compilation. The codebase is designed for " +
-                    "long-term maintainability and gradual feature expansion."
-            )
-
-            // Developer attribution — required on About Us per spec
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -86,38 +60,34 @@ fun AboutUsScreen(onBack: () -> Unit) {
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier.padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Developed and Maintained by",
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = "Developer",
+                        style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Nexus Wave Technologies",
+                        text = "Kuldeep Kumar Yadav",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.semantics { heading() }
                     )
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Crafting accessible, modular, and intelligent Android experiences.",
-                        style = MaterialTheme.typography.bodySmall,
+                        text = "Nexus Wave Technologies",
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center
                     )
                 }
             }
 
-            HorizontalDivider()
-
-            // Social links — required at bottom of About Us per spec
-            SocialMediaLinksSection(modifier = Modifier.fillMaxWidth())
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }

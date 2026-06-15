@@ -62,6 +62,9 @@ import com.nexuswavetech.nexusplus.features.barcode.BarcodeGeneratorScreen
 import com.nexuswavetech.nexusplus.features.nexushealthvault.NexusHealthVaultScreen
 import com.nexuswavetech.nexusplus.features.totp.TotpAuthenticatorScreen
 import com.nexuswavetech.nexusplus.features.speedtest.NetworkSpeedTestScreen
+import com.nexuswavetech.nexusplus.features.aira.AiraAiScreen
+import com.nexuswavetech.nexusplus.features.imageviewer.NexusImageViewerScreen
+import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
@@ -165,14 +168,38 @@ fun NexusNavHost() {
         composable(Screen.WifiAnalyzer.route)      { WifiAnalyzerScreen     (onBack = { navController.popBackStack() }) }
         composable(Screen.VoiceRecorder.route)     { VoiceRecorderScreen    (onBack = { navController.popBackStack() }) }
         composable(Screen.ClipboardManager.route)  { ClipboardManagerScreen (onBack = { navController.popBackStack() }) }
-        composable(Screen.FileManager.route)       { FileManagerScreen      (onBack = { navController.popBackStack() }) }
+        composable(Screen.FileManager.route) {
+            FileManagerScreen(
+                onBack             = { navController.popBackStack() },
+                onOpenImageViewer  = { uri ->
+                    navController.navigate(Screen.NexusImageViewer.route)
+                },
+                onOpenDocReader    = { uri ->
+                    navController.navigate(Screen.NexusDocReader.route)
+                }
+            )
+        }
         composable(Screen.AlarmClock.route)        { AlarmClockScreen       (onBack = { navController.popBackStack() }) }
         composable(Screen.BarcodeGenerator.route)  { BarcodeGeneratorScreen (onBack = { navController.popBackStack() }) }
         composable(Screen.Weather.route)           { StubFeatureScreen(featureKey = "weather", onBack = { navController.popBackStack() }) }
 
         // ── AI / Smart Tools ──────────────────────────────────────────────
-        composable(Screen.ObjectDetector.route) { ObjectDetectorScreen(onBack = { navController.popBackStack() }) }
-        composable(Screen.ColorDetector.route)  { ColorDetectorScreen (onBack = { navController.popBackStack() }) }
+        composable(Screen.ObjectDetector.route)  { ObjectDetectorScreen  (onBack = { navController.popBackStack() }) }
+        composable(Screen.ColorDetector.route)   { ColorDetectorScreen   (onBack = { navController.popBackStack() }) }
+        composable(Screen.AiraAi.route)          { AiraAiScreen          (onBack = { navController.popBackStack() }) }
+
+        // ── Image Viewer ──────────────────────────────────────────────────
+        composable(Screen.NexusImageViewer.route) {
+            NexusImageViewerScreen(
+                onBack       = { navController.popBackStack() },
+                onOpenEditor = { navController.navigate(Screen.SmartImageEditor.route) }
+            )
+        }
+
+        // ── Document Reader ───────────────────────────────────────────────
+        composable(Screen.NexusDocReader.route) {
+            NexusDocumentReaderScreen(onBack = { navController.popBackStack() })
+        }
 
         // ── Forms ─────────────────────────────────────────────────────────
         composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }

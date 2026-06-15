@@ -1,8 +1,11 @@
 package com.nexuswavetech.nexusplus.features.filemanager
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.webkit.MimeTypeMap
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,11 +18,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
@@ -50,9 +55,32 @@ private fun getFileIcon(file: File): ImageVector = when {
     else                                          -> Icons.AutoMirrored.Filled.InsertDriveFile
 }
 
+private fun openFileWithSystem(context: android.content.Context, file: File) {
+    runCatching {
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+        val ext = file.extension.lowercase()
+        val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "*/*"
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, mime)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(Intent.createChooser(intent, "Open with"))
+    }
+}
+
+private val IMAGE_EXTS  = setOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "heic")
+private val AUDIO_EXTS  = setOf("mp3", "wav", "flac", "aac", "ogg", "m4a", "opus")
+private val VIDEO_EXTS  = setOf("mp4", "mkv", "avi", "mov", "webm", "m4v", "3gp")
+private val DOC_EXTS    = setOf("pdf", "txt", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "rtf", "md", "log")
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun FileManagerScreen(onBack: () -> Unit) {
+fun FileManagerScreen(
+    onBack: () -> Unit,
+    onOpenImageViewer: ((Uri) -> Unit)? = null,
+    onOpenDocReader: ((Uri) -> Unit)? = null
+) {
+    val context = LocalContext.current
     val requiredPermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         listOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_AUDIO)
     } else {
@@ -136,6 +164,23 @@ fun FileManagerScreen(onBack: () -> Unit) {
                                 if (file.isDirectory) {
                                     pathStack.add(currentDir)
                                     currentDir = file
+                                } else {
+                                    val ext = file.extension.lowercase()
+                                    when {
+                                        ext in IMAGE_EXTS && onOpenImageViewer != null -> {
+                                            runCatching {
+                                                val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                                                onOpenImageViewer(uri)
+                                            }.onFailure { openFileWithSystem(context, file) }
+                                        }
+                                        ext in DOC_EXTS && onOpenDocReader != null -> {
+                                            runCatching {
+                                                val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                                                onOpenDocReader(uri)
+                                            }.onFailure { openFileWithSystem(context, file) }
+                                        }
+                                        else -> openFileWithSystem(context, file)
+                                    }
                                 }
                             }
                             .padding(horizontal = 16.dp, vertical = 10.dp)

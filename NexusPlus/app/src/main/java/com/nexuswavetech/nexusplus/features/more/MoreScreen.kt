@@ -22,7 +22,7 @@ import com.nexuswavetech.nexusplus.core.displayName
 import com.nexuswavetech.nexusplus.core.isGuest
 import com.nexuswavetech.nexusplus.features.notifications.NotificationRepository
 import com.nexuswavetech.nexusplus.navigation.Screen
-import com.nexuswavetech.nexusplus.ui.components.SocialMediaLinksSection
+import com.nexuswavetech.nexusplus.ui.components.HelpSection
 import org.koin.compose.koinInject
 
 @Composable
@@ -134,10 +134,10 @@ fun MoreScreen(rootNavController: NavController) {
         item {
             MoreMenuItem(
                 icon        = Icons.Filled.Info,
-                title       = "About Us",
+                title       = "About",
                 subtitle    = "App info and developer details",
                 onClick     = { rootNavController.navigate(Screen.AboutUs.route) },
-                contentDesc = "About Us. Opens app information and Nexus Wave Technologies developer details.",
+                contentDesc = "About. Opens app information and developer details.",
             )
         }
 
@@ -161,10 +161,10 @@ fun MoreScreen(rootNavController: NavController) {
             )
         }
 
-        // ── Connect ───────────────────────────────────────────────────────
-        item { SectionHeader("Connect with Nexus Wave") }
+        // ── Help ──────────────────────────────────────────────────────────
+        item { SectionHeader("Help") }
 
-        item { SocialMediaLinksSection(modifier = Modifier.fillMaxWidth()) }
+        item { HelpSection(modifier = Modifier.fillMaxWidth()) }
 
         // ── App ───────────────────────────────────────────────────────────
         item { SectionHeader("App") }

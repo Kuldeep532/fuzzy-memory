@@ -4,13 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.Message
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -107,20 +102,19 @@ fun SocialMediaLinksSection(modifier: Modifier = Modifier) {
                 ) {
                     Icon(
                         imageVector = when (link.label) {
-                            "Instagram"       -> Icons.Filled.PhotoCamera
-                            "Facebook"        -> Icons.Filled.People
-                            "Telegram"        -> Icons.AutoMirrored.Filled.Message
-                            "WhatsApp Channel"-> Icons.Filled.Forum
-                            "Discord"         -> Icons.Filled.Forum
-                            "GitHub"          -> Icons.Filled.Code
-                            "Official Website"-> Icons.Filled.Language
-                            else              -> Icons.Filled.Share
+                            "Instagram"        -> Icons.Filled.PhotoCamera
+                            "Facebook"         -> Icons.Filled.People
+                            "Telegram"         -> Icons.AutoMirrored.Filled.Message
+                            "WhatsApp Channel" -> Icons.Filled.Forum
+                            "Discord"          -> Icons.Filled.Forum
+                            "GitHub"           -> Icons.Filled.Code
+                            "Official Website" -> Icons.Filled.Language
+                            else               -> Icons.Filled.Share
                         },
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
-
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = link.label,
@@ -134,6 +128,61 @@ fun SocialMediaLinksSection(modifier: Modifier = Modifier) {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun HelpSection(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        OutlinedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = "Support email: nexuswavetech@yahoo.com. Tap to send email." },
+            onClick = {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("mailto:nexuswavetech@yahoo.com")
+                    putExtra(Intent.EXTRA_SUBJECT, "Nexus Plus Support")
+                }
+                runCatching { context.startActivity(intent) }
+            }
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Email,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Email Support",
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "nexuswavetech@yahoo.com",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Icon(
+                    Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
             }
         }
     }

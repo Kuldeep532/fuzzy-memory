@@ -54,6 +54,11 @@ object NexusGatekeeper {
         FeatureId.MY_REMINDER          to FeatureAccess.PUBLIC,
         FeatureId.FORM_X               to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_HEALTH_VAULT   to FeatureAccess.PUBLIC,
+        FeatureId.AIRA_AI              to FeatureAccess.PUBLIC,
+        FeatureId.NEXUS_IMAGE_VIEWER   to FeatureAccess.PUBLIC,
+        FeatureId.NEXUS_DOC_READER     to FeatureAccess.PUBLIC,
+        FeatureId.TOTP_AUTHENTICATOR   to FeatureAccess.PUBLIC,
+        FeatureId.NETWORK_SPEED_TEST   to FeatureAccess.PUBLIC,
 
         // ── Authenticated only ────────────────────────────────────────────────
         FeatureId.AI_IMAGE_GENERATOR   to FeatureAccess.AUTHENTICATED_ONLY,
