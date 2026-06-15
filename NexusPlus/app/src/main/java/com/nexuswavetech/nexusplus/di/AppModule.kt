@@ -33,8 +33,10 @@ import com.nexuswavetech.nexusplus.features.regextester.RegexTesterViewModel
 import com.nexuswavetech.nexusplus.features.reminder.MyReminderViewModel
 import com.nexuswavetech.nexusplus.features.qrcode.QrCodeViewModel
 import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterViewModel
-import com.nexuswavetech.nexusplus.features.tts.NseAndroidEngine
+import com.nexuswavetech.nexusplus.features.tts.NseEngine
 import com.nexuswavetech.nexusplus.features.tts.NseAudioFocusManager
+import com.nexuswavetech.nexusplus.features.tts.NsePcmCache
+import com.nexuswavetech.nexusplus.features.tts.NsePipelineAndroidEngine
 import com.nexuswavetech.nexusplus.features.tts.NseRepository
 import com.nexuswavetech.nexusplus.features.tts.NseViewModel
 import org.koin.android.ext.koin.androidContext
@@ -59,10 +61,11 @@ val appModule = module {
     // ConsentRepository — process-scoped, DataStore-backed legal consent gate.
     single { ConsentRepository(androidContext()) }
 
-    // ── NSE 2.0 — Nexus Speech Engine ─────────────────────────────────────
+    // ── NSE 3.0 — Nexus Speech Engine (Pipeline) ──────────────────────────
+    single  { NsePcmCache() }                                          // LRU PCM cache — singleton so cache persists across screens
     factory { NseAudioFocusManager(androidContext()) }
-    factory { NseAndroidEngine(androidContext(), get()) }
-    factory { NseRepository(get()) }
+    factory<NseEngine> { NsePipelineAndroidEngine(androidContext(), get(), get()) }
+    factory { NseRepository(get<NseEngine>()) }
 
     // ── ViewModels ────────────────────────────────────────────────────────
     viewModel {

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -15,6 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
@@ -71,14 +74,16 @@ fun NexusTtsScreen(
     val detectedLocale by viewModel.detectedLocale.collectAsState()
     val isSpeaking    by viewModel.isSpeaking.collectAsState()
     val isReady       by viewModel.isReady.collectAsState()
-    val voices        by viewModel.availableVoices.collectAsState()
-    val selectedVoice by viewModel.selectedVoice.collectAsState()
+    val voices           by viewModel.availableVoices.collectAsState()
+    val selectedVoice    by viewModel.selectedVoice.collectAsState()
+    val cachedPhrases    by viewModel.cachedPhraseCount.collectAsState()
+    val isPipeline        = viewModel.isPipelineEngine
 
     var showVoicePicker by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        NexusTopBar(title = "Nexus Speech Engine", onBack = onBack)
+        NexusTopBar(title = "Nexus Speech Engine 3.0", onBack = onBack)
 
         Column(
             modifier = Modifier
@@ -93,6 +98,9 @@ fun NexusTtsScreen(
 
             // ── Engine status ──────────────────────────────────────────────
             EngineStatusBanner(state = engineState)
+
+            // ── NSE 3.0 pipeline status ────────────────────────────────────
+            NsePipelineBanner(isActive = isPipeline, cachedPhrases = cachedPhrases)
 
             // ── Mode selector ──────────────────────────────────────────────
             ModeSelectorRow(
@@ -237,6 +245,57 @@ fun NexusTtsScreen(
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────
+
+// ─── NSE 3.0 pipeline status banner ──────────────────────────────────────────
+
+@Composable
+private fun NsePipelineBanner(isActive: Boolean, cachedPhrases: Int) {
+    AnimatedVisibility(
+        visible = isActive,
+        enter   = fadeIn(tween(300)) + expandVertically(),
+        exit    = fadeOut(tween(200)) + shrinkVertically(),
+    ) {
+        Surface(
+            shape    = MaterialTheme.shapes.medium,
+            color    = MaterialTheme.colorScheme.tertiaryContainer,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier              = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFF4CAF50))
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "NSE 3.0 Pipeline Active",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                    Text(
+                        buildString {
+                            append("Pre-synthesis · AudioTrack · PCM cache")
+                            if (cachedPhrases > 0) append(" · $cachedPhrases cached")
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.75f),
+                    )
+                }
+                Icon(
+                    Icons.Filled.Speed,
+                    contentDescription = null,
+                    tint     = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun JaiShriKrishnaHeader() {

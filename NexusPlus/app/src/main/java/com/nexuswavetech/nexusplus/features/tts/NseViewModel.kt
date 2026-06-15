@@ -45,6 +45,13 @@ class NseViewModel(
     val availableVoices: StateFlow<List<NseVoiceProfile>> = repository.availableVoices
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
+    /** True when the NSE 3.0 pipeline engine is active. */
+    val isPipelineEngine: Boolean get() = repository.isPipelineEngine
+
+    /** Observable count of phrases currently in the PCM cache. */
+    val cachedPhraseCount: StateFlow<Int> = repository.cachedPhraseCount
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+
     // ── User-editable parameters ───────────────────────────────────────────
 
     private val _inputText   = MutableStateFlow("")

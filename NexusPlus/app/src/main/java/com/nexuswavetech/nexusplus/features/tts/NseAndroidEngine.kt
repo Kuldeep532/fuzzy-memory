@@ -34,7 +34,7 @@ class NseAndroidEngine(
 
     @Volatile private var engineReady = false
 
-    var utteranceResultListener: ((NseUtteranceResult) -> Unit)? = null
+    override var utteranceResultListener: ((NseUtteranceResult) -> Unit)? = null
 
     // ── Initialisation ─────────────────────────────────────────────────────
 

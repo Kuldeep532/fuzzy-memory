@@ -82,4 +82,10 @@ interface NseEngine {
 
     /** Release all resources. Must be called when the engine is no longer needed. */
     fun shutdown()
+
+    /**
+     * Utterance lifecycle callback. Receives [NseUtteranceResult] events for
+     * started / completed / failed utterances. Set by [NseRepository] at init.
+     */
+    var utteranceResultListener: ((NseUtteranceResult) -> Unit)?
 }

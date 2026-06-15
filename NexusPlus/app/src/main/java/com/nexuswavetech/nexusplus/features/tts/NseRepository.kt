@@ -10,16 +10,22 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 /**
- * NSE 2.0 — Repository layer.
+ * NSE 3.0 — Repository layer.
  *
  * Owns the engine lifecycle, exposes observable state, and serialises
  * concurrent speak/stop requests through a [SupervisorJob]-scoped
- * coroutine scope so that the ViewModel never has to manage threads.
+ * coroutine scope.
  *
- * The Repository intentionally does NOT expose the raw [NseEngine] to
- * callers — all interactions go through the typed API here.
+ * Now accepts [NseEngine] (interface) rather than the concrete
+ * [NseAndroidEngine], enabling the NSE 3.0 pipeline engine ([NsePipelineAndroidEngine])
+ * to be injected transparently while preserving the same public API
+ * consumed by all ViewModels and screens.
+ *
+ * New in NSE 3.0:
+ *  - [isPipelineEngine] — true when the injected engine is the pipeline variant
+ *  - [cachedPhraseCount] — observable count of PCM-cached phrases (pipeline only)
  */
-class NseRepository(private val engine: NseAndroidEngine) {
+class NseRepository(private val engine: NseEngine) {
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -32,18 +38,26 @@ class NseRepository(private val engine: NseAndroidEngine) {
     private val _availableVoices = MutableStateFlow<List<NseVoiceProfile>>(emptyList())
     val availableVoices: StateFlow<List<NseVoiceProfile>> = _availableVoices.asStateFlow()
 
+    /** True when running the NSE 3.0 pre-synthesis pipeline engine. */
+    val isPipelineEngine: Boolean get() = engine is NsePipelineAndroidEngine
+
+    /** Number of phrases currently in the PCM cache (pipeline engine only). */
+    val cachedPhraseCount: StateFlow<Int> =
+        (engine as? NsePipelineAndroidEngine)?.pcmCache?.size
+            ?: MutableStateFlow(0).asStateFlow()
+
     init {
         engine.utteranceResultListener = { result ->
             when (result) {
                 is NseUtteranceResult.Started   -> _state.value = NseState.Speaking
                 is NseUtteranceResult.Completed -> _state.value = NseState.Ready
-                is NseUtteranceResult.Failed    -> _state.value =
-                    NseState.Error("Utterance failed (code=${result.error})", null)
+                is NseUtteranceResult.Failed    ->
+                    _state.value = NseState.Error("Utterance failed (code=${result.error})", null)
             }
         }
     }
 
-    // ── Lifecycle ──────────────────────────────────────────────────────────
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     fun initialise() {
         scope.launch {
@@ -54,12 +68,12 @@ class NseRepository(private val engine: NseAndroidEngine) {
                     _availableVoices.value = engine.availableVoices()
                 }
                 .onFailure { ex ->
-                    _state.value = NseState.Error("Engine failed to start: ${ex.message}", ex)
+                    _state.value = NseState.Error("NSE engine failed to start: ${ex.message}", ex)
                 }
         }
     }
 
-    // ── Synthesis ──────────────────────────────────────────────────────────
+    // ── Synthesis ────────────────────────────────────────────────────────────
 
     fun speak(request: NseSpeechRequest) {
         scope.launch {
@@ -79,7 +93,7 @@ class NseRepository(private val engine: NseAndroidEngine) {
         _state.value = NseState.Ready
     }
 
-    // ── Query ──────────────────────────────────────────────────────────────
+    // ── Query ────────────────────────────────────────────────────────────────
 
     fun updateDetectedLocale(text: String) {
         if (text.length > 5) {
@@ -92,7 +106,7 @@ class NseRepository(private val engine: NseAndroidEngine) {
     fun voicesForLocale(locale: Locale): List<NseVoiceProfile> =
         engine.availableVoices(locale)
 
-    // ── Cleanup ────────────────────────────────────────────────────────────
+    // ── Cleanup ──────────────────────────────────────────────────────────────
 
     fun shutdown() {
         engine.shutdown()

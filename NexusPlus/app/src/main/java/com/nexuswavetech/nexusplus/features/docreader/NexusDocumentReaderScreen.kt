@@ -229,7 +229,7 @@ fun NexusDocumentReaderScreen(
                         onClick = { filePicker.launch(arrayOf("*/*")) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Filled.AllInclusive, null)
+                        Icon(Icons.Filled.Layers, null)
                         Spacer(Modifier.width(8.dp))
                         Text("Browse All Files")
                     }
