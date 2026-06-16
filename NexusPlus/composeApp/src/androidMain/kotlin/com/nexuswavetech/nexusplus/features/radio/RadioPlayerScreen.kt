@@ -28,6 +28,7 @@ import org.json.JSONArray
 import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
 import java.io.IOException
+import com.nexuswavetech.nexusplus.ads.NexusBannerAd
 
 data class RadioStation(
     val stationUuid: String,
@@ -406,6 +407,10 @@ fun RadioPlayerScreen(
                         }
                     }
                 }
+            }
+            item {
+                NexusBannerAd(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp))
+                Spacer(Modifier.height(8.dp))
             }
         }
     }

@@ -76,6 +76,10 @@ enum class FeatureId {
     // ── Smart Tools (additional) ──────────────────────────────────────────
     NETWORK_SPEED_TEST,
 
+    // ── Stage 4 ───────────────────────────────────────────────────────────
+    NEXUS_DIALER,
+    TEXT_ANALYZER,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
     TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER

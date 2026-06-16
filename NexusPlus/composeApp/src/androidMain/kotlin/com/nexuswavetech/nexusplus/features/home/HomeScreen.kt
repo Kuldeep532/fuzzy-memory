@@ -31,8 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nexuswavetech.nexusplus.R
-import com.nexuswavetech.nexusplus.ads.NexusBannerAd
-import com.nexuswavetech.nexusplus.ads.NexusNativeAdCard
+
 import com.nexuswavetech.nexusplus.core.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.FeatureCard
@@ -143,12 +142,6 @@ fun HomeScreen(rootNavController: NavController) {
                 )
                 Spacer(Modifier.height(8.dp))
             }
-        }
-
-        // Top banner ad slot
-        item {
-            NexusBannerAd(modifier = Modifier.padding(horizontal = 0.dp))
-            Spacer(Modifier.height(12.dp))
         }
 
         // Quick Search shortcut
@@ -313,13 +306,6 @@ fun HomeScreen(rootNavController: NavController) {
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 10.dp),
             )
-        }
-
-        // Native ad slot between hubs and suggestions
-        item {
-            Spacer(Modifier.height(4.dp))
-            NexusNativeAdCard(modifier = Modifier.padding(horizontal = 16.dp))
-            Spacer(Modifier.height(8.dp))
         }
 
         // ── Suggested for You ─────────────────────────────────────────────

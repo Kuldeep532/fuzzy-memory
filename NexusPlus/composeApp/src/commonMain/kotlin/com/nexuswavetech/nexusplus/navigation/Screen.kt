@@ -85,6 +85,10 @@ sealed class Screen(val route: String) {
     object PrivacyPolicy   : Screen("legal/privacy")
     object TermsConditions : Screen("legal/terms")
 
+    // ── Stage 4 features ────────────────────────────────────────────────────
+    object NexusDialer  : Screen("feature/nexus_dialer")
+    object TextAnalyzer : Screen("feature/text_analyzer")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

@@ -63,6 +63,9 @@ import com.nexuswavetech.nexusplus.features.speedtest.NetworkSpeedTestScreen
 import com.nexuswavetech.nexusplus.features.aira.AiraAiScreen
 import com.nexuswavetech.nexusplus.features.imageviewer.NexusImageViewerScreen
 import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
+import com.nexuswavetech.nexusplus.features.dialer.NexusDialerScreen
+import com.nexuswavetech.nexusplus.features.textanalyzer.NexusTextAnalyzerScreen
+import com.nexuswavetech.nexusplus.features.weather.NexusWeatherScreen
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
@@ -194,7 +197,9 @@ fun NexusNavHost() {
         }
         composable(Screen.AlarmClock.route)        { AlarmClockScreen       (onBack = { navController.popBackStack() }) }
         composable(Screen.BarcodeGenerator.route)  { BarcodeGeneratorScreen (onBack = { navController.popBackStack() }) }
-        composable(Screen.Weather.route)           { StubFeatureScreen(featureKey = "weather", onBack = { navController.popBackStack() }) }
+        composable(Screen.Weather.route)           { NexusWeatherScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.NexusDialer.route)      { NexusDialerScreen (onBack = { navController.popBackStack() }) }
+        composable(Screen.TextAnalyzer.route)     { NexusTextAnalyzerScreen(onBack = { navController.popBackStack() }) }
 
         // ── AI / Smart Tools ──────────────────────────────────────────────
         composable(Screen.ObjectDetector.route)  { ObjectDetectorScreen  (onBack = { navController.popBackStack() }) }

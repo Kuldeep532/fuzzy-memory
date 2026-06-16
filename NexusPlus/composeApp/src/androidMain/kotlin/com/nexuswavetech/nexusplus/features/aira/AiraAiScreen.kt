@@ -32,6 +32,7 @@ import org.json.JSONObject
 import org.koin.androidx.compose.koinViewModel
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.nexuswavetech.nexusplus.ads.NexusBannerAd
 
 data class AiraMessage(
     val id: Long = System.currentTimeMillis(),
@@ -318,6 +319,8 @@ fun AiraAiScreen(
                 item { AiraTypingIndicator() }
             }
         }
+
+        NexusBannerAd(modifier = Modifier.fillMaxWidth())
 
         Surface(tonalElevation = 4.dp, modifier = Modifier.fillMaxWidth()) {
             Row(

@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.koin.androidx.compose.koinViewModel
+import com.nexuswavetech.nexusplus.ads.NexusBannerAd
 
 data class IptvChannel(
     val name: String,
@@ -307,6 +308,10 @@ fun IptvPlayerScreen(
                         )
                         HorizontalDivider(thickness = 0.5.dp)
                     }
+                }
+                item {
+                    NexusBannerAd(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp))
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         }

@@ -129,6 +129,16 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("main") {
+            java.srcDirs(
+                "src/main/java",
+                "../composeApp/src/commonMain/kotlin",
+                "../composeApp/src/androidMain/kotlin",
+            )
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

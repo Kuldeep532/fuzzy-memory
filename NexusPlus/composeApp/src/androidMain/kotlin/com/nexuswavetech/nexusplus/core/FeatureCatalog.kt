@@ -494,6 +494,28 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
+        // ── Stage 4 ───────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.NEXUS_DIALER,
+            name        = "Nexus Dialer",
+            description = "Full-featured phone dialer with contacts browser and quick-dial",
+            icon        = Icons.Filled.Call,
+            route       = Screen.NexusDialer.route,
+            category    = FeatureCategory.UTILITIES,
+            keywords    = listOf("dialer", "phone", "call", "contacts", "dial", "number", "telephone"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.TEXT_ANALYZER,
+            name        = "Text Analyzer",
+            description = "Instant word count, reading time, top words and character stats",
+            icon        = Icons.Filled.Analytics,
+            route       = Screen.TextAnalyzer.route,
+            category    = FeatureCategory.PRODUCTIVITY,
+            keywords    = listOf("text", "analyze", "word", "count", "reading", "time", "stats", "characters"),
+            isNew       = true,
+        ),
+
     )
 
     /** All features grouped by [FeatureHub]. */
