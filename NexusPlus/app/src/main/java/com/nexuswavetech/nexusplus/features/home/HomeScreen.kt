@@ -1,5 +1,11 @@
 package com.nexuswavetech.nexusplus.features.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,17 +25,23 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.nexuswavetech.nexusplus.R
+import com.nexuswavetech.nexusplus.ads.NexusBannerAd
+import com.nexuswavetech.nexusplus.ads.NexusNativeAdCard
 import com.nexuswavetech.nexusplus.core.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.FeatureCard
 import com.nexuswavetech.nexusplus.ui.components.GatekeeperDialog
 import com.nexuswavetech.nexusplus.ui.components.HubCard
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import java.util.Calendar
 
 @Composable
 fun HomeScreen(rootNavController: NavController) {
@@ -122,15 +134,21 @@ fun HomeScreen(rootNavController: NavController) {
         item {
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Spacer(Modifier.height(16.dp))
-                JaiShriKrishnaGreeting()
+                DevotionalMarqueeHeader()
                 Spacer(Modifier.height(14.dp))
                 Text(
                     text     = "Nexus Plus",
                     style    = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
                     modifier = Modifier.semantics { heading() },
                 )
-                Spacer(Modifier.height(14.dp))
+                Spacer(Modifier.height(8.dp))
             }
+        }
+
+        // Top banner ad slot
+        item {
+            NexusBannerAd(modifier = Modifier.padding(horizontal = 0.dp))
+            Spacer(Modifier.height(12.dp))
         }
 
         // Quick Search shortcut
@@ -297,6 +315,13 @@ fun HomeScreen(rootNavController: NavController) {
             )
         }
 
+        // Native ad slot between hubs and suggestions
+        item {
+            Spacer(Modifier.height(4.dp))
+            NexusNativeAdCard(modifier = Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(8.dp))
+        }
+
         // ── Suggested for You ─────────────────────────────────────────────
         if (suggestedFeatures.isNotEmpty()) {
             item {
@@ -428,26 +453,97 @@ private fun QuickChip(
     }
 }
 
+// ── Devotional Marquee Header ─────────────────────────────────────────────────
+
+private val GITA_QUOTES = listOf(
+    "You have a right to perform your prescribed duties, but you are not entitled to the fruits. — BG 2.47",
+    "The soul is neither born nor dies at any time. — BG 2.20",
+    "Let right deeds be thy motive, not the fruit which comes from them. — BG 2.47",
+    "The self-controlled soul, who moves amongst sense objects, free from either attachment or repulsion — BG 2.64",
+    "Man is made by his belief. As he believes, so he is. — BG 17.3",
+    "When meditation is mastered, the mind is unwavering like the flame of a lamp. — BG 6.19",
+    "Whatever happened, happened for the good. What is happening, is happening for the good. — BG",
+    "No one who does good work will ever come to a bad end. — BG 6.40",
+    "Set thy heart upon thy work, but never on its reward. — BG 2.47",
+    "The wise grieve neither for the living nor for the dead. — BG 2.11",
+    "Jai Shri Krishna — May your day be filled with divine grace and clarity.",
+    "Jai Shri Krishna — Seek wisdom, act with love, and trust the path.",
+)
+
+private fun getTimeAwareGreeting(): String {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when {
+        hour in 4..11  -> "🌅 Good Morning — Jai Shri Krishna"
+        hour in 12..16 -> "☀️ Good Afternoon — Jai Shri Krishna"
+        hour in 17..20 -> "🌇 Good Evening — Jai Shri Krishna"
+        else           -> "🌙 Good Night — Jai Shri Krishna"
+    }
+}
+
 @Composable
-private fun JaiShriKrishnaGreeting() {
-    val text = stringResource(R.string.jai_shri_krishna)
-    Surface(
-        shape    = MaterialTheme.shapes.medium,
-        color    = MaterialTheme.colorScheme.primaryContainer,
-        modifier = Modifier
-            .fillMaxWidth()
-            .semantics(mergeDescendants = true) { contentDescription = text },
+private fun DevotionalMarqueeHeader() {
+    val timeGreeting = remember { getTimeAwareGreeting() }
+    var quoteIndex by remember { mutableIntStateOf((System.currentTimeMillis() / 1000 % GITA_QUOTES.size).toInt()) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(6000L)
+            quoteIndex = (quoteIndex + 1) % GITA_QUOTES.size
+        }
+    }
+
+    val currentQuote = GITA_QUOTES[quoteIndex]
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Row(
-            modifier              = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+        // Time-aware greeting chip
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics(mergeDescendants = true) { contentDescription = timeGreeting },
         ) {
-            Text(
-                "🙏 $text",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    text  = timeGreeting,
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
+
+        // Rotating Bhagavad Gita quote
+        AnimatedContent(
+            targetState = currentQuote,
+            transitionSpec = {
+                slideInVertically { it } + fadeIn() togetherWith
+                slideOutVertically { -it } + fadeOut()
+            },
+            label = "gita_quote_anim",
+        ) { quote ->
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = quote },
+            ) {
+                Text(
+                    text  = "🙏 $quote",
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Normal, fontSize = 11.sp),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                )
+            }
         }
     }
 }

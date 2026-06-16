@@ -51,14 +51,86 @@ data class AiraUiState(
     val isLoading: Boolean = false
 )
 
+// ── Resilient endpoint configuration ─────────────────────────────────────────
+
+private data class AiraEndpoint(val url: String, val buildBody: (JSONArray) -> String)
+
+private val AIRA_ENDPOINTS = listOf(
+    // Primary: Pollinations.ai OpenAI-large (free, no key required)
+    AiraEndpoint("https://text.pollinations.ai/") { messages ->
+        JSONObject().apply {
+            put("messages", messages)
+            put("model", "openai-large")
+            put("seed", (1..999999).random())
+        }.toString()
+    },
+    // Fallback 1: Pollinations.ai mistral model
+    AiraEndpoint("https://text.pollinations.ai/") { messages ->
+        JSONObject().apply {
+            put("messages", messages)
+            put("model", "mistral")
+            put("seed", (1..999999).random())
+        }.toString()
+    },
+    // Fallback 2: HuggingFace Inference API (Mistral-7B-Instruct — free tier)
+    AiraEndpoint("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3") { messages ->
+        val lastUser = (0 until messages.length())
+            .map { messages.getJSONObject(it) }
+            .lastOrNull { it.getString("role") == "user" }
+            ?.getString("content") ?: ""
+        JSONObject().apply {
+            put("inputs", lastUser)
+            put("parameters", JSONObject().apply {
+                put("max_new_tokens", 512)
+                put("return_full_text", false)
+            })
+        }.toString()
+    },
+    // Fallback 3: HuggingFace Zephyr-7B (extremely reliable free model)
+    AiraEndpoint("https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta") { messages ->
+        val lastUser = (0 until messages.length())
+            .map { messages.getJSONObject(it) }
+            .lastOrNull { it.getString("role") == "user" }
+            ?.getString("content") ?: ""
+        JSONObject().apply {
+            put("inputs", "<|system|>\nYou are Aira, a helpful AI assistant in Nexus Plus.\n<|user|>\n$lastUser\n<|assistant|>")
+            put("parameters", JSONObject().apply {
+                put("max_new_tokens", 512)
+                put("return_full_text", false)
+            })
+        }.toString()
+    }
+)
+
+// ── In-memory offline response cache ─────────────────────────────────────────
+
+private object AiraOfflineCache {
+    private val cache = LinkedHashMap<String, String>(64, 0.75f, true)
+    private const val MAX_SIZE = 50
+
+    fun put(prompt: String, response: String) {
+        val key = prompt.trim().lowercase().take(120)
+        if (cache.size >= MAX_SIZE) cache.entries.iterator().let { it.next(); it.remove() }
+        cache[key] = response
+    }
+
+    fun get(prompt: String): String? = cache[prompt.trim().lowercase().take(120)]
+
+    fun hasRecentMessages(): Boolean = cache.isNotEmpty()
+}
+
+// ── ViewModel ─────────────────────────────────────────────────────────────────
+
 class AiraViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(AiraUiState())
     val uiState: StateFlow<AiraUiState> = _uiState.asStateFlow()
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
+        .connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(45, TimeUnit.SECONDS)
+        .writeTimeout(15, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
     private val systemPrompt = """You are Aira, a helpful, friendly and intelligent AI assistant built into the Nexus Plus app by Nexus Wave Technologies. 
@@ -75,64 +147,109 @@ Keep responses clear and well-structured. Use markdown formatting where helpful.
         if (input.isBlank() || _uiState.value.isLoading) return
 
         val userMsg = AiraMessage(role = "user", content = input)
-        _uiState.update { it.copy(
-            messages = it.messages + userMsg,
-            inputText = "",
-            isLoading = true
-        )}
+        _uiState.update { it.copy(messages = it.messages + userMsg, inputText = "", isLoading = true) }
 
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val history = _uiState.value.messages.takeLast(10)
-                val messagesJson = JSONArray()
-                messagesJson.put(JSONObject().apply {
-                    put("role", "system")
-                    put("content", systemPrompt)
-                })
-                history.forEach { msg ->
-                    if (!msg.isError) {
-                        messagesJson.put(JSONObject().apply {
-                            put("role", msg.role)
-                            put("content", msg.content)
-                        })
-                    }
-                }
-
-                val bodyJson = JSONObject().apply {
-                    put("messages", messagesJson)
-                    put("model", "openai-large")
-                    put("seed", (1..999999).random())
-                }
-
-                val request = Request.Builder()
-                    .url("https://text.pollinations.ai/")
-                    .post(bodyJson.toString().toRequestBody("application/json".toMediaType()))
-                    .addHeader("Content-Type", "application/json")
-                    .addHeader("User-Agent", "NexusPlus/1.2 Android")
-                    .build()
-
-                val response = client.newCall(request).execute()
-                val responseText = response.body?.string()?.trim() ?: ""
-
-                if (response.isSuccessful && responseText.isNotBlank()) {
-                    val cleanResponse = if (responseText.startsWith("{") || responseText.startsWith("[")) {
-                        try {
-                            JSONObject(responseText).optString("text", responseText)
-                        } catch (_: Exception) { responseText }
-                    } else responseText
-                    val aiMsg = AiraMessage(role = "assistant", content = cleanResponse)
-                    _uiState.update { it.copy(messages = it.messages + aiMsg, isLoading = false) }
-                } else {
-                    val errMsg = AiraMessage(role = "assistant", content = "Sorry, I'm having trouble connecting right now (${response.code}). Please try again.", isError = true)
-                    _uiState.update { it.copy(messages = it.messages + errMsg, isLoading = false) }
-                }
-            } catch (e: IOException) {
-                val errMsg = AiraMessage(role = "assistant", content = "Network error. Please check your connection and try again.", isError = true)
-                _uiState.update { it.copy(messages = it.messages + errMsg, isLoading = false) }
-            } catch (e: Exception) {
-                val errMsg = AiraMessage(role = "assistant", content = "Something went wrong. Please try again.", isError = true)
-                _uiState.update { it.copy(messages = it.messages + errMsg, isLoading = false) }
+            // Check offline cache first
+            val cached = AiraOfflineCache.get(input)
+            if (cached != null) {
+                val aiMsg = AiraMessage(role = "assistant", content = cached)
+                _uiState.update { it.copy(messages = it.messages + aiMsg, isLoading = false) }
+                return@launch
             }
+
+            val history = _uiState.value.messages.takeLast(10)
+            val messagesJson = buildMessagesJson(history)
+
+            val response = tryEndpointsWithRetry(messagesJson, input)
+            _uiState.update { it.copy(messages = it.messages + response, isLoading = false) }
+        }
+    }
+
+    private fun buildMessagesJson(history: List<AiraMessage>): JSONArray {
+        val arr = JSONArray()
+        arr.put(JSONObject().apply { put("role", "system"); put("content", systemPrompt) })
+        history.forEach { msg ->
+            if (!msg.isError) {
+                arr.put(JSONObject().apply { put("role", msg.role); put("content", msg.content) })
+            }
+        }
+        return arr
+    }
+
+    private suspend fun tryEndpointsWithRetry(messagesJson: JSONArray, userInput: String): AiraMessage {
+        val errors = mutableListOf<String>()
+
+        for ((index, endpoint) in AIRA_ENDPOINTS.withIndex()) {
+            val attemptsForEndpoint = if (index == 0) 2 else 1
+            repeat(attemptsForEndpoint) { attempt ->
+                try {
+                    val bodyStr = endpoint.buildBody(messagesJson)
+                    val request = Request.Builder()
+                        .url(endpoint.url)
+                        .post(bodyStr.toRequestBody("application/json".toMediaType()))
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("User-Agent", "NexusPlus/1.2 Android")
+                        .build()
+
+                    val response = client.newCall(request).execute()
+                    val responseText = response.body?.string()?.trim() ?: ""
+
+                    if (response.isSuccessful && responseText.isNotBlank()) {
+                        val parsed = parseResponse(responseText, index)
+                        if (parsed.isNotBlank() && parsed.length > 5) {
+                            AiraOfflineCache.put(userInput, parsed)
+                            return AiraMessage(role = "assistant", content = parsed)
+                        }
+                    } else {
+                        errors.add("Endpoint $index attempt $attempt: HTTP ${response.code}")
+                        if (attempt == 0 && index == 0) delay(800)
+                    }
+                } catch (e: IOException) {
+                    errors.add("Endpoint $index attempt $attempt: ${e.javaClass.simpleName}")
+                    if (attempt == 0 && index == 0) delay(500)
+                } catch (e: Exception) {
+                    errors.add("Endpoint $index attempt $attempt: ${e.javaClass.simpleName}")
+                }
+            }
+        }
+
+        // All endpoints failed — check if we have any cached response for a similar query
+        return if (AiraOfflineCache.hasRecentMessages()) {
+            AiraMessage(
+                role = "assistant",
+                content = "I'm having trouble connecting right now. Please check your internet connection and try again. (Tried ${AIRA_ENDPOINTS.size} servers)",
+                isError = true
+            )
+        } else {
+            AiraMessage(
+                role = "assistant",
+                content = "I'm currently offline. Please check your connection and try again.",
+                isError = true
+            )
+        }
+    }
+
+    private fun parseResponse(raw: String, endpointIndex: Int): String {
+        return when {
+            // HuggingFace array format: [{"generated_text": "..."}]
+            endpointIndex >= 2 && raw.startsWith("[") -> {
+                try {
+                    val arr = JSONArray(raw)
+                    if (arr.length() > 0) {
+                        arr.getJSONObject(0).optString("generated_text", raw)
+                            .removePrefix("<|assistant|>").trim()
+                    } else raw
+                } catch (_: Exception) { raw }
+            }
+            // JSON object with "text" key (some Pollinations responses)
+            raw.startsWith("{") -> {
+                try {
+                    JSONObject(raw).optString("text", raw)
+                } catch (_: Exception) { raw }
+            }
+            // Plain text (most Pollinations responses)
+            else -> raw
         }
     }
 
@@ -146,6 +263,8 @@ Keep responses clear and well-structured. Use markdown formatting where helpful.
         }
     }
 }
+
+// ── UI ────────────────────────────────────────────────────────────────────────
 
 @Composable
 fun AiraAiScreen(
@@ -185,12 +304,9 @@ fun AiraAiScreen(
             }
         )
 
-        // Chat messages
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
+            modifier = Modifier.weight(1f).fillMaxWidth(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -199,21 +315,13 @@ fun AiraAiScreen(
             }
 
             if (uiState.isLoading) {
-                item {
-                    AiraTypingIndicator()
-                }
+                item { AiraTypingIndicator() }
             }
         }
 
-        // Input area
-        Surface(
-            tonalElevation = 4.dp,
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Surface(tonalElevation = 4.dp, modifier = Modifier.fillMaxWidth()) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -233,9 +341,7 @@ fun AiraAiScreen(
                         view.announceForAccessibility("Message sent")
                     },
                     enabled = uiState.inputText.isNotBlank() && !uiState.isLoading,
-                    modifier = Modifier
-                        .size(52.dp)
-                        .semantics { contentDescription = "Send message to Aira" }
+                    modifier = Modifier.size(52.dp).semantics { contentDescription = "Send message to Aira" }
                 ) {
                     Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
                 }

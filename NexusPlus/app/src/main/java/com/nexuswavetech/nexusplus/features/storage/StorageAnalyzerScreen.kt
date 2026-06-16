@@ -32,7 +32,7 @@ import androidx.lifecycle.viewModelScope
 import com.nexuswavetech.nexusplus.core.HapticHelper
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-package kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -96,9 +96,9 @@ class StorageAnalyzerViewModel : ViewModel() {
 
     fun evaluateStorageThresholds() {
         viewModelScope.launch(Dispatchers.IO) {
-            val path = Environment.getDataDirectory().absolutePath[span_0](start_span)[span_0](end_span)
-            getStorageStats(path)?.let { stats ->[span_1](start_span)[span_1](end_span)
-                val freePct = (stats.freeBytes.toFloat() / stats.totalBytes.toFloat()) * 100f[span_2](start_span)[span_2](end_span)
+            val path = Environment.getDataDirectory().absolutePath
+            getStorageStats(path)?.let { stats ->
+                val freePct = (stats.freeBytes.toFloat() / stats.totalBytes.toFloat()) * 100f
                 if (freePct < 15.0f) {
                     _uiState.update { 
                         it.copy(autoStorageNotification = "Critical Storage Warning: Free space is below 15%! Please launch optimized system cleanup operations immediately.")
@@ -230,10 +230,10 @@ fun StorageAnalyzerScreen(
         view.announceForAccessibility("Sub-panel collapsed. Returned to primary storage monitor root layout.")
     }
 
-    val internalPath = remember { Environment.getDataDirectory().absolutePath }[span_3](start_span)[span_3](end_span)
-    val externalPath = remember { Environment.getExternalStorageDirectory().absolutePath }[span_4](start_span)[span_4](end_span)
-    val internal = remember(uiState.operationalFeedbackText) { getStorageStats(internalPath) }[span_5](start_span)[span_5](end_span)
-    val external = remember(uiState.operationalFeedbackText) { getStorageStats(externalPath) }[span_6](start_span)[span_6](end_span)
+    val internalPath = remember { Environment.getDataDirectory().absolutePath }
+    val externalPath = remember { Environment.getExternalStorageDirectory().absolutePath }
+    val internal = remember(uiState.operationalFeedbackText) { getStorageStats(internalPath) }
+    val external = remember(uiState.operationalFeedbackText) { getStorageStats(externalPath) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Storage Analyzer", onBack = { if (!viewModel.closeActivePanel()) onBack() })
@@ -274,9 +274,9 @@ fun StorageAnalyzerScreen(
                 }
             }
 
-            // Hardware Gauges[span_7](start_span)[span_7](end_span)
-            internal?.let { StorageCard("Internal Storage Space", Icons.Filled.Storage, it, MaterialTheme.colorScheme.primaryContainer)[span_8](start_span)[span_8](end_span) }
-            external?.let { StorageCard("External SD Card Segment", Icons.Filled.SdCard, it, MaterialTheme.colorScheme.secondaryContainer)[span_9](start_span)[span_9](end_span) }
+            // Hardware Gauges
+            internal?.let { StorageCard("Internal Storage Space", Icons.Filled.Storage, it, MaterialTheme.colorScheme.primaryContainer) }
+            external?.let { StorageCard("External SD Card Segment", Icons.Filled.SdCard, it, MaterialTheme.colorScheme.secondaryContainer) }
 
             Text("Premium Core Architectural Suites", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary)
 
@@ -382,7 +382,7 @@ fun StorageAnalyzerScreen(
                 haptic = haptic, view = view, vib = touchVib
             )
 
-            // Baseline Core Tools Category[span_10](start_span)[span_10](end_span)
+            // Baseline Core Tools Category
             Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Baseline Cache Purger Tools", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
@@ -438,29 +438,29 @@ private fun PremiumSuiteCard(
 
 @Composable
 private fun StorageCard(title: String, icon: ImageVector, stats: StorageStats, cardColor: androidx.compose.ui.graphics.Color) {
-    val usedFraction = (stats.usedBytes.toFloat() / stats.totalBytes.toFloat()).coerceIn(0f, 1f)[span_11](start_span)[span_11](end_span)
-    val usedPct = (usedFraction * 100).toInt()[span_12](start_span)[span_12](end_span)
-    val progress by animateFloatAsState(targetValue = usedFraction, animationSpec = tween(800), label = "storage_progress")[span_13](start_span)[span_13](end_span)
+    val usedFraction = (stats.usedBytes.toFloat() / stats.totalBytes.toFloat()).coerceIn(0f, 1f)
+    val usedPct = (usedFraction * 100).toInt()
+    val progress by animateFloatAsState(targetValue = usedFraction, animationSpec = tween(800), label = "storage_progress")
 
     Card(
-        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "$title: ${formatBytes(stats.usedBytes)} used of ${formatBytes(stats.totalBytes)} total ($usedPct%). ${formatBytes(stats.freeBytes)} free." },[span_14](start_span)[span_14](end_span)
-        colors = CardDefaults.cardColors(containerColor = cardColor)[span_15](start_span)[span_15](end_span)
+        modifier = Modifier.fillMaxWidth().semantics { contentDescription = "$title: ${formatBytes(stats.usedBytes)} used of ${formatBytes(stats.totalBytes)} total ($usedPct%). ${formatBytes(stats.freeBytes)} free." },
+        colors = CardDefaults.cardColors(containerColor = cardColor)
     ) {
-        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {[span_16](start_span)[span_16](end_span)
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {[span_17](start_span)[span_17](end_span)
-                Icon(icon, null, modifier = Modifier.size(28.dp))[span_18](start_span)[span_18](end_span)
-                Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))[span_19](start_span)[span_19](end_span)
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(icon, null, modifier = Modifier.size(28.dp))
+                Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
             }
-            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(10.dp), color = MaterialTheme.colorScheme.error, strokeCap = StrokeCap.Round, trackColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f))[span_20](start_span)[span_20](end_span)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {[span_21](start_span)[span_21](end_span)
+            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(10.dp), color = MaterialTheme.colorScheme.error, strokeCap = StrokeCap.Round, trackColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Column {
                     Text("Allocated Space", style = MaterialTheme.typography.bodySmall)
-                    Text(formatBytes(stats.usedBytes), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))[span_22](start_span)[span_22](end_span)
+                    Text(formatBytes(stats.usedBytes), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
                 }
-                Text("$usedPct%", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold))[span_23](start_span)[span_23](end_span)
+                Text("$usedPct%", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold))
                 Column(horizontalAlignment = Alignment.End) {
                     Text("Available Pool", style = MaterialTheme.typography.bodySmall)
-                    Text(formatBytes(stats.freeBytes), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))[span_24](start_span)[span_24](end_span)
+                    Text(formatBytes(stats.freeBytes), style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
                 }
             }
         }

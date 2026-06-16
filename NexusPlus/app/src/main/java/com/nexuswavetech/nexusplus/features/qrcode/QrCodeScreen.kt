@@ -47,7 +47,7 @@ import org.koin.compose.koinInject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
-package java.net.URLEncoder
+import java.net.URLEncoder
 
 // ── ViewModel & State Management ──────────────────────────────────────────────
 
@@ -425,7 +425,7 @@ fun QrCodeScreen(
                     modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Commit active graphics asset directly into persistent local multimedia storage arrays" }
                 ) {
                     if (uiState.isSaving) {
-                        CircularProgressIndicator(size = 20.dp, color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
                     } else {
                         Icon(Icons.Filled.Download, null)
                         Spacer(Modifier.width(8.dp))

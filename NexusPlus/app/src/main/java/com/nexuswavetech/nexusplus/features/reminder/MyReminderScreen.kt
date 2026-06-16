@@ -33,7 +33,7 @@ import androidx.work.*
 import com.nexuswavetech.nexusplus.core.HapticHelper
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-package java.text.SimpleDateFormat
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
