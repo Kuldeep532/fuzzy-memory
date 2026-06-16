@@ -1,0 +1,46 @@
+ACT AS AN ELITE ENTERPRISE COMPOSE MULTIPLATFORM (KOTLIN MULTIPLATFORM) CORE ARCHITECT. THIS APPLICATION IS NAMED "NEXUS PLUS" AND CONTAINS A LIVE USER BASE OF 1 MILLION+ ACTIVE USERS (HEAVY IPHONE/iOS BASE). THE CORE BUSINESS PURPOSE OF NEXUS PLUS IS TO GENERATE ADVANCED ADVERTISING REVENUE TO SUSTAIN AND FUND THE FREEMIUM BACKEND OF THE ECOSYSTEM'S COMPANION APPS: "GEETA NEXUS" AND "GEETA NAGAR". EXECUTE SYSTEM TRANSFORMATION WITH ZERO BREAKAGE AND 100% SUCCESSFUL COMPILATION. START CODING DIRECTLY WITHOUT PREAMBLES or TO-DOs.
+
+STAGE 1: COMPILATION BASELINE & FILE SYSTEM CLEANUP (MANDATORY EXECUTION FIRST)
+
+1. RESOLVE THE 41 ANDROID COMPILATION ERRORS IMMEDIATELY
+- Target, debug, and fix all compilation blockers across 'QrCodeScreen.kt', 'MyReminderScreen.kt', 'StorageAnalyzerScreen.kt', 'EnrypterDecrypterScreen.kt', and 'FileManagerScreen.kt' before generating any new features.
+- Clean all syntax scope closures ("Expecting a top level declaration"), fix misplaced imports on line 170, and resolve all @Composable invocation context violations perfectly.
+
+2. MANDATORY FILE STRUCTURE REORGANIZATION & LEGACY PURGE
+- Completely eliminate the old 'app/src/main/java' directory structure. Shift all native core logic out of traditional Java environments into a pure Compose Multiplatform layout.
+- Organize the entire file architecture strictly into the following shared layout tree:
+  * Shared UI Core, Features (File Manager, Dialer, Weather, Login), and Hugging Face AI Repository -> `composeApp/src/commonMain/kotlin/`
+  * Android Security Guard, App Lock Services & Google ML Kit actuals -> `composeApp/src/androidMain/kotlin/`
+  * iOS Pinned Shortcuts and native Apple Vision Framework actuals -> `composeApp/src/iosMain/kotlin/`
+- PURGE RULE: As soon as the files are correctly moved and remapped into commonMain/androidMain/iosMain package modules, you MUST structurally delete and drop all legacy, duplicate, or outdated pre-existing file folders to prevent dependency collisions.
+
+STAGE 2: MONETIZATION & SPIRITUAL HOME CONFIGURATION (NEXUS PLUS CORE)
+
+3. DEVOTIONAL HEADER WITH CRITICAL AD MONETIZATION LAYER
+- SPIRITUAL HEADER: Implement a dynamic message marquee/text layer on the Main Home Screen of Nexus Plus. Every launch must switch between time-aware spiritual greetings like "Jay Shri Krishna" or contextually relevant quotes from Srimad Bhagavad Gita to heavily engage the loyal community demographic.
+- AD-REVENUE ECOSYSTEM INTEGRATION: To successfully maximize income for Geeta Nexus and Geeta Nagar funding, integrate an advanced multiplatform Advertisement configuration block (Native App Open Ads, Banner Ads, and Interstitial Ads placeholders optimized for both Android and iOS views). The UI must remain clean and premium, but strategically serve high-CPM ad streams to maximize revenue without breaking accessibility frameworks.
+
+STAGE 3: CORE FEATURE REFURBISHMENT & SYSTEM EXPANSION
+
+4. COMPONENT REPLACEMENT & NAME CHANGE (IMAGE READER WITH LOCAL OCR)
+- Detect existing Image/PDF viewing modules. Do NOT rewrite them from scratch. Maintain your pre-written logic but locate the old 'ImageView/MSB' component across all views and rename it to 'Image Reader'.
+- Inject local, offline Google ML Kit Text Recognition (via androidMain) and native Apple Vision Framework (via iosMain Objective-C interop) to provide 100% free, high-speed local OCR capabilities across both Android and iOS shared UI.
+
+5. AIRA AI 404 NETWORK LOOPS & RESILIENT REPOSITORY FIX
+- Completely refactor the internal AI layer processing to eliminate the Aira AI 404 Not Found loops and freeze exceptions.
+- Implement a thread-safe Repository inside `commonMain` using Ktor clients and highly stable HUGGING FACE chat inference models. Include immediate local offline cache fallbacks so concurrent user spikes never freeze the UI thread.
+
+6. AD-FREE ACCESSIBLE LAUNCHER & UNIVERSAL LAUNCHER APP LOCK
+- PRE-BUILT LAUNCHER INJECTION: Create an ultra-premium, 100% Ad-Free Home Screen replacement architecture (category.HOME configuration inside manifest layer) optimized with semantic accessibility components (VoiceOver/TalkBack targets) and deep grid customization.
+- UNIVERSAL SECURITY APP LOCK: Refactor the internal App Lock mechanism to run as a low-overhead persistent background Service that locks and intercepts targeted screens flawlessly across ALL third-party device launchers.
+- MULTI-VECTOR TRIPLE THREAT SHIELD: Embed background heuristics to analyze, detect, and block Malicious APKs (Play Protect level signature checking), Phishing Links/URLs, and suspicious social engineering Email streams. Bypassing this shield must strictly require a secure Master Toggle inside hidden Settings.
+
+7. ACCESSIBLE PHONE SHORTCUT APP & CORE GATEKEEPER MODULES
+- NEXUS PHONE COMPONENT: Build an ultra-accessible native Calling interface directly in `commonMain` (Real-time Dialer pad, Recent Logs sync, full Contacts integration, and local encrypted CSV/VCF Contact Backup engine) with a Pinned-Shortcut Manager to deploy it directly as an independent icon on the device's Home Screen.
+- HYBRID LOGIN GATEKEEPER: Gate all advanced sections (including 'Nexus Text Analyzer') behind a Dual-Failsafe login system (Primary Google Sign-In with an immediate Email/Password authentication fallback form if Google services fail).
+- NEXUS TEXT ANALYZER & AUTOMATIC LOCATION WEATHER: Compute instant reading-time estimates, character density, and precise word count with clear semantic "Copy to Clipboard" text block modifiers. Integrate Android's FusedLocationProviderClient to update a time-aware Home Header ("Good Morning") and cached weather matrices asynchronously without lagging the main process.
+
+STAGE 4: STRICT CONTINUOUS EXECUTION CLAUSE
+
+8. NO HALT POLICY
+- YOU ARE STRICTLY FORBIDDEN FROM STOPPING, TRUNCATING, OR EMITTING PARTIAL CODE BLOCKS UNTIL EVERY CONTEXT LAYOUT DEFINED ABOVE IS FULLY IMPLEMENTED IN COMPILABLE WORKING KOTLIN KMP CODE. Write full code streams continuously from start to finish.
