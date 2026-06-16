@@ -1,0 +1,15 @@
+# Node/Replit dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.replit
+replit.nix
+
+# Agent and temporary memory files
+.agents/
+attached_assets/
+
+# OS/System files
+.DS_Store
+Thumbs.db
