@@ -5,4 +5,4 @@
 - [AppModule viewModel registration](nexusplus-names.md) — all new ViewModels (AiraViewModel, RadioViewModel) use `viewModel { }` not singleton
 - [ML Kit Object Detection](nexusplus-names.md) — intentionally removed from build.gradle.kts; do NOT re-add (caused build failures)
 - [KMP migration approach](kmp-migration.md) — pragmatic: files in composeApp/src/{commonMain,androidMain,iosMain}/; app/ adds these as sourceSets; NO separate Gradle module for composeApp
-- [Ad placement rule](kmp-migration.md) — NexusBannerAd ONLY on network features: AiraAi, Radio, IPTV, Weather; HomeScreen has ZERO ads
+- [Ad placement — NexusAdScaffold](ad-placement.md) — ALL feature screens wrapped with NexusAdScaffold in NavHost (51 wrappers); real Ad IDs set; Banner=3163996172 Interstitial=6401326195

@@ -80,6 +80,9 @@ enum class FeatureId {
     NEXUS_DIALER,
     TEXT_ANALYZER,
 
+    // ── Stage 5 ───────────────────────────────────────────────────────────
+    URL_SHORTENER,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
     TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER

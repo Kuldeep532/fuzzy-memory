@@ -89,6 +89,9 @@ sealed class Screen(val route: String) {
     object NexusDialer  : Screen("feature/nexus_dialer")
     object TextAnalyzer : Screen("feature/text_analyzer")
 
+    // ── Stage 5 features ────────────────────────────────────────────────────
+    object UrlShortener : Screen("feature/url_shortener")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

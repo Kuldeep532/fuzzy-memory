@@ -516,6 +516,18 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
+        // ── Stage 5 ─────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.URL_SHORTENER,
+            name        = "URL Shortener",
+            description = "Shorten long URLs using TinyURL, is.gd or v.gd — with copy & open",
+            icon        = Icons.Filled.Link,
+            route       = Screen.UrlShortener.route,
+            category    = FeatureCategory.UTILITIES,
+            keywords    = listOf("url", "shortener", "link", "shorten", "tinyurl", "isgd", "share", "web"),
+            isNew       = true,
+        ),
+
     )
 
     /** All features grouped by [FeatureHub]. */
