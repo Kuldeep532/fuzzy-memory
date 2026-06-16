@@ -109,15 +109,28 @@ class RadioViewModel : ViewModel() {
     }
 
     fun onStationSelected(station: RadioStation, context: android.content.Context) {
-        exoPlayer?.release()
-        val player = androidx.media3.exoplayer.ExoPlayer.Builder(context).build().also {
-            val mediaItem = androidx.media3.common.MediaItem.fromUri(station.url)
-            it.setMediaItem(mediaItem)
-            it.prepare()
-            it.play()
+        if (exoPlayer == null) {
+            exoPlayer = androidx.media3.exoplayer.ExoPlayer.Builder(context).build().also { player ->
+                player.addListener(object : androidx.media3.common.Player.Listener {
+                    override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                        _uiState.update { it.copy(
+                            error = "Stream unavailable. Please try another station.",
+                            isPlaying = false
+                        )}
+                    }
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        _uiState.update { it.copy(isPlaying = isPlaying) }
+                    }
+                })
+            }
         }
-        exoPlayer = player
-        _uiState.update { it.copy(currentStation = station, isPlaying = true) }
+        val player = exoPlayer!!
+        player.stop()
+        player.clearMediaItems()
+        player.setMediaItem(androidx.media3.common.MediaItem.fromUri(station.url))
+        player.prepare()
+        player.play()
+        _uiState.update { it.copy(currentStation = station, isPlaying = true, error = null) }
     }
 
     fun onPlayPauseToggled() {

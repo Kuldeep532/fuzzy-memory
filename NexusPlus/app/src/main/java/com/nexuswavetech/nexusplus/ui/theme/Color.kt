@@ -33,19 +33,32 @@ val NexusOnErrorContainer    = Color(0xFFFFCDD2)
 
 // ── Light palette ────────────────────────────────────────────────────────────
 
-val NexusPrimaryLight        = Color(0xFF4A3AFF)
+val NexusPrimaryLight              = Color(0xFF4A3AFF)
+val NexusOnPrimaryLight            = Color(0xFFFFFFFF)
+val NexusPrimaryContainerLight     = Color(0xFFE2DFFF)
+val NexusOnPrimaryContainerLight   = Color(0xFF10006B)
 
-val NexusBackgroundLight     = Color(0xFFF3F3FF)
-val NexusSurfaceLight        = Color(0xFFFFFFFF)
-val NexusOnSurfaceLight      = Color(0xFF12123A)
+val NexusSecondaryLight            = Color(0xFF00897B)
+val NexusOnSecondaryLight          = Color(0xFFFFFFFF)
+val NexusSecondaryContainerLight   = Color(0xFFB2F5EC)
+val NexusOnSecondaryContainerLight = Color(0xFF00251F)
 
-val NexusSurfaceVariantLight    = Color(0xFFE6E4FF)
-val NexusOnSurfaceVariantLight  = Color(0xFF454580)
-val NexusSurfaceContainerLight  = Color(0xFFEEEDFF)
-val NexusOutlineLight           = Color(0xFF9595CC)
+val NexusTertiaryLight             = Color(0xFFD32F2F)
+val NexusOnTertiaryLight           = Color(0xFFFFFFFF)
+val NexusTertiaryContainerLight    = Color(0xFFFFDAD6)
+val NexusOnTertiaryContainerLight  = Color(0xFF410001)
 
-val NexusErrorContainerLight    = Color(0xFFFFE0E0)
-val NexusOnErrorContainerLight  = Color(0xFF4A0000)
+val NexusBackgroundLight           = Color(0xFFF3F3FF)
+val NexusSurfaceLight              = Color(0xFFFFFFFF)
+val NexusOnSurfaceLight            = Color(0xFF12123A)
+
+val NexusSurfaceVariantLight       = Color(0xFFE6E4FF)
+val NexusOnSurfaceVariantLight     = Color(0xFF454580)
+val NexusSurfaceContainerLight     = Color(0xFFEEEDFF)
+val NexusOutlineLight              = Color(0xFF9595CC)
+
+val NexusErrorContainerLight       = Color(0xFFFFE0E0)
+val NexusOnErrorContainerLight     = Color(0xFF4A0000)
 
 // ── Gradient accent colors (used for Hub cards) ──────────────────────────────
 

@@ -13,7 +13,6 @@ object NexusGatekeeper {
         // ── Public ────────────────────────────────────────────────────────────
         FeatureId.RADIO_PLAYER         to FeatureAccess.PUBLIC,
         FeatureId.PDF_SUITE            to FeatureAccess.PUBLIC,
-        FeatureId.PDF_READER           to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_TTS            to FeatureAccess.PUBLIC,
         FeatureId.FILE_MANAGER         to FeatureAccess.PUBLIC,
         FeatureId.CURRENCY_CONVERTER   to FeatureAccess.PUBLIC,
@@ -52,7 +51,6 @@ object NexusGatekeeper {
         FeatureId.VOICE_TYPER          to FeatureAccess.PUBLIC,
         FeatureId.DOC_HUB              to FeatureAccess.PUBLIC,
         FeatureId.MY_REMINDER          to FeatureAccess.PUBLIC,
-        FeatureId.FORM_X               to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_HEALTH_VAULT   to FeatureAccess.PUBLIC,
         FeatureId.AIRA_AI              to FeatureAccess.PUBLIC,
         FeatureId.NEXUS_IMAGE_VIEWER   to FeatureAccess.PUBLIC,

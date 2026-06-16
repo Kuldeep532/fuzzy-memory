@@ -100,7 +100,7 @@ Keep responses clear and well-structured. Use markdown formatting where helpful.
 
                 val bodyJson = JSONObject().apply {
                     put("messages", messagesJson)
-                    put("model", "openai")
+                    put("model", "openai-large")
                     put("seed", (1..999999).random())
                 }
 
@@ -108,16 +108,22 @@ Keep responses clear and well-structured. Use markdown formatting where helpful.
                     .url("https://text.pollinations.ai/")
                     .post(bodyJson.toString().toRequestBody("application/json".toMediaType()))
                     .addHeader("Content-Type", "application/json")
+                    .addHeader("User-Agent", "NexusPlus/1.2 Android")
                     .build()
 
                 val response = client.newCall(request).execute()
                 val responseText = response.body?.string()?.trim() ?: ""
 
                 if (response.isSuccessful && responseText.isNotBlank()) {
-                    val aiMsg = AiraMessage(role = "assistant", content = responseText)
+                    val cleanResponse = if (responseText.startsWith("{") || responseText.startsWith("[")) {
+                        try {
+                            JSONObject(responseText).optString("text", responseText)
+                        } catch (_: Exception) { responseText }
+                    } else responseText
+                    val aiMsg = AiraMessage(role = "assistant", content = cleanResponse)
                     _uiState.update { it.copy(messages = it.messages + aiMsg, isLoading = false) }
                 } else {
-                    val errMsg = AiraMessage(role = "assistant", content = "Sorry, I couldn't process that request. Please try again.", isError = true)
+                    val errMsg = AiraMessage(role = "assistant", content = "Sorry, I'm having trouble connecting right now (${response.code}). Please try again.", isError = true)
                     _uiState.update { it.copy(messages = it.messages + errMsg, isLoading = false) }
                 }
             } catch (e: IOException) {

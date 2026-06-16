@@ -72,7 +72,7 @@ fun DocHubScreen(onBack: () -> Unit) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NexusTopBar(title = "Doc Hub", onBack = onBack)
+        NexusTopBar(title = "Document Organizer", onBack = onBack)
 
         Column(modifier = Modifier.fillMaxSize()) {
             // Search

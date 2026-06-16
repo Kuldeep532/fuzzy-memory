@@ -29,9 +29,14 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun ProfileScreen(onBack: () -> Unit) {
+fun ProfileScreen(
+    onBack: () -> Unit,
+    onSignOut: () -> Unit = {},
+    onSignIn: () -> Unit = {},
+) {
     val sessionManager: SessionManager      = koinInject()
     val favoritesRepo: FavoritesRepository  = koinInject()
+    val authRepository: com.nexuswavetech.nexusplus.auth.AuthRepository = koinInject()
     val scope                               = rememberCoroutineScope()
 
     val session     by sessionManager.session.collectAsState()
@@ -194,9 +199,52 @@ fun ProfileScreen(onBack: () -> Unit) {
                         HorizontalDivider()
                         AppInfoRow(Icons.Filled.Business, "Developer",   "Nexus Wave Technologies")
                         HorizontalDivider()
-                        AppInfoRow(Icons.Filled.Build,    "Stack",       "Kotlin · Compose · KMP")
-                        HorizontalDivider()
                         AppInfoRow(Icons.Filled.Security, "Encryption",  "AES-256-GCM · Android Keystore")
+                    }
+                }
+            }
+
+            // ── Sign in / Sign out ────────────────────────────────────────
+            item { ProfileSectionHeader("Account Actions") }
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (session.isGuest) {
+                            Button(
+                                onClick  = { onSignIn() },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors   = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            ) {
+                                Icon(Icons.Filled.Login, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Sign in with Google")
+                            }
+                            Text(
+                                "Sign in to sync your preferences and unlock premium features.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        } else {
+                            OutlinedButton(
+                                onClick  = {
+                                    scope.launch {
+                                        authRepository.signOut()
+                                        sessionManager.clearSession()
+                                        onSignOut()
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors   = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                                border   = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                            ) {
+                                Icon(Icons.Filled.Logout, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text("Sign out")
+                            }
+                        }
                     }
                 }
             }

@@ -19,6 +19,7 @@ import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
     val settings = koinInject<SettingsRepository>()
@@ -72,18 +73,15 @@ fun SettingsScreen(onBack: () -> Unit) {
                             color    = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(bottom = 8.dp),
                         )
-                        listOf(
-                            Triple(SettingsRepository.THEME_SYSTEM, "Follow system",  Icons.Filled.SettingsBrightness),
-                            Triple(SettingsRepository.THEME_LIGHT,  "Light",          Icons.Filled.LightMode),
-                            Triple(SettingsRepository.THEME_DARK,   "Dark",           Icons.Filled.DarkMode),
-                        ).forEach { (value, label, icon) ->
-                            ThemeOption(
-                                icon     = icon,
-                                label    = label,
-                                selected = theme == value,
-                                onClick  = { scope.launch { settings.setTheme(value) } },
-                            )
-                        }
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.THEME_SYSTEM to "Follow system",
+                                SettingsRepository.THEME_LIGHT  to "Light",
+                                SettingsRepository.THEME_DARK   to "Dark",
+                            ),
+                            selected = theme,
+                            onSelect = { scope.launch { settings.setTheme(it) } },
+                        )
                     }
                 }
             }
@@ -115,35 +113,17 @@ fun SettingsScreen(onBack: () -> Unit) {
                             "Font Scale",
                             style    = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                             color    = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(bottom = 8.dp),
+                            modifier = Modifier.padding(bottom = 4.dp),
                         )
-                        listOf(
-                            SettingsRepository.FONT_NORMAL to "Normal",
-                            SettingsRepository.FONT_LARGE  to "Large",
-                            SettingsRepository.FONT_XLARGE to "Extra Large",
-                        ).forEach { (value, label) ->
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "$label font scale. " +
-                                            if (fontScale == value) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(
-                                    label,
-                                    style    = MaterialTheme.typography.bodyMedium,
-                                    color    = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                RadioButton(
-                                    selected = fontScale == value,
-                                    onClick  = { scope.launch { settings.setFontScale(value) } },
-                                )
-                            }
-                        }
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.FONT_NORMAL to "Normal",
+                                SettingsRepository.FONT_LARGE  to "Large",
+                                SettingsRepository.FONT_XLARGE to "Extra Large",
+                            ),
+                            selected = fontScale,
+                            onSelect = { scope.launch { settings.setFontScale(it) } },
+                        )
                     }
                 }
             }
@@ -191,45 +171,19 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Filled.LockClock, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(22.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("Vault Auto-Lock", style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium), color = MaterialTheme.colorScheme.onSurface)
-                                Text(
-                                    if (vaultLockMins == 0) "Never" else "After $vaultLockMins minute${if (vaultLockMins != 1) "s" else ""}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
+                            Text("Vault Auto-Lock", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                         }
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            "Lock timeout",
-                            style    = MaterialTheme.typography.labelSmall,
-                            color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 4.dp),
+                        SettingsDropdown(
+                            options = SettingsRepository.VAULT_LOCK_OPTIONS.map { mins ->
+                                mins to when {
+                                    mins == 0  -> "Never"
+                                    mins == 60 -> "1 hour"
+                                    else       -> "$mins min${if (mins != 1) "s" else ""}"
+                                }
+                            },
+                            selected = vaultLockMins,
+                            onSelect = { scope.launch { settings.setVaultAutoLockMinutes(it) } },
                         )
-                        SettingsRepository.VAULT_LOCK_OPTIONS.forEach { mins ->
-                            val label = when {
-                                mins == 0  -> "Never"
-                                mins == 60 -> "1 hr"
-                                else       -> "$mins min${if (mins != 1) "s" else ""}"
-                            }
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Vault auto-lock: $label. " +
-                                            if (vaultLockMins == mins) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = vaultLockMins == mins,
-                                    onClick  = { scope.launch { settings.setVaultAutoLockMinutes(mins) } },
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -285,36 +239,23 @@ fun SettingsScreen(onBack: () -> Unit) {
 
                         Spacer(Modifier.height(4.dp))
                         Text("Default language", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        listOf(
-                            SettingsRepository.TTS_LANG_AUTO to "Auto (System locale)",
-                            SettingsRepository.TTS_LANG_EN   to "English",
-                            SettingsRepository.TTS_LANG_HI   to "Hindi",
-                            SettingsRepository.TTS_LANG_ES   to "Spanish",
-                            SettingsRepository.TTS_LANG_FR   to "French",
-                            SettingsRepository.TTS_LANG_DE   to "German",
-                            SettingsRepository.TTS_LANG_ZH   to "Chinese",
-                            SettingsRepository.TTS_LANG_AR   to "Arabic",
-                            SettingsRepository.TTS_LANG_PT   to "Portuguese",
-                            SettingsRepository.TTS_LANG_RU   to "Russian",
-                            SettingsRepository.TTS_LANG_JA   to "Japanese",
-                        ).forEach { (value, label) ->
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "TTS language: $label. " +
-                                            if (ttsLang == value) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = ttsLang == value,
-                                    onClick  = { scope.launch { settings.setTtsDefaultLanguage(value) } },
-                                )
-                            }
-                        }
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.TTS_LANG_AUTO to "Auto (System locale)",
+                                SettingsRepository.TTS_LANG_EN   to "English",
+                                SettingsRepository.TTS_LANG_HI   to "Hindi",
+                                SettingsRepository.TTS_LANG_ES   to "Spanish",
+                                SettingsRepository.TTS_LANG_FR   to "French",
+                                SettingsRepository.TTS_LANG_DE   to "German",
+                                SettingsRepository.TTS_LANG_ZH   to "Chinese",
+                                SettingsRepository.TTS_LANG_AR   to "Arabic",
+                                SettingsRepository.TTS_LANG_PT   to "Portuguese",
+                                SettingsRepository.TTS_LANG_RU   to "Russian",
+                                SettingsRepository.TTS_LANG_JA   to "Japanese",
+                            ),
+                            selected = ttsLang,
+                            onSelect = { scope.launch { settings.setTtsDefaultLanguage(it) } },
+                        )
                     }
                 }
             }
@@ -328,28 +269,15 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Text("Morse Code", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                         }
                         Text("Vibration speed", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-                        listOf(
-                            SettingsRepository.MORSE_SPEED_SLOW   to "Slow",
-                            SettingsRepository.MORSE_SPEED_NORMAL to "Normal",
-                            SettingsRepository.MORSE_SPEED_FAST   to "Fast",
-                        ).forEach { (value, label) ->
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Morse vibration: $label. " +
-                                            if (morseSpeed == value) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = morseSpeed == value,
-                                    onClick  = { scope.launch { settings.setMorseVibrationSpeed(value) } },
-                                )
-                            }
-                        }
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.MORSE_SPEED_SLOW   to "Slow",
+                                SettingsRepository.MORSE_SPEED_NORMAL to "Normal",
+                                SettingsRepository.MORSE_SPEED_FAST   to "Fast",
+                            ),
+                            selected = morseSpeed,
+                            onSelect = { scope.launch { settings.setMorseVibrationSpeed(it) } },
+                        )
                     }
                 }
             }
@@ -363,28 +291,15 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Text("Radio & IPTV", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                         }
                         Text("Stream buffer quality", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-                        listOf(
-                            SettingsRepository.BUFFER_LOW    to "Low (saves data)",
-                            SettingsRepository.BUFFER_NORMAL to "Normal",
-                            SettingsRepository.BUFFER_HIGH   to "High (best quality)",
-                        ).forEach { (value, label) ->
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Buffer quality: $label. " +
-                                            if (bufferQuality == value) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = bufferQuality == value,
-                                    onClick  = { scope.launch { settings.setBufferQuality(value) } },
-                                )
-                            }
-                        }
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.BUFFER_LOW    to "Low (saves data)",
+                                SettingsRepository.BUFFER_NORMAL to "Normal",
+                                SettingsRepository.BUFFER_HIGH   to "High (best quality)",
+                            ),
+                            selected = bufferQuality,
+                            onSelect = { scope.launch { settings.setBufferQuality(it) } },
+                        )
                     }
                 }
             }
@@ -411,25 +326,13 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Text("Reminders", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                         }
                         Text("Default snooze duration", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-                        SettingsRepository.REMINDER_SNOOZE_OPTIONS.forEach { mins ->
-                            val label = "$mins min${if (mins != 1) "s" else ""}"
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Snooze $label. " +
-                                            if (reminderSnooze == mins) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = reminderSnooze == mins,
-                                    onClick  = { scope.launch { settings.setReminderSnoozeMins(mins) } },
-                                )
-                            }
-                        }
+                        SettingsDropdown(
+                            options = SettingsRepository.REMINDER_SNOOZE_OPTIONS.map { mins ->
+                                mins to "$mins min${if (mins != 1) "s" else ""}"
+                            },
+                            selected = reminderSnooze,
+                            onSelect = { scope.launch { settings.setReminderSnoozeMins(it) } },
+                        )
                     }
                 }
             }
@@ -443,27 +346,14 @@ fun SettingsScreen(onBack: () -> Unit) {
                             Text("Calculator", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                         }
                         Text("Angle unit for trigonometric functions", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-                        listOf(
-                            SettingsRepository.ANGLE_DEG to "Degrees (°)",
-                            SettingsRepository.ANGLE_RAD to "Radians (rad)",
-                        ).forEach { (value, label) ->
-                            Row(
-                                modifier              = Modifier
-                                    .fillMaxWidth()
-                                    .semantics(mergeDescendants = true) {
-                                        contentDescription = "Angle unit: $label. " +
-                                            if (calcAngleUnit == value) "Currently selected." else "Double tap to select."
-                                    },
-                                verticalAlignment     = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-                                RadioButton(
-                                    selected = calcAngleUnit == value,
-                                    onClick  = { scope.launch { settings.setCalculatorAngleUnit(value) } },
-                                )
-                            }
-                        }
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.ANGLE_DEG to "Degrees (°)",
+                                SettingsRepository.ANGLE_RAD to "Radians (rad)",
+                            ),
+                            selected = calcAngleUnit,
+                            onSelect = { scope.launch { settings.setCalculatorAngleUnit(it) } },
+                        )
                     }
                 }
             }
@@ -489,12 +379,6 @@ fun SettingsScreen(onBack: () -> Unit) {
                             icon  = Icons.Filled.Business,
                             title = "Developer",
                             value = "Nexus Wave Technologies",
-                        )
-                        HorizontalDivider()
-                        SettingsInfoRow(
-                            icon  = Icons.Filled.Build,
-                            title = "Build",
-                            value = "Kotlin 2.0 · Compose BOM 2024.06 · KMP",
                         )
                     }
                 }
@@ -567,26 +451,44 @@ private fun SettingsToggleRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ThemeOption(
-    icon: ImageVector,
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
+private fun <T> SettingsDropdown(
+    options:  List<Pair<T, String>>,
+    selected: T,
+    onSelect: (T) -> Unit,
 ) {
-    Row(
-        modifier              = Modifier
-            .fillMaxWidth()
-            .semantics(mergeDescendants = true) {
-                contentDescription = "$label theme. " +
-                    if (selected) "Currently selected." else "Double tap to select."
-            },
-        verticalAlignment     = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = options.firstOrNull { it.first == selected }?.second ?: selected.toString()
+    ExposedDropdownMenuBox(
+        expanded         = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier         = Modifier.fillMaxWidth(),
     ) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
-        RadioButton(selected = selected, onClick = onClick)
+        OutlinedTextField(
+            value         = selectedLabel,
+            onValueChange = {},
+            readOnly      = true,
+            trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors        = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier      = Modifier.menuAnchor().fillMaxWidth(),
+            singleLine    = true,
+        )
+        ExposedDropdownMenu(
+            expanded         = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { (value, label) ->
+                DropdownMenuItem(
+                    text           = { Text(label) },
+                    onClick        = { onSelect(value); expanded = false },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    leadingIcon    = if (value == selected) {
+                        { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary) }
+                    } else null,
+                )
+            }
+        }
     }
 }
 

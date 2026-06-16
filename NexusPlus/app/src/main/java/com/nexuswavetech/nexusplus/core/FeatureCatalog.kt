@@ -126,8 +126,8 @@ object FeatureCatalog {
         ),
         FeatureItem(
             id          = FeatureId.DOC_HUB,
-            name        = "Doc Hub",
-            description = "Quick-access storage and organisation for your documents",
+            name        = "Document Organizer",
+            description = "Organise, access and manage your documents in one place",
             icon        = Icons.Filled.Description,
             route       = Screen.DocHub.route,
             category    = FeatureCategory.PRODUCTIVITY,
@@ -253,17 +253,6 @@ object FeatureCatalog {
             category    = FeatureCategory.UTILITIES,
             keywords    = listOf("reminder", "notification", "alarm", "schedule", "alert"),
         ),
-        FeatureItem(
-            id          = FeatureId.FORM_X,
-            name        = "Form X",
-            description = "Universal reactive form with auto-validation",
-            icon        = Icons.AutoMirrored.Filled.Assignment,
-            route       = Screen.FormX.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("form", "input", "validate", "email", "password", "field"),
-            isNew       = true,
-        ),
-
         // ── AI ────────────────────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.AIRA_AI,

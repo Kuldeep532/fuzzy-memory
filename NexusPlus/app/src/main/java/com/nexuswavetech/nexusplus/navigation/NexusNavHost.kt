@@ -17,7 +17,6 @@ import com.nexuswavetech.nexusplus.features.hub.SecurityHubScreen
 import com.nexuswavetech.nexusplus.features.hub.UtilitiesHubScreen
 import com.nexuswavetech.nexusplus.features.radio.RadioPlayerScreen
 import com.nexuswavetech.nexusplus.features.pdfsuite.PdfSuiteScreen
-import com.nexuswavetech.nexusplus.features.pdf.PdfReaderScreen
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageGeneratorScreen
 import com.nexuswavetech.nexusplus.features.tts.NexusTtsScreen
 import com.nexuswavetech.nexusplus.features.iptv.IptvPlayerScreen
@@ -41,7 +40,6 @@ import com.nexuswavetech.nexusplus.features.qrcode.QrCodeScreen
 import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterScreen
 import com.nexuswavetech.nexusplus.features.dochub.DocHubScreen
 import com.nexuswavetech.nexusplus.features.voicetyper.VoiceTyperScreen
-import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 import com.nexuswavetech.nexusplus.features.settings.SettingsScreen
 import com.nexuswavetech.nexusplus.features.profile.ProfileScreen
 import com.nexuswavetech.nexusplus.features.notifications.NotificationCenterScreen
@@ -121,7 +119,23 @@ fun NexusNavHost() {
 
         // ── Global screens ────────────────────────────────────────────────
         composable(Screen.Settings.route)           { SettingsScreen          (onBack = { navController.popBackStack() }) }
-        composable(Screen.Profile.route)            { ProfileScreen            (onBack = { navController.popBackStack() }) }
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                onBack = { navController.popBackStack() },
+                onSignOut = {
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onSignIn = {
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+            )
+        }
         composable(Screen.NotificationCenter.route) { NotificationCenterScreen (onBack = { navController.popBackStack() }) }
 
         // ── Media ─────────────────────────────────────────────────────────
@@ -134,7 +148,6 @@ fun NexusNavHost() {
 
         // ── Documents ─────────────────────────────────────────────────────
         composable(Screen.PdfSuite.route)  { PdfSuiteScreen (onBack = { navController.popBackStack() }) }
-        composable(Screen.PdfReader.route) { PdfReaderScreen(onBack = { navController.popBackStack() }) }
         composable(Screen.DocHub.route)    { DocHubScreen   (onBack = { navController.popBackStack() }) }
 
         // ── Security ──────────────────────────────────────────────────────
@@ -202,7 +215,6 @@ fun NexusNavHost() {
         }
 
         // ── Forms ─────────────────────────────────────────────────────────
-        composable(Screen.FormX.route) { AutoUniversalFormX(onBack = { navController.popBackStack() }) }
 
         // ── Health & Wellbeing ────────────────────────────────────────────
         composable(Screen.NexusHealthVault.route)   { NexusHealthVaultScreen(onBack = { navController.popBackStack() }) }

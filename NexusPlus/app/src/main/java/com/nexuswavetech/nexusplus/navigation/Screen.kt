@@ -29,7 +29,6 @@ sealed class Screen(val route: String) {
 
     // ── Document feature screens ────────────────────────────────────────────
     object PdfSuite         : Screen("feature/pdf_suite")
-    object PdfReader        : Screen("feature/pdf")
     object DocHub           : Screen("feature/doc_hub")
     object NexusDocReader   : Screen("feature/nexus_doc_reader")
 
@@ -73,9 +72,6 @@ sealed class Screen(val route: String) {
     object ObjectDetector : Screen("feature/object_detector")
     object ColorDetector  : Screen("feature/color_detector")
     object AiraAi         : Screen("feature/aira_ai")
-
-    // ── Forms ───────────────────────────────────────────────────────────────
-    object FormX : Screen("feature/form_x")
 
     // ── Health & Wellbeing ───────────────────────────────────────────────────
     object NexusHealthVault : Screen("feature/health_vault")

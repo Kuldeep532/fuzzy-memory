@@ -168,14 +168,6 @@ fun FeatureCard(
                     maxLines = 2,
                 )
 
-                // ── Description ───────────────────────────────────────────
-                Text(
-                    text     = feature.description,
-                    style    = MaterialTheme.typography.bodySmall,
-                    color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                )
-
                 // ── Category chip ─────────────────────────────────────────
                 Surface(
                     shape = RoundedCornerShape(6.dp),
