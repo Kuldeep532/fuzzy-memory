@@ -68,6 +68,7 @@ class NseAndroidEngine(
         return when (request.mode) {
             is NseSpeechMode.Auto       -> speakAuto(engine, request)
             is NseSpeechMode.SingleVoice -> speakSingleVoice(engine, request, request.mode.locale)
+            is NseSpeechMode.DualVoice   -> speakDual(engine, request)
             is NseSpeechMode.Mix        -> speakMix(engine, request)
         }
     }
@@ -79,6 +80,25 @@ class NseAndroidEngine(
 
     private fun speakSingleVoice(engine: TextToSpeech, req: NseSpeechRequest, locale: Locale): Result<Unit> =
         synthesise(engine, req.text, locale, req.pitch, req.speechRate, req.utteranceId, flush = true)
+
+    private fun speakDual(engine: TextToSpeech, req: NseSpeechRequest): Result<Unit> {
+        val mode = req.mode as? NseSpeechMode.DualVoice ?: return Result.failure(
+            IllegalStateException("Dual mode required")
+        )
+        val segments = NseLanguageDetector.segmentByScript(req.text)
+        if (segments.isEmpty()) return Result.success(Unit)
+
+        segments.forEachIndexed { index, (segText, segLocale) ->
+            val assigned = if (segLocale == mode.primaryLocale || segLocale == mode.secondaryLocale) segLocale
+            else if (NseLanguageDetector.detect(segText) == mode.primaryLocale) mode.primaryLocale
+            else mode.secondaryLocale
+            val uid = "${req.utteranceId}_seg$index"
+            val flush = index == 0
+            val result = synthesise(engine, segText, assigned, req.pitch, req.speechRate, uid, flush)
+            if (result.isFailure) return result
+        }
+        return Result.success(Unit)
+    }
 
     private fun speakMix(engine: TextToSpeech, req: NseSpeechRequest): Result<Unit> {
         val segments = NseLanguageDetector.segmentByScript(req.text)

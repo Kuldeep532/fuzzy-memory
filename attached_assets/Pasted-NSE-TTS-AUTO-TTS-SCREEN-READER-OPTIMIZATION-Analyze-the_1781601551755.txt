@@ -1,0 +1,73 @@
+NSE TTS / AUTO TTS SCREEN READER OPTIMIZATION
+
+Analyze the existing NSE TTS implementation including NseViewModel, NseRepository, NseTtsService, NseEngine, NsePipelineAndroidEngine, Accessibility integration and all related settings, then directly upgrade and optimize the existing engine without creating plans, reports or questions.
+
+Do not convert this feature into a text reader, PDF reader, OCR reader or document reader. This feature must remain an Accessibility Service based Auto TTS Screen Reader.
+
+The current NSE engine already contains Auto Mode, language detection, voice selection, speech rate, pitch and pipeline logic. Audit all existing settings and verify that every option actually affects Accessibility speech behavior. Fix any setting that currently has no real effect.
+
+Add fully functional screen-reader modes:
+
+• Auto Mode
+• Single Mode
+• Dual Mode
+• Mixed Mode
+
+These modes must work with Accessibility Events and screen content only.
+
+Auto Mode:
+Automatically detect language, voice and content changes.
+
+Single Mode:
+Use one selected voice for all spoken content.
+
+Dual Mode:
+Use primary and secondary voices depending on detected language or content type.
+
+Mixed Mode:
+Intelligently switch between multiple voices and languages while reading Accessibility content.
+
+Add proper settings persistence:
+
+• Save Settings Button
+• Reset Settings Button
+• Open System TTS Settings Button
+
+All settings must survive app restart and device reboot.
+
+Improve Accessibility Service behavior:
+
+• Better Accessibility Event Filtering
+• Better Window Change Detection
+• Better Focus Tracking
+• Better Duplicate Speech Prevention
+• Better Notification Filtering
+• Better Foreground App Detection
+• Better Continuous Reading Logic
+• Better Accessibility Node Handling
+• Better Dynamic Content Detection
+
+Optimize speech quality:
+
+• Faster Response Time
+• Reduced Speech Delay
+• Better Language Detection
+• Better Mixed Language Handling
+• Better Voice Switching
+• Better Pronunciation
+• Better Queue Management
+• Better Audio Focus Handling
+
+Improve compatibility with:
+
+• TalkBack
+• Accessibility Focus
+• Screen Readers
+• Screen Mirroring
+• Keyboard Navigation
+• Switch Access
+• Large Font Sizes
+
+Redesign the TTS settings UI using the app's centralized theme system. Remove confusing descriptions, non-functional settings and unnecessary technical information. Present settings in a clean categorized interface.
+
+Keep the existing NSE architecture and pipeline engine. Refactor and optimize the current implementation instead of replacing it. The final result must feel like a professional accessibility-focused Auto TTS Screen Reader with reliable mode switching, intelligent language handling, persistent settings and significantly improved Accessibility performance.

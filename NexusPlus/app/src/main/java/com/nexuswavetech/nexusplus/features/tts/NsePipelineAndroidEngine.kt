@@ -106,6 +106,16 @@ class NsePipelineAndroidEngine(
                     is NseSpeechMode.SingleVoice ->
                         NseSentenceSplitter.split(request.text)
                             .map { Task(it, request.mode.locale) }
+                    is NseSpeechMode.DualVoice ->
+                        NseSentenceSplitter.split(request.text).flatMap { s ->
+                            NseLanguageDetector.segmentByScript(s)
+                                .map { (seg, segLocale) ->
+                                    val assigned = if (segLocale == request.mode.primaryLocale || segLocale == request.mode.secondaryLocale) segLocale
+                                    else if (NseLanguageDetector.detect(seg) == request.mode.primaryLocale) request.mode.primaryLocale
+                                    else request.mode.secondaryLocale
+                                    Task(seg, assigned)
+                                }
+                        }
                     is NseSpeechMode.Mix ->
                         NseSentenceSplitter.split(request.text).flatMap { s ->
                             NseLanguageDetector.segmentByScript(s)

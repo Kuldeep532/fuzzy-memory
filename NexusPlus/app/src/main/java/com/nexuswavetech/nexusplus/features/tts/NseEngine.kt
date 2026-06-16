@@ -20,6 +20,15 @@ sealed interface NseSpeechMode {
     data class SingleVoice(val locale: Locale) : NseSpeechMode
 
     /**
+     * Dual mode: uses a primary voice for the main language and a secondary
+     * voice for detected alternate language segments. Ideal for bilingual users.
+     */
+    data class DualVoice(
+        val primaryLocale: Locale,
+        val secondaryLocale: Locale,
+    ) : NseSpeechMode
+
+    /**
      * Mix mode: the engine splits the text by detected script segment and
      * synthesises each segment with the best-matching voice, then queues
      * them back-to-back. Produces a seamless multi-language experience.

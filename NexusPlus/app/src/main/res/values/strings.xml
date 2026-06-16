@@ -35,13 +35,15 @@
     <string name="terms_conditions">Terms &amp; Conditions</string>
     <string name="developed_by">Developed and Maintained by Nexus Wave Technologies</string>
 
-    <!-- Nexus Speech Engine (NSE 2.0) -->
+    <!-- Nexus Speech Engine (NSE 4.0) - Auto TTS Screen Reader -->
+    <string name="nse_accessibility_desc">NSE Auto TTS Screen Reader \u2014 automatically reads screen content aloud with intelligent language detection and professional voice switching.</string>
     <string name="nse_title">Nexus Speech Engine</string>
     <string name="nse_input_label">Enter text to speak\u2026</string>
     <string name="nse_input_placeholder">Type or paste text in any language</string>
     <string name="nse_mode_auto">Auto</string>
     <string name="nse_mode_single">Single Voice</string>
-    <string name="nse_mode_mix">Mix</string>
+    <string name="nse_mode_dual">Dual Voice</string>
+    <string name="nse_mode_mix">Mixed</string>
     <string name="nse_btn_speak">Speak</string>
     <string name="nse_btn_stop">Stop</string>
     <string name="nse_btn_clear">Clear</string>

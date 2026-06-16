@@ -34,6 +34,16 @@ class SettingsRepository(private val context: Context) {
         // Feature — TTS
         private val KEY_TTS_SPEECH_RATE     = floatPreferencesKey("tts_speech_rate")
         private val KEY_TTS_LANGUAGE        = stringPreferencesKey("tts_language")
+        private val KEY_TTS_SCREEN_READER_MODE = stringPreferencesKey("tts_screen_reader_mode")
+        private val KEY_TTS_VOICE_SELECTION = stringPreferencesKey("tts_voice_selection")
+        private val KEY_TTS_PITCH           = floatPreferencesKey("tts_pitch")
+        private val KEY_TTS_SECONDARY_LANG  = stringPreferencesKey("tts_secondary_language")
+        private val KEY_TTS_AUTO_START      = booleanPreferencesKey("tts_auto_start")
+        private val KEY_TTS_NOTIFICATION_FILTER = booleanPreferencesKey("tts_notification_filter")
+        private val KEY_TTS_WINDOW_CHANGE   = booleanPreferencesKey("tts_window_change")
+        private val KEY_TTS_FOCUS_TRACKING  = booleanPreferencesKey("tts_focus_tracking")
+        private val KEY_TTS_CONTINUOUS_READ = booleanPreferencesKey("tts_continuous_read")
+        private val KEY_TTS_DUPLICATE_FILTER = booleanPreferencesKey("tts_duplicate_filter")
 
         // Feature — Morse Code
         private val KEY_MORSE_VIB_SPEED     = stringPreferencesKey("morse_vibration_speed")
@@ -76,6 +86,13 @@ class SettingsRepository(private val context: Context) {
         const val TTS_LANG_PT   = "pt"
         const val TTS_LANG_RU   = "ru"
         const val TTS_LANG_JA   = "ja"
+
+        // TTS screen reader modes
+        const val TTS_MODE_AUTO   = "AUTO"
+        const val TTS_MODE_SINGLE = "SINGLE"
+        const val TTS_MODE_DUAL   = "DUAL"
+        const val TTS_MODE_MIXED  = "MIXED"
+        val TTS_MODE_OPTIONS = listOf(TTS_MODE_AUTO, TTS_MODE_SINGLE, TTS_MODE_DUAL, TTS_MODE_MIXED)
 
         // Morse vibration speed
         const val MORSE_SPEED_SLOW   = "SLOW"
@@ -121,6 +138,36 @@ class SettingsRepository(private val context: Context) {
     val ttsDefaultLanguage: Flow<String> = context.settingsDataStore.data.map {
         it[KEY_TTS_LANGUAGE] ?: TTS_LANG_AUTO
     }
+    val ttsScreenReaderMode: Flow<String> = context.settingsDataStore.data.map {
+        it[KEY_TTS_SCREEN_READER_MODE] ?: TTS_MODE_AUTO
+    }
+    val ttsVoiceSelection: Flow<String> = context.settingsDataStore.data.map {
+        it[KEY_TTS_VOICE_SELECTION] ?: ""
+    }
+    val ttsPitch: Flow<Float> = context.settingsDataStore.data.map {
+        it[KEY_TTS_PITCH] ?: 1.0f
+    }
+    val ttsSecondaryLanguage: Flow<String> = context.settingsDataStore.data.map {
+        it[KEY_TTS_SECONDARY_LANG] ?: TTS_LANG_AUTO
+    }
+    val ttsAutoStart: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[KEY_TTS_AUTO_START] ?: false
+    }
+    val ttsNotificationFilter: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[KEY_TTS_NOTIFICATION_FILTER] ?: true
+    }
+    val ttsWindowChangeDetection: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[KEY_TTS_WINDOW_CHANGE] ?: true
+    }
+    val ttsFocusTracking: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[KEY_TTS_FOCUS_TRACKING] ?: true
+    }
+    val ttsContinuousRead: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[KEY_TTS_CONTINUOUS_READ] ?: true
+    }
+    val ttsDuplicateFilter: Flow<Boolean> = context.settingsDataStore.data.map {
+        it[KEY_TTS_DUPLICATE_FILTER] ?: true
+    }
 
     // ── Feature: Morse Code ───────────────────────────────────────────────────
     val morseVibrationSpeed: Flow<String> = context.settingsDataStore.data.map {
@@ -157,6 +204,16 @@ class SettingsRepository(private val context: Context) {
     suspend fun setTouchVibration(v: Boolean)      { context.settingsDataStore.edit { it[KEY_TOUCH_VIBRATION] = v } }
     suspend fun setTtsDefaultRate(v: Float)        { context.settingsDataStore.edit { it[KEY_TTS_SPEECH_RATE] = v } }
     suspend fun setTtsDefaultLanguage(v: String)   { context.settingsDataStore.edit { it[KEY_TTS_LANGUAGE] = v } }
+    suspend fun setTtsScreenReaderMode(v: String) { context.settingsDataStore.edit { it[KEY_TTS_SCREEN_READER_MODE] = v } }
+    suspend fun setTtsVoiceSelection(v: String)   { context.settingsDataStore.edit { it[KEY_TTS_VOICE_SELECTION] = v } }
+    suspend fun setTtsPitch(v: Float)              { context.settingsDataStore.edit { it[KEY_TTS_PITCH] = v } }
+    suspend fun setTtsSecondaryLanguage(v: String) { context.settingsDataStore.edit { it[KEY_TTS_SECONDARY_LANG] = v } }
+    suspend fun setTtsAutoStart(v: Boolean)        { context.settingsDataStore.edit { it[KEY_TTS_AUTO_START] = v } }
+    suspend fun setTtsNotificationFilter(v: Boolean) { context.settingsDataStore.edit { it[KEY_TTS_NOTIFICATION_FILTER] = v } }
+    suspend fun setTtsWindowChange(v: Boolean)     { context.settingsDataStore.edit { it[KEY_TTS_WINDOW_CHANGE] = v } }
+    suspend fun setTtsFocusTracking(v: Boolean)   { context.settingsDataStore.edit { it[KEY_TTS_FOCUS_TRACKING] = v } }
+    suspend fun setTtsContinuousRead(v: Boolean)  { context.settingsDataStore.edit { it[KEY_TTS_CONTINUOUS_READ] = v } }
+    suspend fun setTtsDuplicateFilter(v: Boolean) { context.settingsDataStore.edit { it[KEY_TTS_DUPLICATE_FILTER] = v } }
     suspend fun setMorseVibrationSpeed(v: String)  { context.settingsDataStore.edit { it[KEY_MORSE_VIB_SPEED] = v } }
     suspend fun setBufferQuality(v: String)        { context.settingsDataStore.edit { it[KEY_BUFFER_QUALITY] = v } }
     suspend fun setTranslatorAutoDetect(v: Boolean){ context.settingsDataStore.edit { it[KEY_TRANSLATOR_AUTO] = v } }
