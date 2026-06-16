@@ -146,7 +146,7 @@ fun DocHubScreen(onBack: () -> Unit) {
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .semantics { contentDescription = "${doc.name}. ${formatSize(doc.size)}. Double tap to open." }
+                                .semantics { contentDescription = "${doc.name}. ${formatSize(doc.size)}." }
                         ) {
                             ListItem(
                                 leadingContent = {

@@ -164,7 +164,7 @@ fun ColorDetectorScreen(onBack: () -> Unit) {
                         Modifier
                             .size(40.dp)
                             .align(Alignment.Center)
-                            .background(Color.White.copy(alpha = 0.3f), CircleShape)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.3f), CircleShape)
                     )
 
                     // Freeze button

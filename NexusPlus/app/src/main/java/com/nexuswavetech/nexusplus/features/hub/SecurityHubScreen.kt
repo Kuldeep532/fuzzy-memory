@@ -56,7 +56,6 @@ fun SecurityHubScreen(
             title       = "Security & Privacy",
             icon        = FeatureHub.SECURITY.icon,
             description = FeatureHub.SECURITY.description,
-            color       = FeatureHub.SECURITY.color,
             count       = allFeatures.size,
         )
 

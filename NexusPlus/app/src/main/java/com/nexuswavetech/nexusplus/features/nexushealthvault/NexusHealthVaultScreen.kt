@@ -32,12 +32,12 @@ import org.koin.androidx.compose.koinViewModel
 private data class HealthCategory(val name: String, val icon: ImageVector, val color: Color)
 
 private val categories = listOf(
-    HealthCategory("Vitals",       Icons.Filled.MonitorHeart,  Color(0xFFF44336)),
-    HealthCategory("Medications",  Icons.Filled.Medication,    Color(0xFF9C27B0)),
-    HealthCategory("Lab Results",  Icons.Filled.Science,       Color(0xFF2196F3)),
-    HealthCategory("Appointments", Icons.Filled.CalendarMonth, Color(0xFF4CAF50)),
-    HealthCategory("Allergies",    Icons.Filled.Warning,       Color(0xFFFF9800)),
-    HealthCategory("Vaccinations", Icons.Filled.Vaccines,      Color(0xFF009688)),
+    HealthCategory("Vitals",       Icons.Filled.MonitorHeart,  Color(0xFFEF5350)),
+    HealthCategory("Medications",  Icons.Filled.Medication,    Color(0xFFAB47BC)),
+    HealthCategory("Lab Results",  Icons.Filled.Science,       Color(0xFF42A5F5)),
+    HealthCategory("Appointments", Icons.Filled.CalendarMonth, Color(0xFF66BB6A)),
+    HealthCategory("Allergies",    Icons.Filled.Warning,       Color(0xFFFFA726)),
+    HealthCategory("Vaccinations", Icons.Filled.Vaccines,      Color(0xFF26A69A)),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

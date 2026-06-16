@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import com.nexuswavetech.nexusplus.ui.theme.NexusPrimary
+import com.nexuswavetech.nexusplus.ui.theme.NexusSecondary
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -27,8 +29,8 @@ import kotlin.math.sin
 @Composable
 fun NexusPlusLogo(
     modifier: Modifier = Modifier,
-    primaryColor: Color = Color(0xFF4A3AFF),
-    accentColor: Color  = Color(0xFF00C9A7),
+    primaryColor: Color = NexusPrimary,
+    accentColor: Color  = NexusSecondary,
     strokeWidth: Dp     = 3.dp,
 ) {
     Canvas(modifier = modifier) {

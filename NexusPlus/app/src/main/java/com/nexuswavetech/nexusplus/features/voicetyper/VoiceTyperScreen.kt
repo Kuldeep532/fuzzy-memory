@@ -186,7 +186,7 @@ fun VoiceTyperScreen(onBack: () -> Unit) {
                         modifier = Modifier
                             .size(80.dp)
                             .semantics {
-                                contentDescription = if (isListening) "Stop listening. Double tap to stop." else "Start listening. Double tap to begin voice input."
+                                contentDescription = if (isListening) "Stop listening" else "Start listening"
                             },
                         containerColor = if (isListening) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     ) {

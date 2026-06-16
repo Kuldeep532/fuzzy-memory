@@ -257,7 +257,7 @@ fun RadioPlayerScreen(
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.semantics { contentDescription = "Radio category filter. Swipe to browse categories." }
+            modifier = Modifier.semantics { contentDescription = "Radio category filter" }
         ) {
             items(IndianRadioCategory.entries.toList()) { category ->
                 FilterChip(
@@ -339,8 +339,7 @@ fun RadioPlayerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics {
-                                    contentDescription = "${station.name}. ${station.language.ifBlank { "Indian" }} language." +
-                                        if (isActive) " Currently playing." else " Double tap to play."
+                                    contentDescription = "${station.name}. ${station.language.ifBlank { "Indian" }} language.${if (isActive) " Currently playing" else ""}"
                                 },
                             colors = CardDefaults.cardColors(
                                 containerColor = if (isActive) MaterialTheme.colorScheme.secondaryContainer

@@ -34,9 +34,9 @@ import androidx.compose.ui.unit.dp
 
 private enum class PasswordStrength(val label: String, val color: Color, val fraction: Float) {
     EMPTY("", Color.Transparent, 0f),
-    WEAK("Weak", Color(0xFFEF5350), 0.25f),
-    FAIR("Fair", Color(0xFFFF9800), 0.6f),
-    STRONG("Strong", Color(0xFF43A047), 1f)
+    WEAK("Weak", Color(0xFFE53935), 0.25f),
+    FAIR("Fair", Color(0xFFFF8F00), 0.6f),
+    STRONG("Strong", Color(0xFF2E7D32), 1f)
 }
 
 private data class FormXState(
@@ -192,12 +192,12 @@ fun AutoUniversalFormX(
                                 Icon(
                                     Icons.Filled.CheckCircle,
                                     contentDescription = null,
-                                    tint = Color(0xFF43A047),
+                                    tint = Color(0xFF2E7D32),
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
                                     "Valid email",
-                                    color = Color(0xFF43A047),
+                                    color = Color(0xFF2E7D32),
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -213,7 +213,7 @@ fun AutoUniversalFormX(
                             label = "email-icon"
                         ) { s ->
                             when (s) {
-                                "ok" -> Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF43A047))
+                                "ok" -> Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF2E7D32))
                                 "err" -> Icon(Icons.Filled.Error, null, tint = MaterialTheme.colorScheme.error)
                                 else -> {}
                             }
@@ -331,12 +331,12 @@ fun AutoUniversalFormX(
                             ) {
                                 Icon(
                                     Icons.Filled.CheckCircle, null,
-                                    tint = Color(0xFF43A047),
+                                    tint = Color(0xFF2E7D32),
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Text(
                                     "Valid specification",
-                                    color = Color(0xFF43A047),
+                                    color = Color(0xFF2E7D32),
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
@@ -352,7 +352,7 @@ fun AutoUniversalFormX(
                             label = "spec-icon"
                         ) { s ->
                             when (s) {
-                                "ok" -> Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF43A047))
+                                "ok" -> Icon(Icons.Filled.CheckCircle, null, tint = Color(0xFF2E7D32))
                                 "err" -> Icon(Icons.Filled.Error, null, tint = MaterialTheme.colorScheme.error)
                                 else -> {}
                             }
@@ -401,7 +401,7 @@ fun AutoUniversalFormX(
                 val ready = state.allValid
                 Surface(
                     shape = RoundedCornerShape(12.dp),
-                    color = if (ready) Color(0xFF43A047).copy(alpha = 0.12f)
+                    color = if (ready) Color(0xFF2E7D32).copy(alpha = 0.12f)
                     else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -413,7 +413,7 @@ fun AutoUniversalFormX(
                         Icon(
                             if (ready) Icons.Filled.TaskAlt else Icons.Filled.PendingActions,
                             contentDescription = null,
-                            tint = if (ready) Color(0xFF43A047) else MaterialTheme.colorScheme.error,
+                            tint = if (ready) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(20.dp)
                         )
                         Text(
@@ -427,7 +427,7 @@ fun AutoUniversalFormX(
                                 "Fix: ${remaining.joinToString(", ")}"
                             },
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (ready) Color(0xFF43A047) else MaterialTheme.colorScheme.error
+                            color = if (ready) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -485,7 +485,7 @@ fun AutoUniversalFormX(
             AnimatedVisibility(visible = state.submitted) {
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color(0xFF43A047).copy(alpha = 0.15f),
+                    color = Color(0xFF2E7D32).copy(alpha = 0.15f),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -496,13 +496,13 @@ fun AutoUniversalFormX(
                         Icon(
                             Icons.Filled.CheckCircle,
                             contentDescription = "Success",
-                            tint = Color(0xFF43A047),
+                            tint = Color(0xFF2E7D32),
                             modifier = Modifier.size(40.dp)
                         )
                         Text(
                             "Submitted successfully",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                            color = Color(0xFF43A047)
+                            color = Color(0xFF2E7D32)
                         )
                         Text(
                             "Form X data accepted for ${state.email}",

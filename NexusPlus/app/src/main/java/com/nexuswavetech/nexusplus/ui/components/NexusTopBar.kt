@@ -31,7 +31,7 @@ fun NexusTopBar(
                 IconButton(
                     onClick  = onBack,
                     modifier = Modifier.semantics {
-                        contentDescription = "Navigate back to previous screen"
+                        contentDescription = "Back"
                     }
                 ) {
                     Icon(

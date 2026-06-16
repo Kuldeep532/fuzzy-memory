@@ -120,7 +120,7 @@ fun NumberSystemScreen(onBack: () -> Unit, viewModel: NumberSystemViewModel = ko
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .semantics { contentDescription = "${result.base.label}: ${result.value}. Double tap copy button to copy." },
+                            .semantics { contentDescription = "${result.base.label}: ${result.value}" },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
                         Row(

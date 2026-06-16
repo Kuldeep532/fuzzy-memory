@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.koin.androidx.compose.koinViewModel
 
-// ── Supported language pairs (on-device MLKit — no API key required) ──────────
+// ── Supported language pairs (on-device MLKit) ────────────────────────────────
 
 data class NexusLanguage(val code: String, val displayName: String)
 
@@ -154,7 +154,7 @@ fun TextTranslatorScreen(
                 Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(Icons.Filled.OfflineBolt, null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
                     Text(
-                        "Powered by Google MLKit — works 100% offline after first download. No API key required.",
+                        "Offline translation",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -302,7 +302,7 @@ private fun LanguageDropdown(
             modifier          = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 .fillMaxWidth()
-                .semantics { contentDescription = "$label language: ${selected.displayName}. Double tap to change." },
+                .semantics { contentDescription = "$label language: ${selected.displayName}" },
             singleLine        = true
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {

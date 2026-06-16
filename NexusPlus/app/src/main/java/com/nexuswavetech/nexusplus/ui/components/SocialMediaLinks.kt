@@ -144,7 +144,7 @@ fun HelpSection(modifier: Modifier = Modifier) {
         OutlinedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics { contentDescription = "Support email: nexuswavetech@yahoo.com. Tap to send email." },
+                .semantics { contentDescription = "Support email: nexuswavetech@yahoo.com" },
             onClick = {
                 val intent = Intent(Intent.ACTION_SENDTO).apply {
                     data = Uri.parse("mailto:nexuswavetech@yahoo.com")

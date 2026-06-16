@@ -186,7 +186,7 @@ fun QrCodeScreen(
                 Card(
                     modifier = Modifier
                         .size(260.dp)
-                        .semantics { contentDescription = "Generated QR code. Double tap to share." }
+                        .semantics { contentDescription = "Generated QR code" }
                 ) {
                     Image(
                         bitmap = bmp.asImageBitmap(),

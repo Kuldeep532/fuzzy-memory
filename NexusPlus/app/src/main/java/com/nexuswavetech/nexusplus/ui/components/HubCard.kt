@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -34,8 +33,7 @@ fun HubCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .semantics {
-                contentDescription =
-                    "${hub.displayName} hub. ${hub.description}. $featureCount features. Double tap to open."
+                contentDescription = "${hub.displayName}. ${featureCount} features."
                 role = Role.Button
             },
         shape     = RoundedCornerShape(20.dp),
@@ -49,17 +47,16 @@ fun HubCard(
             verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // Tinted icon badge
             Surface(
                 shape = RoundedCornerShape(14.dp),
-                color = hub.color.copy(alpha = 0.18f),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(52.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector        = hub.icon,
                         contentDescription = null,
-                        tint               = hub.color,
+                        tint               = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier           = Modifier.size(28.dp),
                     )
                 }
@@ -79,15 +76,14 @@ fun HubCard(
                 )
             }
 
-            // Feature count badge
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = hub.color.copy(alpha = 0.15f),
+                color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
                 Text(
                     text  = "$featureCount",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.ExtraBold),
-                    color = hub.color,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
@@ -102,7 +98,6 @@ fun HubCard(
 fun CompactHubCard(
     icon: ImageVector,
     label: String,
-    accentColor: Color,
     featureCount: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -110,7 +105,7 @@ fun CompactHubCard(
     Card(
         onClick   = onClick,
         modifier  = modifier.semantics {
-            contentDescription = "$label. $featureCount features. Double tap to open."
+            contentDescription = "$label. $featureCount features."
             role = Role.Button
         },
         shape  = RoundedCornerShape(16.dp),
@@ -123,11 +118,11 @@ fun CompactHubCard(
         ) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = accentColor.copy(alpha = 0.18f),
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(48.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(imageVector = icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(26.dp))
+                    Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(26.dp))
                 }
             }
             Text(label, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)

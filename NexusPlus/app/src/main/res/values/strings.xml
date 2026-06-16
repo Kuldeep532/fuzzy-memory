@@ -18,7 +18,7 @@
     <string name="tab_more">More</string>
 
     <!-- Accessibility -->
-    <string name="cd_feature_card">Feature: %1$s. Double tap to open. Long press to manage favorites.</string>
+    <string name="cd_feature_card">Feature: %1$s</string>
     <string name="cd_favorite_added">%1$s added to favorites</string>
     <string name="cd_favorite_removed">%1$s removed from favorites</string>
     <string name="cd_restricted_feature">%1$s requires Google Sign-In. This feature is restricted for guest users.</string>

@@ -113,7 +113,7 @@ private fun HashResultCard(result: HashResult, onCopy: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .semantics {
-                contentDescription = "${result.algorithm.label} hash: ${result.hash}. Double tap copy button to copy."
+                contentDescription = "${result.algorithm.label} hash: ${result.hash}"
             },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {

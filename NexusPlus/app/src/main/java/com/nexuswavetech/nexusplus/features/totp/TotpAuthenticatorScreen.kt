@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
@@ -164,7 +163,7 @@ private fun TotpCard(
     )
     val codeColor = when {
         secsLeft <= 5  -> MaterialTheme.colorScheme.error
-        secsLeft <= 10 -> Color(0xFFFF9800)
+        secsLeft <= 10 -> MaterialTheme.colorScheme.secondary
         else           -> MaterialTheme.colorScheme.primary
     }
 

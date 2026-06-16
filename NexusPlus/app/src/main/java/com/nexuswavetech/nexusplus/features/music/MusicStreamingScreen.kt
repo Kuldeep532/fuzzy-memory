@@ -378,8 +378,7 @@ private fun OfflineMusicContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) {
-                                    contentDescription = "${track.title} by ${track.artist}. Duration ${track.duration}." +
-                                        if (isActive) " Currently playing." else " Double tap to play."
+                                    contentDescription = "${track.title} by ${track.artist}. Duration ${track.duration}.${if (isActive) " Currently playing" else ""}"
                                     customActions = listOf(
                                         CustomAccessibilityAction("Play ${track.title}") { viewModel.playTrack(track); true }
                                     )
@@ -445,8 +444,7 @@ private fun OnlineMusicContent(uiState: MusicUiState, viewModel: MusicViewModel,
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics(mergeDescendants = true) {
-                                contentDescription = "${track.title} by ${track.artist}. Duration ${track.duration}." +
-                                    if (isActive) " Currently playing." else " Double tap to play."
+                                contentDescription = "${track.title} by ${track.artist}. Duration ${track.duration}.${if (isActive) " Currently playing" else ""}"
                                 customActions = listOf(
                                     CustomAccessibilityAction("Play ${track.title}") { viewModel.playTrack(track); view.announceForAccessibility("Playing ${track.title}"); true }
                                 )

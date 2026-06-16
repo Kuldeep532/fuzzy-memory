@@ -54,7 +54,7 @@ fun UtilitiesHubScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Utilities Hub", onBack = onBack)
 
-        HubHeader(title = "Utilities & Smart Tools", icon = FeatureHub.UTILITIES.icon, description = FeatureHub.UTILITIES.description, color = FeatureHub.UTILITIES.color, count = allUtilities.size)
+        HubHeader(title = "Utilities & Smart Tools", icon = FeatureHub.UTILITIES.icon, description = FeatureHub.UTILITIES.description, count = allUtilities.size)
 
         OutlinedTextField(
             value         = searchQuery,

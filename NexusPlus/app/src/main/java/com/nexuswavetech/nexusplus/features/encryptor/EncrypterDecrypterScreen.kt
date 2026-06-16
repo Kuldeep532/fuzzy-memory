@@ -239,7 +239,7 @@ fun EncrypterDecrypterScreen(
                         onClick = { fileLauncher.launch(mimeType) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .semantics { contentDescription = "Select ${uiState.mode.name.lowercase()} file. Double tap to browse." }
+                            .semantics { contentDescription = "Select ${uiState.mode.name.lowercase()} file" }
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
@@ -252,7 +252,7 @@ fun EncrypterDecrypterScreen(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = if (uiState.selectedFileName.isNotBlank()) uiState.selectedFileName else "Tap to select ${uiState.mode.name.lowercase()}",
+                                text = if (uiState.selectedFileName.isNotBlank()) uiState.selectedFileName else "Select ${uiState.mode.name.lowercase()}",
                                 color = if (uiState.selectedFileName.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }

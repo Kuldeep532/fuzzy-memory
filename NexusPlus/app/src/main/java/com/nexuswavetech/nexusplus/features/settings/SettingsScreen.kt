@@ -436,8 +436,7 @@ private fun SettingsToggleRow(
         modifier              = Modifier
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
-                contentDescription = "$title. $subtitle. " +
-                    if (checked) "Currently enabled. Double tap to disable." else "Currently disabled. Double tap to enable."
+                contentDescription = "$title. ${if (checked) "Enabled" else "Disabled"}."
             },
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),

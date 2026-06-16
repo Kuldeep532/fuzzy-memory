@@ -41,7 +41,7 @@ fun DocumentsHubScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Documents Hub", onBack = onBack)
 
-        HubHeader(title = "Documents & Productivity", icon = FeatureHub.DOCUMENTS.icon, description = FeatureHub.DOCUMENTS.description, color = FeatureHub.DOCUMENTS.color, count = features.size)
+        HubHeader(title = "Documents & Productivity", icon = FeatureHub.DOCUMENTS.icon, description = FeatureHub.DOCUMENTS.description, count = features.size)
 
         Text(
             text     = "Document Tools",

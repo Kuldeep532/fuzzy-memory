@@ -36,7 +36,6 @@ import android.content.ContentValues
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -152,7 +151,7 @@ fun NexusImageViewerScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .background(Color.Black)
+                    .background(MaterialTheme.colorScheme.background)
                     .pointerInput(Unit) {
                         detectTransformGestures { _, _, zoom, rotation ->
                             scale = (scale * zoom).coerceIn(0.5f, 6f)
@@ -160,7 +159,7 @@ fun NexusImageViewerScreen(
                         }
                     }
                     .semantics {
-                        contentDescription = "Image viewer. Pinch to zoom, rotate with two fingers."
+                        contentDescription = "Image viewer"
                     },
                 contentAlignment = Alignment.Center
             ) {
@@ -175,8 +174,8 @@ fun NexusImageViewerScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(Icons.Filled.BrokenImage, null, tint = Color.White, modifier = Modifier.size(64.dp))
-                            Text("Unable to load image", color = Color.White)
+                            Icon(Icons.Filled.BrokenImage, null, tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(64.dp))
+                            Text("Unable to load image", color = MaterialTheme.colorScheme.onSurface)
                         }
                     },
                     modifier = Modifier

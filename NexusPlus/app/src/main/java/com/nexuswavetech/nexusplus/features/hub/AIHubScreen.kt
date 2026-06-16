@@ -55,7 +55,7 @@ fun AIHubScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "AI & Voice Hub", onBack = onBack)
 
-        HubHeader(title = "AI & Intelligence", icon = FeatureHub.AI.icon, description = FeatureHub.AI.description, color = FeatureHub.AI.color, count = features.size)
+        HubHeader(title = "AI & Intelligence", icon = FeatureHub.AI.icon, description = FeatureHub.AI.description, count = features.size)
 
         Text(
             text     = "AI & Voice Tools (incl. Aira AI)",

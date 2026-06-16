@@ -65,7 +65,7 @@ fun AllFeaturesScreen(
             contentPadding        = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier              = Modifier.semantics {
-                contentDescription = "Category filters. Swipe to browse."
+                contentDescription = "Category filters"
             },
         ) {
             item {

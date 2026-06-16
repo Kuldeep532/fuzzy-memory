@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -33,11 +32,12 @@ private fun categoryIcon(cat: String): ImageVector = when (cat) {
     else       -> Icons.Filled.Notifications
 }
 
+@Composable
 private fun categoryColor(cat: String) = when (cat) {
-    "security" -> Color(0xFFF44336)
-    "update"   -> Color(0xFF4CAF50)
-    "alert"    -> Color(0xFFFFC107)
-    else       -> Color(0xFF2196F3)
+    "security" -> MaterialTheme.colorScheme.error
+    "update"   -> MaterialTheme.colorScheme.tertiary
+    "alert"    -> MaterialTheme.colorScheme.secondary
+    else       -> MaterialTheme.colorScheme.primary
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -160,8 +160,7 @@ fun WelcomeScreen(
                     .height(56.dp)
                     .semantics {
                         contentDescription =
-                            if (consentGranted) "Continue as Guest. Tap to enter your name."
-                            else "Continue as Guest. Accept Privacy Policy and Terms first."
+                            if (consentGranted) "Continue as Guest" else "Continue as Guest. Accept Privacy Policy and Terms first."
                     },
                 shape  = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
@@ -297,8 +296,7 @@ private fun GoogleSignInButton(isLoading: Boolean, enabled: Boolean, onClick: ()
             .height(56.dp)
             .semantics {
                 contentDescription =
-                    if (enabled) "Sign in with Google. Tap to authenticate."
-                    else "Sign in with Google. Disabled until Privacy Policy and Terms are accepted."
+                    if (enabled) "Sign in with Google" else "Sign in with Google. Disabled until Privacy Policy and Terms are accepted."
                 role = Role.Button
             },
         shape  = RoundedCornerShape(16.dp),

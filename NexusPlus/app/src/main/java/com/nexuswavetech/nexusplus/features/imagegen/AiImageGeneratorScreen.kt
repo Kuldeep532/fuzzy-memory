@@ -140,7 +140,7 @@ fun AiImageGeneratorScreen(
         if (uiState.isGenerating) view.announceForAccessibility("Generating AI image. Please wait.")
     }
     LaunchedEffect(uiState.generatedBitmap) {
-        if (uiState.generatedBitmap != null) view.announceForAccessibility("Image generated. Double tap Save to Gallery button to save.")
+        if (uiState.generatedBitmap != null) view.announceForAccessibility("Image generated")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

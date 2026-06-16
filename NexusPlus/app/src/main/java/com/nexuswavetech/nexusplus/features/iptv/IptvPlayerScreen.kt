@@ -172,7 +172,7 @@ fun IptvPlayerScreen(
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.semantics { contentDescription = "Region selection. Swipe to browse." }
+            modifier = Modifier.semantics { contentDescription = "Region selection" }
         ) {
             items(IptvRegion.entries.toList()) { region ->
                 FilterChip(
@@ -298,8 +298,7 @@ fun IptvPlayerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics(mergeDescendants = true) {
-                                    contentDescription = "${channel.name}${if (channel.group.isNotBlank()) ", ${channel.group}" else ""}." +
-                                        if (isActive) " Currently playing." else " Double tap to play."
+                                    contentDescription = "${channel.name}${if (channel.group.isNotBlank()) ", ${channel.group}" else ""}.${if (isActive) " Currently playing" else ""}"
                                     customActions = listOf(
                                         CustomAccessibilityAction("Play ${channel.name}") { viewModel.onChannelSelected(channel); true }
                                     )

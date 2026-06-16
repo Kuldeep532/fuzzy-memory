@@ -257,7 +257,7 @@ object FeatureCatalog {
         FeatureItem(
             id          = FeatureId.AIRA_AI,
             name        = "Aira AI",
-            description = "Chat with Aira — your intelligent AI assistant, powered by Pollinations.ai",
+            description = "Chat with Aira — your intelligent AI assistant",
             icon        = Icons.Filled.AutoAwesome,
             route       = Screen.AiraAi.route,
             category    = FeatureCategory.TOOLS,

@@ -17,7 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -85,7 +84,7 @@ fun FlashlightScreen(onBack: () -> Unit) {
     }
 
     val glowColor by animateColorAsState(
-        targetValue = if (isOn || strobeOn) Color(0xFFFFF9C4) else Color(0xFF37474F),
+        targetValue = if (isOn || strobeOn) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer,
         animationSpec = tween(300),
         label = "glow",
     )
@@ -109,7 +108,7 @@ fun FlashlightScreen(onBack: () -> Unit) {
             Box(
                 modifier = Modifier
                     .size(200.dp)
-                    .shadow(if (isOn || strobeOn) 32.dp else 0.dp, CircleShape, ambientColor = Color(0xFFFFF59D))
+                    .shadow(if (isOn || strobeOn) 32.dp else 0.dp, CircleShape, ambientColor = MaterialTheme.colorScheme.primary)
                     .clip(CircleShape)
                     .background(glowColor),
                 contentAlignment = Alignment.Center,
@@ -130,7 +129,7 @@ fun FlashlightScreen(onBack: () -> Unit) {
                         imageVector        = if (isOn || strobeOn) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
                         contentDescription = null,
                         modifier           = Modifier.size(96.dp),
-                        tint               = if (isOn || strobeOn) Color(0xFF37474F) else Color(0xFF90A4AE),
+                        tint               = if (isOn || strobeOn) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

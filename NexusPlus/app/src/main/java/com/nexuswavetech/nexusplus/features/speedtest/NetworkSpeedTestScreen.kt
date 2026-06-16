@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalView
@@ -124,9 +123,9 @@ fun NetworkSpeedTestScreen(onBack: () -> Unit) {
 
             // ── Results row ────────────────────────────────────────────────
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                ResultCard("Ping", pingMs?.let { if (it < 0) "Error" else "${it}ms" } ?: "—", Icons.Filled.Wifi, Color(0xFF4CAF50))
-                ResultCard("Download", downloadMbps?.let { if (it < 0) "Error" else "%.1f Mbps".format(it) } ?: "—", Icons.Filled.ArrowDownward, Color(0xFF2196F3))
-                ResultCard("Upload", uploadMbps?.let { if (it < 0) "Error" else "%.1f Mbps".format(it) } ?: "—", Icons.Filled.ArrowUpward, Color(0xFFFF9800))
+                ResultCard("Ping", pingMs?.let { if (it < 0) "Error" else "${it}ms" } ?: "—", Icons.Filled.Wifi, MaterialTheme.colorScheme.tertiary)
+                ResultCard("Download", downloadMbps?.let { if (it < 0) "Error" else "%.1f Mbps".format(it) } ?: "—", Icons.Filled.ArrowDownward, MaterialTheme.colorScheme.primary)
+                ResultCard("Upload", uploadMbps?.let { if (it < 0) "Error" else "%.1f Mbps".format(it) } ?: "—", Icons.Filled.ArrowUpward, MaterialTheme.colorScheme.secondary)
             }
 
             if (error != null) {

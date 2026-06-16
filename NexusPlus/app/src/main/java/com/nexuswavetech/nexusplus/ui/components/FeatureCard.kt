@@ -29,7 +29,7 @@ import com.nexuswavetech.nexusplus.core.FeatureItem
  *
  * ## Interaction model
  *  - Single tap   → open feature
- *  - Long press   → context menu with 5 actions
+ *  - Long press   → context menu
  *  - TalkBack     → semantic custom actions expose all 5 actions without gestures
  *
  * ## Context-menu actions
@@ -67,19 +67,16 @@ fun FeatureCard(
                 .semantics(mergeDescendants = true) {
                     contentDescription = buildString {
                         append(feature.name)
-                        append(". ")
-                        append(feature.description)
-                        if (feature.isNew)       append(" New feature.")
-                        if (feature.isFavorite)  append(" In your favorites.")
-                        if (feature.isPinned)    append(" Pinned to Home.")
-                        append(" Double tap to open. Long press for more options.")
+                        if (feature.isNew)       append(". New.")
+                        if (feature.isFavorite)  append(". Favorited.")
+                        if (feature.isPinned)    append(". Pinned.")
                     }
                     customActions = listOf(
                         CustomAccessibilityAction("Open")             { onTap(); true },
                         CustomAccessibilityAction(favoriteLabel)      { onToggleFavorite(); true },
                         CustomAccessibilityAction(pinLabel)           { onTogglePin(); true },
                         CustomAccessibilityAction("Share")            { shareFeature(context, feature); true },
-                        CustomAccessibilityAction("View Information") { showInfoDialog = true; true },
+                        CustomAccessibilityAction("Information") { showInfoDialog = true; true },
                     )
                 },
             shape     = MaterialTheme.shapes.medium,

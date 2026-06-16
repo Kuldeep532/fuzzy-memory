@@ -129,7 +129,7 @@ fun PdfReaderScreen(onBack: () -> Unit) {
                     Button(
                         onClick = { filePicker.launch("application/pdf") },
                         modifier = Modifier.semantics {
-                            contentDescription = "Open PDF file. Tap to browse files and select a PDF."
+                            contentDescription = "Open PDF file"
                         }
                     ) {
                         Icon(Icons.Filled.FolderOpen, contentDescription = null)

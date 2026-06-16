@@ -17,4 +17,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Prevent automatic theme flickering on resume
+        window.decorView.postInvalidate()
+    }
 }

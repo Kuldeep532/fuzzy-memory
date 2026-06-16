@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.BackHandler
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -42,25 +43,25 @@ private val tabs = listOf(
         tab            = BottomTab.Home,
         selectedIcon   = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
-        contentDesc    = "Home tab. Dashboard with hub cards and recent activity.",
+        contentDesc    = "Home",
     ),
     NavTabItem(
         tab            = BottomTab.Explore,
         selectedIcon   = Icons.Filled.Apps,
         unselectedIcon = Icons.Outlined.Apps,
-        contentDesc    = "Explore tab. Browse all features by category.",
+        contentDesc    = "Explore",
     ),
     NavTabItem(
         tab            = BottomTab.Favorites,
         selectedIcon   = Icons.Filled.Favorite,
         unselectedIcon = Icons.Outlined.FavoriteBorder,
-        contentDesc    = "Favorites tab. Your bookmarked and pinned features.",
+        contentDesc    = "Favorites",
     ),
     NavTabItem(
         tab            = BottomTab.More,
         selectedIcon   = Icons.Filled.MoreHoriz,
         unselectedIcon = Icons.Outlined.MoreHoriz,
-        contentDesc    = "More tab. Profile, settings, and app information.",
+        contentDesc    = "More",
     ),
 )
 
@@ -69,6 +70,14 @@ fun MainScaffold(rootNavController: NavController) {
     val tabNavController = rememberNavController()
     val navBackStack     by tabNavController.currentBackStackEntryAsState()
     val currentRoute     = navBackStack?.destination?.route
+
+    // System back button: on non-Home tabs, return to Home instead of exiting the app
+    BackHandler(enabled = currentRoute != BottomTab.Home.route) {
+        tabNavController.navigate(BottomTab.Home.route) {
+            popUpTo(BottomTab.Home.route) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -104,8 +113,7 @@ fun MainScaffold(rootNavController: NavController) {
                             unselectedTextColor    = MaterialTheme.colorScheme.onSurfaceVariant,
                         ),
                         modifier  = Modifier.semantics {
-                            contentDescription = item.contentDesc +
-                                if (selected) " Currently selected." else " Double tap to switch."
+                            contentDescription = item.contentDesc
                         },
                     )
                 }

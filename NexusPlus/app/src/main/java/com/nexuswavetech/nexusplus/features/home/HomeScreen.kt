@@ -124,16 +124,10 @@ fun HomeScreen(rootNavController: NavController) {
                 Spacer(Modifier.height(16.dp))
                 JaiShriKrishnaGreeting()
                 Spacer(Modifier.height(14.dp))
-                val name = session.displayName.ifBlank { "there" }
                 Text(
-                    text     = "Welcome back, $name 👋",
+                    text     = "Nexus Plus",
                     style    = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.ExtraBold),
                     modifier = Modifier.semantics { heading() },
-                )
-                Text(
-                    text  = "What would you like to explore today?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(Modifier.height(14.dp))
             }
@@ -146,7 +140,7 @@ fun HomeScreen(rootNavController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .semantics { contentDescription = "Search. Tap the Search tab to find any feature." },
+                    .semantics { contentDescription = "Search" },
                 shape    = RoundedCornerShape(28.dp),
                 color    = MaterialTheme.colorScheme.surfaceVariant,
                 tonalElevation = 2.dp,
@@ -337,7 +331,7 @@ fun HomeScreen(rootNavController: NavController) {
                     Column(
                         modifier              = Modifier
                             .padding(24.dp)
-                            .semantics { contentDescription = "Tip: Long press any feature card to pin it to Home or add it to favorites." },
+                            .semantics { contentDescription = "No pinned or recent features." },
                         horizontalAlignment   = Alignment.CenterHorizontally,
                         verticalArrangement   = Arrangement.spacedBy(8.dp),
                     ) {
@@ -348,14 +342,9 @@ fun HomeScreen(rootNavController: NavController) {
                             modifier = Modifier.size(40.dp),
                         )
                         Text(
-                            "Long press any feature card",
+                            "No pinned features yet",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            "to Pin it here, add to Favorites, or share it",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -403,7 +392,7 @@ private fun QuickChip(
     Surface(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .semantics { contentDescription = "${feature.name}. Double tap to open." },
+            .semantics { contentDescription = feature.name },
         shape          = RoundedCornerShape(14.dp),
         color          = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 2.dp,

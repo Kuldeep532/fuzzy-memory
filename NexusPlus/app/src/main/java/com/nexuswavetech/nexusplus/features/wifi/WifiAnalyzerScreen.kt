@@ -18,7 +18,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
@@ -52,10 +51,11 @@ private fun rssiToLabel(rssi: Int) = when {
     else         -> "Poor"
 }
 
+@Composable
 private fun rssiToColor(rssi: Int) = when {
-    rssi >= -60  -> Color(0xFF4CAF50)
-    rssi >= -70  -> Color(0xFFFFC107)
-    else         -> Color(0xFFF44336)
+    rssi >= -60  -> MaterialTheme.colorScheme.tertiary
+    rssi >= -70  -> MaterialTheme.colorScheme.secondary
+    else         -> MaterialTheme.colorScheme.error
 }
 
 @OptIn(ExperimentalPermissionsApi::class)

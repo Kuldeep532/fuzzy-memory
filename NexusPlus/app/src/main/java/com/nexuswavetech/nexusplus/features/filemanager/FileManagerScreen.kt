@@ -65,11 +65,11 @@ private fun getFileIcon(file: File): ImageVector = when {
 
 private fun getFileIconTint(file: File, primary: Color, onSurface: Color): Color = when {
     file.isDirectory -> primary
-    file.extension.lowercase() in setOf("jpg","jpeg","png","gif","webp","bmp","heic") -> Color(0xFF9C27B0)
-    file.extension.lowercase() in setOf("mp4","mkv","avi","mov","webm")               -> Color(0xFFF44336)
-    file.extension.lowercase() in setOf("mp3","wav","flac","aac","ogg","m4a","opus")  -> Color(0xFF2196F3)
-    file.extension.lowercase() in setOf("pdf")  -> Color(0xFFE53935)
-    file.extension.lowercase() in setOf("apk")  -> Color(0xFF4CAF50)
+    file.extension.lowercase() in setOf("jpg","jpeg","png","gif","webp","bmp","heic") -> primary
+    file.extension.lowercase() in setOf("mp4","mkv","avi","mov","webm")               -> MaterialTheme.colorScheme.error
+    file.extension.lowercase() in setOf("mp3","wav","flac","aac","ogg","m4a","opus")  -> MaterialTheme.colorScheme.secondary
+    file.extension.lowercase() in setOf("pdf")  -> MaterialTheme.colorScheme.error
+    file.extension.lowercase() in setOf("apk")  -> MaterialTheme.colorScheme.tertiary
     else -> onSurface
 }
 
@@ -444,7 +444,7 @@ private fun FileItem(
             )
             .background(
                 if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                else Color.Transparent
+                else androidx.compose.ui.graphics.Color.Transparent
             )
             .padding(horizontal = 16.dp, vertical = 11.dp),
         verticalAlignment     = Alignment.CenterVertically,

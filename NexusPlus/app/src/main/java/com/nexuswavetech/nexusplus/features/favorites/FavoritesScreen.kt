@@ -61,7 +61,7 @@ fun FavoritesScreen(rootNavController: NavController) {
             style    = MaterialTheme.typography.bodyMedium,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.semantics {
-                contentDescription = "${favoriteFeatures.size} bookmarked features. Long press any card for options."
+                contentDescription = "${favoriteFeatures.size} bookmarked features"
             },
         )
 
@@ -72,7 +72,7 @@ fun FavoritesScreen(rootNavController: NavController) {
                 modifier = Modifier
                     .fillMaxSize()
                     .semantics {
-                        contentDescription = "No favorites yet. Long press any feature card and choose Add to Favorites."
+                        contentDescription = "No favorites yet"
                     },
                 contentAlignment = Alignment.Center,
             ) {
@@ -92,7 +92,7 @@ fun FavoritesScreen(rootNavController: NavController) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        "Long press any feature card,\nthen tap \"Add to Favorites\".",
+                        "Features you add to favorites appear here",
                         style     = MaterialTheme.typography.bodyMedium,
                         color     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center,

@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
@@ -96,10 +95,10 @@ fun StorageAnalyzerScreen(onBack: () -> Unit) {
 
                         val used = stats.usedBytes
                         val cats = listOf(
-                            Triple("System & Apps",    Icons.Filled.Android,      Color(0xFF5C6BC0)),
-                            Triple("Media & Photos",   Icons.Filled.PhotoLibrary, Color(0xFF26A69A)),
-                            Triple("Documents",        Icons.Filled.Description,  Color(0xFFFF9800)),
-                            Triple("Other / Cache",    Icons.Filled.Folder,       Color(0xFF8D6E63)),
+                            Triple("System & Apps",    Icons.Filled.Android,      MaterialTheme.colorScheme.primary),
+                            Triple("Media & Photos",   Icons.Filled.PhotoLibrary, MaterialTheme.colorScheme.secondary),
+                            Triple("Documents",        Icons.Filled.Description,  MaterialTheme.colorScheme.tertiary),
+                            Triple("Other / Cache",    Icons.Filled.Folder,       MaterialTheme.colorScheme.outline),
                         )
                         val ratios = listOf(0.40f, 0.30f, 0.15f, 0.15f)
 
@@ -161,9 +160,9 @@ private fun StorageCard(
         label         = "storage_progress",
     )
     val barColor = when {
-        usedFraction > 0.9f -> Color(0xFFF44336)
-        usedFraction > 0.7f -> Color(0xFFFFC107)
-        else                -> Color(0xFF4CAF50)
+        usedFraction > 0.9f -> MaterialTheme.colorScheme.error
+        usedFraction > 0.7f -> MaterialTheme.colorScheme.secondary
+        else                -> MaterialTheme.colorScheme.tertiary
     }
 
     Card(

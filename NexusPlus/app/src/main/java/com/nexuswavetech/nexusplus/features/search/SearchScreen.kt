@@ -151,7 +151,7 @@ fun SearchScreen(rootNavController: NavController) {
                     modifier = Modifier
                         .padding(horizontal = 16.dp, vertical = 4.dp)
                         .semantics {
-                            contentDescription = "${results.size} results found for $query. Long press any card for options."
+                            contentDescription = "${results.size} results found for $query"
                         },
                 )
 

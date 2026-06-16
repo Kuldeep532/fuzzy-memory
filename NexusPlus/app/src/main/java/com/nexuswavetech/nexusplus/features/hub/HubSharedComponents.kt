@@ -9,7 +9,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -27,9 +26,9 @@ internal fun HubHeader(
     title: String,
     icon: ImageVector,
     description: String,
-    color: Color,
     count: Int,
 ) {
+    val primary = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,35 +36,33 @@ internal fun HubHeader(
             .background(
                 Brush.verticalGradient(
                     colors = listOf(
-                        color.copy(alpha = 0.18f),
-                        color.copy(alpha = 0.06f),
+                        primary.copy(alpha = 0.12f),
+                        primary.copy(alpha = 0.04f),
                     )
                 )
             )
-            .semantics { contentDescription = "$title. $description. $count features available." }
+            .semantics { contentDescription = "$title. $count features." }
     ) {
         Row(
             modifier              = Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
             verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // Icon container
             Surface(
                 shape    = RoundedCornerShape(16.dp),
-                color    = color.copy(alpha = 0.20f),
+                color    = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.size(52.dp),
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector        = icon,
                         contentDescription = null,
-                        tint               = color,
+                        tint               = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier           = Modifier.size(28.dp),
                     )
                 }
             }
 
-            // Text content
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(
                     text     = title,
@@ -83,10 +80,9 @@ internal fun HubHeader(
                 )
             }
 
-            // Count badge
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = color.copy(alpha = 0.18f),
+                color = MaterialTheme.colorScheme.secondaryContainer,
             ) {
                 Column(
                     modifier            = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -95,12 +91,12 @@ internal fun HubHeader(
                     Text(
                         text  = "$count",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
-                        color = color,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                     Text(
                         text  = "tools",
                         style = MaterialTheme.typography.labelSmall,
-                        color = color.copy(alpha = 0.75f),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
             }

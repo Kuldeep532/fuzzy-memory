@@ -201,7 +201,7 @@ fun VoiceRecorderScreen(onBack: () -> Unit) {
                     color = MaterialTheme.colorScheme.error,
                 )
             } else {
-                Text("Tap to Record", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Record", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 

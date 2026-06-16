@@ -80,7 +80,7 @@ fun PdfSuiteScreen(onBack: () -> Unit) {
                         onClick = { selectedTool = tool },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .semantics { contentDescription = "${tool.label}. Double tap to open." }
+                            .semantics { contentDescription = tool.label }
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),

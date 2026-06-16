@@ -47,7 +47,7 @@ fun MoreScreen(rootNavController: NavController) {
                 onClick  = { rootNavController.navigate(Screen.Profile.route) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .semantics { contentDescription = "Profile card for ${session.displayName.ifBlank { "Guest User" }}. Tap to view profile." },
+                    .semantics { contentDescription = "Profile: ${session.displayName.ifBlank { "Guest User" }}" },
                 colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             ) {
                 Row(
@@ -68,7 +68,7 @@ fun MoreScreen(rootNavController: NavController) {
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                         Text(
-                            text  = if (session.isGuest) "Guest Account — Tap to view profile" else "Authenticated · Tap to view profile",
+                            text  = if (session.isGuest) "Guest Account" else "Authenticated",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
                         )

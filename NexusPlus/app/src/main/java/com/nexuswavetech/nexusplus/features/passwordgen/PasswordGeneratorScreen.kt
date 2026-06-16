@@ -68,11 +68,11 @@ class PasswordGeneratorViewModel : ViewModel() {
 
 private val strengthLabels = listOf("Very Weak", "Weak", "Fair", "Strong", "Very Strong")
 private val strengthColors  = listOf(
-    androidx.compose.ui.graphics.Color(0xFFD32F2F),
-    androidx.compose.ui.graphics.Color(0xFFF57C00),
-    androidx.compose.ui.graphics.Color(0xFFFBC02D),
-    androidx.compose.ui.graphics.Color(0xFF388E3C),
-    androidx.compose.ui.graphics.Color(0xFF1B5E20)
+    androidx.compose.ui.graphics.Color(0xFFEF5350),
+    androidx.compose.ui.graphics.Color(0xFFFF7043),
+    androidx.compose.ui.graphics.Color(0xFFFFCA28),
+    androidx.compose.ui.graphics.Color(0xFF66BB6A),
+    androidx.compose.ui.graphics.Color(0xFF43A047)
 )
 
 @Composable
@@ -171,7 +171,7 @@ fun PasswordGeneratorScreen(onBack: () -> Unit, viewModel: PasswordGeneratorView
                     Modifier
                         .fillMaxWidth()
                         .semantics(mergeDescendants = true) {
-                            contentDescription = "$label. ${if (checked) "Enabled" else "Disabled"}. Double tap to toggle."
+                            contentDescription = "$label. ${if (checked) "Enabled" else "Disabled"}."
                         },
                     verticalAlignment     = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
