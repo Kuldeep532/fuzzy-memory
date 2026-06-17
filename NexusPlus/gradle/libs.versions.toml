@@ -43,7 +43,6 @@ koinCore = "3.5.6"
 koinCompose = "1.1.5"
 kotlinxSerialization = "1.7.3"
 lifecycleViewmodel = "2.8.7"
-
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
@@ -118,3 +117,13 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 compose = { id = "org.jetbrains.compose", version.ref = "jetbrainsCompose" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+
+[versions]
+koin = "3.5.6"
+kotlinxSerialization = "1.7.3"
+kotlinxCoroutines = "1.8.1"
+
+[libraries]
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
