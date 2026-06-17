@@ -1,6 +1,7 @@
 package com.nexuswavetech.nexusplus.features.notifications
 
 import android.content.Context
+import com.nexuswavetech.nexusplus.core.FeatureCatalog
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -9,21 +10,12 @@ import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class NexusNotification(
-    val id:          String,
-    val title:       String,
-    val body:        String,
-    val timestampMs: Long,
-    val isRead:      Boolean = false,
-    val category:    String  = "system",
-)
-
-class NotificationRepository(private val context: Context) {
+actual class NotificationRepository(private val context: Context) {
 
     private val Context.notifStore by preferencesDataStore(name = "nexus_notifications")
     private val NOTIF_KEY = stringPreferencesKey("notifications_json")
 
-    val notifications: Flow<List<NexusNotification>> = context.notifStore.data.map { prefs ->
+    actual val notifications: Flow<List<NexusNotification>> = context.notifStore.data.map { prefs ->
         val raw = prefs[NOTIF_KEY] ?: return@map seedNotifications()
         runCatching {
             val arr = JSONArray(raw)
@@ -41,7 +33,7 @@ class NotificationRepository(private val context: Context) {
         }.getOrElse { seedNotifications() }
     }
 
-    suspend fun markAsRead(id: String) {
+    actual suspend fun markAsRead(id: String) {
         context.notifStore.edit { prefs ->
             val raw = prefs[NOTIF_KEY] ?: return@edit
             val arr = JSONArray(raw)
@@ -53,7 +45,7 @@ class NotificationRepository(private val context: Context) {
         }
     }
 
-    suspend fun markAllRead() {
+    actual suspend fun markAllRead() {
         context.notifStore.edit { prefs ->
             val raw = prefs[NOTIF_KEY] ?: return@edit
             val arr = JSONArray(raw)
@@ -62,7 +54,7 @@ class NotificationRepository(private val context: Context) {
         }
     }
 
-    suspend fun deleteNotification(id: String) {
+    actual suspend fun deleteNotification(id: String) {
         context.notifStore.edit { prefs ->
             val raw = prefs[NOTIF_KEY] ?: return@edit
             val arr = JSONArray(raw)
@@ -79,7 +71,7 @@ class NotificationRepository(private val context: Context) {
      * Add a notification — ADMIN ONLY.
      * Use [sendAdminNotification] from UI to enforce the admin check.
      */
-    suspend fun addNotification(notif: NexusNotification) {
+    actual suspend fun addNotification(notif: NexusNotification) {
         context.notifStore.edit { prefs ->
             val raw = prefs[NOTIF_KEY] ?: JSONArray().toString()
             val arr = JSONArray(raw)
@@ -100,7 +92,7 @@ class NotificationRepository(private val context: Context) {
      * user with [com.nexuswavetech.nexusplus.core.UserSession.Authenticated.isAdmin] == true
      * may send notifications. Returns true if successful.
      */
-    suspend fun sendAdminNotification(
+    actual suspend fun sendAdminNotification(
         title:    String,
         body:     String,
         category: String,
@@ -124,7 +116,7 @@ class NotificationRepository(private val context: Context) {
     private fun seedNotifications(): List<NexusNotification> {
         val now = System.currentTimeMillis()
         return listOf(
-            NexusNotification("seed_1", "Welcome to Nexus Plus", "Your 52-feature super-app is ready. Explore all hubs!", now - 60_000, false, "system"),
+            NexusNotification("seed_1", "Welcome to Nexus Plus", "Your ${FeatureCatalog.totalCount}-feature super-app is ready. Explore all hubs!", now - 60_000, false, "system"),
             NexusNotification("seed_2", "Biometric Vault", "Vault now uses AES-256-GCM hardware encryption. Your data is safer than ever.", now - 120_000, false, "security"),
             NexusNotification("seed_3", "Health Vault Added", "Track vitals, medications and appointments — secured with biometric lock.", now - 180_000, false, "update"),
         )

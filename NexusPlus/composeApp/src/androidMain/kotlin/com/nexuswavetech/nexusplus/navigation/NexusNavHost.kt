@@ -65,7 +65,9 @@ import com.nexuswavetech.nexusplus.features.imageviewer.NexusImageViewerScreen
 import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
 import com.nexuswavetech.nexusplus.features.dialer.NexusDialerScreen
 import com.nexuswavetech.nexusplus.features.textanalyzer.NexusTextAnalyzerScreen
-import com.nexuswavetech.nexusplus.features.weather.NexusWeatherScreen
+import com.nexuswavetech.nexusplus.features.weather.WeatherScreen
+import com.nexuswavetech.nexusplus.news.NewsScreen
+import com.nexuswavetech.nexusplus.science.ScienceScreen
 import com.nexuswavetech.nexusplus.features.urlshortener.UrlShortenerScreen
 import com.nexuswavetech.nexusplus.ads.NexusAdScaffold
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
@@ -201,7 +203,7 @@ fun NexusNavHost() {
         }
         composable(Screen.AlarmClock.route)        { NexusAdScaffold { AlarmClockScreen       (onBack = { navController.popBackStack() }) } }
         composable(Screen.BarcodeGenerator.route)  { NexusAdScaffold { BarcodeGeneratorScreen (onBack = { navController.popBackStack() }) } }
-        composable(Screen.Weather.route)           { NexusAdScaffold { NexusWeatherScreen      (onBack = { navController.popBackStack() }) } }
+        composable(Screen.Weather.route)           { NexusAdScaffold { WeatherScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.NexusDialer.route)       { NexusAdScaffold { NexusDialerScreen       (onBack = { navController.popBackStack() }) } }
         composable(Screen.TextAnalyzer.route)      { NexusAdScaffold { NexusTextAnalyzerScreen (onBack = { navController.popBackStack() }) } }
         composable(Screen.UrlShortener.route)      { NexusAdScaffold { UrlShortenerScreen      (onBack = { navController.popBackStack() }) } }
@@ -235,6 +237,10 @@ fun NexusNavHost() {
         composable(Screen.AboutUs.route)         { AboutUsScreen        (onBack = { navController.popBackStack() }) }
         composable(Screen.PrivacyPolicy.route)   { PrivacyPolicyScreen  (onBack = { navController.popBackStack() }) }
         composable(Screen.TermsConditions.route) { TermsConditionsScreen(onBack = { navController.popBackStack() }) }
+
+        // ── New KMP Services (commonMain screens) ──────────────────────────────────
+        composable("feature/news")    { NewsScreen   (onBack = { navController.popBackStack() }) }
+        composable("feature/science") { ScienceScreen(onBack = { navController.popBackStack() }) }
 
         // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->

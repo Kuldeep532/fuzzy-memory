@@ -85,10 +85,10 @@ private fun decryptBytes(data: ByteArray, passphrase: String): ByteArray {
 }
 
 private fun encryptText(text: String, passphrase: String): String =
-    android.util.Base64.encodeToString(encryptBytes(text.toByteArray(), passphrase), android.util.Base64.NO_WRAP)
+    java.util.Base64.getEncoder().encodeToString(encryptBytes(text.toByteArray(), passphrase))
 
 private fun decryptText(base64: String, passphrase: String): String =
-    String(decryptBytes(android.util.Base64.decode(base64, android.util.Base64.NO_WRAP), passphrase))
+    String(decryptBytes(java.util.Base64.getDecoder().decode(base64), passphrase))
 
 // ── State & ViewModel Architecture ──────────────────────────────────────────
 

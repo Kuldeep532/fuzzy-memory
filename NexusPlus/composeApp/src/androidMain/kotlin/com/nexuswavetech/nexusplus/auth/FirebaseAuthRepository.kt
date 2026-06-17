@@ -41,4 +41,19 @@ class FirebaseAuthRepository(
     override suspend fun signOut() {
         runCatching { auth?.signOut() }
     }
+
+    override suspend fun isSignedIn(): Boolean =
+        runCatching { auth?.currentUser != null }.getOrDefault(false)
+
+    override suspend fun getCurrentUserId(): String? =
+        runCatching { auth?.currentUser?.uid }.getOrNull()
+
+    override suspend fun getCurrentUserEmail(): String? =
+        runCatching { auth?.currentUser?.email }.getOrNull()
+
+    override suspend fun getCurrentUserDisplayName(): String? =
+        runCatching { auth?.currentUser?.displayName }.getOrNull()
+
+    override suspend fun getCurrentUserPhotoUrl(): String? =
+        runCatching { auth?.currentUser?.photoUrl?.toString() }.getOrNull()
 }

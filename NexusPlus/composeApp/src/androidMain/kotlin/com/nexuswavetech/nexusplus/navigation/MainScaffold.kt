@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.activity.compose.BackHandler
+import com.nexuswavetech.nexusplus.platform.BackNavigationHandler
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -72,7 +72,7 @@ fun MainScaffold(rootNavController: NavController) {
     val currentRoute     = navBackStack?.destination?.route
 
     // System back button: on non-Home tabs, return to Home instead of exiting the app
-    BackHandler(enabled = currentRoute != BottomTab.Home.route) {
+    BackNavigationHandler(enabled = currentRoute != BottomTab.Home.route) {
         tabNavController.navigate(BottomTab.Home.route) {
             popUpTo(BottomTab.Home.route) { inclusive = true }
             launchSingleTop = true

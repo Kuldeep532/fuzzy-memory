@@ -100,7 +100,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 3
-        versionName = "1.2.0"
+        versionName = "1.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -133,8 +133,6 @@ android {
         getByName("main") {
             java.srcDirs(
                 "src/main/java",
-                "../composeApp/src/commonMain/kotlin",
-                "../composeApp/src/androidMain/kotlin",
             )
         }
     }
@@ -177,6 +175,7 @@ tasks.matching {
 
 dependencies {
     implementation(project(":shared"))
+    implementation(project(":composeApp"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

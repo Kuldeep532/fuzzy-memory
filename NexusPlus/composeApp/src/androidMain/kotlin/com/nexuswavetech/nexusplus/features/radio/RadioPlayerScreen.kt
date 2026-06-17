@@ -23,11 +23,10 @@ import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import okhttp3.*
-import org.json.JSONArray
+import com.nexuswavetech.nexusplus.platform.fetchHttp
+import kotlinx.serialization.json.*
 import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
-import java.io.IOException
 import com.nexuswavetech.nexusplus.ads.NexusBannerAd
 
 data class RadioStation(
@@ -70,7 +69,6 @@ class RadioViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(RadioUiState(isLoading = true))
     val uiState: StateFlow<RadioUiState> = _uiState.asStateFlow()
 
-    private val client = OkHttpClient()
     private var exoPlayer: androidx.media3.exoplayer.ExoPlayer? = null
 
     init { fetchIndianStations() }
@@ -82,29 +80,25 @@ class RadioViewModel : ViewModel() {
                 val tagParam = if (category.tag.isNotBlank()) "&tag=${category.tag}" else ""
                 val url = "https://at1.api.radio-browser.info/json/stations/search" +
                     "?limit=100&countrycode=IN&order=votes&reverse=true&hidebroken=true$tagParam"
-                val request = Request.Builder().url(url).build()
-                val response = client.newCall(request).execute()
-                val body = response.body?.string() ?: "[]"
-                val json = JSONArray(body)
+                val body = fetchHttp(url)
+                val json = Json.parseToJsonElement(body).jsonArray
                 val favorites = _uiState.value.favoriteIds
-                val stations = (0 until json.length()).map { i ->
-                    val obj = json.getJSONObject(i)
+                val stations = json.map { el ->
+                    val obj = el.jsonObject
                     RadioStation(
-                        stationUuid = obj.optString("stationuuid"),
-                        name        = obj.optString("name").trim(),
-                        url         = obj.optString("url_resolved"),
-                        country     = obj.optString("country"),
-                        language    = obj.optString("language"),
-                        tags        = obj.optString("tags"),
-                        votes       = obj.optInt("votes"),
-                        isFavorite  = obj.optString("stationuuid") in favorites
+                        stationUuid = obj["stationuuid"]?.jsonPrimitive?.contentOrNull ?: "",
+                        name        = obj["name"]?.jsonPrimitive?.contentOrNull?.trim() ?: "",
+                        url         = obj["url_resolved"]?.jsonPrimitive?.contentOrNull ?: "",
+                        country     = obj["country"]?.jsonPrimitive?.contentOrNull ?: "",
+                        language    = obj["language"]?.jsonPrimitive?.contentOrNull ?: "",
+                        tags        = obj["tags"]?.jsonPrimitive?.contentOrNull ?: "",
+                        votes       = obj["votes"]?.jsonPrimitive?.intOrNull ?: 0,
+                        isFavorite  = (obj["stationuuid"]?.jsonPrimitive?.contentOrNull ?: "") in favorites
                     )
                 }.filter { it.url.isNotBlank() && it.name.isNotBlank() }
                 _uiState.update { it.copy(stations = stations, isLoading = false) }
-            } catch (e: IOException) {
-                _uiState.update { it.copy(error = "Could not load Indian radio stations. Check your connection.", isLoading = false) }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Failed: ${e.message}", isLoading = false) }
+                _uiState.update { it.copy(error = "Could not load stations. Check your connection.", isLoading = false) }
             }
         }
     }

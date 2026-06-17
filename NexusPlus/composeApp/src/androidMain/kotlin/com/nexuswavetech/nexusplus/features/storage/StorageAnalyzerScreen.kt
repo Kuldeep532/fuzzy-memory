@@ -6,7 +6,7 @@ import android.net.Uri
 import android.os.Environment
 import android.os.StatFs
 import android.provider.Settings
-import androidx.activity.compose.BackHandler
+import com.nexuswavetech.nexusplus.platform.BackNavigationHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -224,7 +224,7 @@ fun StorageAnalyzerScreen(
 
     LaunchedEffect(Unit) { viewModel.evaluateStorageThresholds() }
 
-    BackHandler(enabled = uiState.activeSubPanel != ActivePanel.NONE) {
+    BackNavigationHandler(enabled = uiState.activeSubPanel != ActivePanel.NONE) {
         haptic.click(view, touchVib)
         viewModel.closeActivePanel()
         view.announceForAccessibility("Sub-panel collapsed. Returned to primary storage monitor root layout.")

@@ -3,7 +3,7 @@ package com.nexuswavetech.nexusplus.features.biometricvault
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Base64
+import java.util.Base64
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -70,11 +70,11 @@ class BiometricVaultRepository(private val context: Context) {
         val iv         = cipher.iv                                // 12 bytes random
         val ciphertext = cipher.doFinal(plaintext.toByteArray(Charsets.UTF_8))
         val combined   = iv + ciphertext                          // IV || CT
-        return Base64.encodeToString(combined, Base64.NO_WRAP)
+        return Base64.getEncoder().encodeToString(combined)
     }
 
     private fun decrypt(encoded: String): String {
-        val combined   = Base64.decode(encoded, Base64.NO_WRAP)
+        val combined   = Base64.getDecoder().decode(encoded)
         val iv         = combined.sliceArray(0 until GCM_IV_BYTES)
         val ciphertext = combined.sliceArray(GCM_IV_BYTES until combined.size)
         val key        = getOrCreateKey()

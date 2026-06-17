@@ -1,6 +1,6 @@
 package com.nexuswavetech.nexusplus.features.base64tool
 
-import android.util.Base64
+import java.util.Base64
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -34,9 +34,9 @@ fun Base64ToolScreen(onBack: () -> Unit) {
         if (input.isBlank()) { error = "Input is empty"; return }
         output = try {
             if (mode == Base64Mode.ENCODE)
-                Base64.encodeToString(input.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
+                Base64.getEncoder().encodeToString(input.toByteArray(Charsets.UTF_8))
             else
-                String(Base64.decode(input.trim(), Base64.NO_WRAP), Charsets.UTF_8)
+                String(Base64.getDecoder().decode(input.trim()), Charsets.UTF_8)
         } catch (e: Exception) {
             error = "Invalid Base64 input"
             ""

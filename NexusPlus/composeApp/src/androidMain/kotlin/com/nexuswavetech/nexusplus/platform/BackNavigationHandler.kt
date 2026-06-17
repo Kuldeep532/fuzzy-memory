@@ -1,0 +1,12 @@
+package com.nexuswavetech.nexusplus.platform
+
+import androidx.compose.runtime.Composable
+import androidx.activity.compose.BackHandler
+
+@Composable
+actual fun BackNavigationHandler(
+    enabled: Boolean,
+    onBack: () -> Unit,
+) {
+    BackHandler(enabled = enabled, onBack = onBack)
+}

@@ -39,30 +39,48 @@ import com.nexuswavetech.nexusplus.features.tts.NsePcmCache
 import com.nexuswavetech.nexusplus.features.tts.NsePipelineAndroidEngine
 import com.nexuswavetech.nexusplus.features.tts.NseRepository
 import com.nexuswavetech.nexusplus.features.tts.NseViewModel
+import com.nexuswavetech.nexusplus.features.weather.WeatherService
+import com.nexuswavetech.nexusplus.features.weather.WeatherRepository
+import com.nexuswavetech.nexusplus.features.weather.WeatherViewModel
+import com.nexuswavetech.nexusplus.news.NewsService
+import com.nexuswavetech.nexusplus.news.NewsViewModel
+import com.nexuswavetech.nexusplus.science.ScienceService
+import com.nexuswavetech.nexusplus.science.ScienceViewModel
+import com.nexuswavetech.nexusplus.platform.SettingsStore
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
 
+    // ── Platform layer ──────────────────────────────────────────────────
+    single<SettingsStore> { SettingsStore(androidContext()) }
+
     // ── Core singletons ───────────────────────────────────────────────────
     single<SessionManager>           { SessionManager() }
-    single<FavoritesRepository>      { FavoritesRepository(androidContext()) }
+    single<SettingsRepository>       { SettingsRepository(get()) }
+    single<FavoritesRepository>      { FavoritesRepository(get()) }
+    single<RecentActivityRepository> { RecentActivityRepository(get()) }
+    single<ConsentRepository>        { ConsentRepository(get()) }
     single<AdminRepository>          { AdminRepository() }
     single<AuthRepository>           { FirebaseAuthRepository(get()) }
+
+    // ── Services (KMP, commonMain-backed) ──────────────────────────────
+    single { WeatherService() }
+    single { WeatherRepository(get()) }
+    single { NewsService() }
+    single { ScienceService() }
     single { HealthVaultRepository(androidContext()) }
     single<SearchManager>            { SearchManager() }
-    single<RecentActivityRepository> { RecentActivityRepository(androidContext()) }
-    single<SettingsRepository>       { SettingsRepository(androidContext()) }
     single<NotificationRepository>   { NotificationRepository(androidContext()) }
     single<BiometricVaultRepository> { BiometricVaultRepository(androidContext()) }
     single { HapticHelper(get()) }
-
-    // ConsentRepository — process-scoped, DataStore-backed legal consent gate.
-    single { ConsentRepository(androidContext()) }
+    single<com.nexuswavetech.nexusplus.platform.PlatformToast> { com.nexuswavetech.nexusplus.platform.PlatformToast(androidContext()) }
+    single<com.nexuswavetech.nexusplus.platform.PlatformOcr> { com.nexuswavetech.nexusplus.platform.PlatformOcr(androidContext()) }
+    single<com.nexuswavetech.nexusplus.platform.PlatformUrlHandler> { com.nexuswavetech.nexusplus.platform.PlatformUrlHandler(androidContext()) }
 
     // ── NSE 3.0 — Nexus Speech Engine (Pipeline) ──────────────────────────
-    single  { NsePcmCache() }                                          // LRU PCM cache — singleton so cache persists across screens
+    single  { NsePcmCache() }
     factory { NseAudioFocusManager(androidContext()) }
     factory<NseEngine> { NsePipelineAndroidEngine(androidContext(), get(), get()) }
     factory { NseRepository(get<NseEngine>()) }
@@ -111,6 +129,11 @@ val appModule = module {
 
     // NSE — factory-scoped engine + repository wired through Koin
     viewModel { NseViewModel(repository = get(), settings = get()) }
+
+    // New KMP commonMain screens (Priority 5-7)
+    viewModel { WeatherViewModel(service = get(), repository = get()) }
+    viewModel { NewsViewModel(service = get()) }
+    viewModel { ScienceViewModel(service = get()) }
 
     // Camera / sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
     // DocHub, VoiceTyper — state managed locally in composables.

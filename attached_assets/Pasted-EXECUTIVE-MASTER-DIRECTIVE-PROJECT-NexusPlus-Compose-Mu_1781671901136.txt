@@ -1,0 +1,449 @@
+EXECUTIVE MASTER DIRECTIVE
+
+PROJECT: NexusPlus (Compose Multiplatform – Android + iOS)
+
+MISSION:
+
+Perform a complete project-wide audit and immediately start implementation.
+
+Do not ask questions.
+Do not request clarification.
+Do not request confirmation.
+Do not stop for planning.
+Do not create TODOs.
+Do not create placeholders.
+Do not create mock implementations.
+Do not create fake APIs.
+Do not create temporary fixes.
+
+Create your own internal implementation plan silently and immediately begin execution.
+
+====================================================
+AUTONOMOUS EXECUTION MODE
+=========================
+
+You have full authority to make implementation decisions.
+
+If multiple solutions exist:
+
+Choose the most modern,
+production-ready,
+maintainable,
+Compose Multiplatform-compatible solution.
+
+Never ask the user.
+
+Continue implementation automatically.
+
+====================================================
+PRIORITY 0
+COMPOSE MULTIPLATFORM MIGRATION
+===============================
+
+This is the highest priority.
+
+Before implementing new features:
+
+Audit the entire codebase.
+
+Scan:
+
+* commonMain
+* androidMain
+* iosMain
+
+Find all:
+
+* Screens
+* Compose UI
+* Feature Cards
+* Dashboard Components
+* Navigation Logic
+* ViewModels
+* Repositories
+* Services
+* Models
+* Utilities
+* Theme System
+* API Clients
+* Accessibility Components
+
+Move everything possible into commonMain.
+
+Default rule:
+
+Everything belongs in commonMain unless platform APIs require otherwise.
+
+Keep only platform-specific code in:
+
+androidMain:
+
+* Android Permissions
+* Android File Picker
+* Android Intents
+* Google Sign-In Wrappers
+* Firebase Android SDK Wrappers
+* Android TTS Wrappers
+* Android OCR Wrappers
+
+iosMain:
+
+* iOS Permissions
+* iOS File Picker
+* iOS Speech Wrappers
+* iOS Platform Integrations
+
+Requirements:
+
+* Android build succeeds.
+* iOS build succeeds.
+* Shared UI renders on Android.
+* Shared UI renders on iOS.
+* Navigation works on both platforms.
+* Accessibility works on both platforms.
+
+====================================================
+PRIORITY 1
+GOOGLE SIGN-IN FIX
+==================
+
+Complete before any secondary work.
+
+Implement:
+
+* Credential Manager
+* Google Identity Services
+* Firebase Authentication
+* Silent Sign-In
+* Session Restore
+* Sign Out
+* Token Validation
+* Token Decoding
+
+Fix:
+
+* Google Play Services issues
+* Secret decoding issues
+* OAuth issues
+* Firebase linkage issues
+* Credential parsing issues
+
+Requirements:
+
+* Automatically clear corrupted auth cache.
+* Load credentials only from secure secret storage.
+* No hardcoded secrets.
+* No hardcoded OAuth IDs.
+* No hardcoded Firebase keys.
+
+Use Google's latest recommended implementation.
+
+====================================================
+PRIORITY 2
+TEXT-TO-SPEECH REBUILD
+======================
+
+Rebuild the complete TTS system.
+
+Required settings:
+
+* Language
+* Engine
+* Voice
+* Speech Rate
+* Pitch
+* Volume Boost
+* Auto Optimize
+
+Detect automatically:
+
+* Google TTS
+* Samsung TTS
+* Installed TTS engines
+
+Auto Optimize must:
+
+* Detect device capability
+* Detect selected language
+* Detect engine quality
+
+Automatically optimize:
+
+* Speech Rate
+* Pitch
+* Buffering
+* Audio Focus
+
+Fix low-volume speech output.
+
+Persist all settings.
+
+====================================================
+PRIORITY 3
+OCR IMPLEMENTATION
+==================
+
+IMAGE READER
+
+Convert Image Viewer into Image Reader.
+
+Support:
+
+* JPG
+* PNG
+* WEBP
+* HEIC
+
+Add:
+
+* OCR
+* Copy Text
+* Save Text
+* Share Text
+* Search Text
+* Read Aloud
+
+Use ML Kit OCR.
+
+DOCUMENT READER
+
+Support:
+
+* PDF
+* Scanned PDF
+* Image-based PDF
+
+Add:
+
+* OCR
+* Search
+* Copy
+* Export
+* Share
+* Read Aloud
+
+====================================================
+PRIORITY 4
+ACCESSIBILITY + FEATURE REGISTRY
+================================
+
+Create a centralized Feature Registry.
+
+Automatically detect:
+
+* Installed Features
+* Enabled Features
+* Hidden Features
+* Dynamic Features
+
+Feature count must never be hardcoded.
+
+Fix all incorrect feature counts.
+
+Accessibility:
+
+Remove duplicate announcements.
+
+Example:
+
+Bad:
+"Text Analyzer. New. NEW Text Analyzer Productivity"
+
+Good:
+"Text Analyzer"
+
+Only announce meaningful content.
+
+====================================================
+PRIORITY 5
+WEATHER
+=======
+
+Create Weather feature.
+
+Requirements:
+
+* Manual city entry
+* Persistent city storage
+* Auto restore last selected city
+* Multiple favorite cities
+
+Features:
+
+* Current Weather
+* Hourly Forecast
+* 7-Day Forecast
+* Humidity
+* Wind Speed
+* UV Index
+* Air Quality
+* Sunrise/Sunset
+
+Add:
+
+* Offline cache
+* Global city search
+* Favorite cities
+
+====================================================
+PRIORITY 6
+NEWS & EPAPERS
+==============
+
+Do not use paid News APIs.
+
+Use:
+
+* RSS Feeds
+* Public News Sources
+* Public Newspaper Feeds
+* Public Syndication Sources
+
+News Categories:
+
+* Breaking News
+* National News
+* International News
+* Technology News
+* Science News
+* Business News
+* Sports News
+* Entertainment News
+
+Features:
+
+* Search
+* Bookmark
+* Offline Reading
+* Share
+* Read Aloud
+
+ePapers:
+
+* Newspaper Directory
+* Country Filter
+* Language Filter
+* Favorites
+* Recent Newspapers
+* Search Newspapers
+
+====================================================
+PRIORITY 7
+SCIENCE FEATURES
+================
+
+Feature 1:
+
+Space Explorer
+
+Include:
+
+* Astronomy Picture of the Day
+* Planet Information
+* Moon Phase
+* Solar Activity
+* ISS Information
+* Near-Earth Objects
+* Space News
+* Daily Space Facts
+
+Feature 2:
+
+Science Hub
+
+Include:
+
+* Physics Facts
+* Biology Facts
+* Chemistry Facts
+* Earth Science Updates
+* Science News
+* Discoveries Timeline
+* Science Quiz
+
+====================================================
+PRIORITY 8
+SYSTEM IMPROVEMENTS
+===================
+
+Fix and improve:
+
+* Radio Browser Integration
+* More Page Cleanup
+* About Page
+* Privacy Policy
+* AdMob
+* Encryptor & Decryptor
+* Help Walls Crashes
+* Back Navigation
+* Theme Issues
+* Hardcoded Colors
+* Hardcoded Strings
+* Accessibility Issues
+* UI Inconsistencies
+
+====================================================
+TECHNICAL DECISIONS
+===================
+
+OCR:
+Use Google ML Kit.
+
+TTS:
+Use best available engine automatically.
+
+Authentication:
+Use Credential Manager + Google Identity Services + Firebase Auth.
+
+UI:
+Use Material 3.
+
+Themes:
+Use Dynamic Color + Dark Mode + Light Mode.
+
+Accessibility:
+Follow Android and iOS best practices.
+
+Secrets:
+Use centralized secret storage.
+
+Navigation:
+Use proper back stack handling.
+
+Compose Multiplatform:
+Prefer commonMain by default.
+
+====================================================
+FINAL RULES
+===========
+
+No questions.
+
+No confirmations.
+
+No TODOs.
+
+No placeholders.
+
+No fake data.
+
+No mock APIs.
+
+No hardcoded secrets.
+
+No broken navigation.
+
+No accessibility regressions.
+
+No crashes.
+
+Fix every issue discovered during the audit, even if not explicitly listed above.
+
+Generate:
+
+* Modified Files Report
+* Migration Report
+* New Files Report
+* Complete Changelog
+
+Deliver only production-ready code.

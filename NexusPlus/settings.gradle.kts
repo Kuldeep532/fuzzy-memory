@@ -23,3 +23,4 @@ dependencyResolutionManagement {
 rootProject.name = "NexusPlus"
 include(":app")
 include(":shared")
+include(":composeApp")
