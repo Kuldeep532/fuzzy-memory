@@ -42,6 +42,8 @@ enum class FeatureId {
     WEATHER,
     MY_REMINDER,
     FORM_X,
+    NEWS,
+    SCIENCE,
 
     // ── Smart Tools ───────────────────────────────────────────────────────
     QR_GENERATOR,

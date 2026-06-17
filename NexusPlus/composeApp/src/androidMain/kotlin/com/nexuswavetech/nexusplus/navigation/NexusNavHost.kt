@@ -238,9 +238,9 @@ fun NexusNavHost() {
         composable(Screen.PrivacyPolicy.route)   { PrivacyPolicyScreen  (onBack = { navController.popBackStack() }) }
         composable(Screen.TermsConditions.route) { TermsConditionsScreen(onBack = { navController.popBackStack() }) }
 
-        // ── New KMP Services (commonMain screens) ──────────────────────────────────
-        composable("feature/news")    { NewsScreen   (onBack = { navController.popBackStack() }) }
-        composable("feature/science") { ScienceScreen(onBack = { navController.popBackStack() }) }
+        // ── News & Science (commonMain screens) ──────────────────────────────────
+        composable(Screen.News.route)    { NexusAdScaffold { NewsScreen   (onBack = { navController.popBackStack() }) } }
+        composable(Screen.Science.route) { NexusAdScaffold { ScienceScreen(onBack = { navController.popBackStack() }) } }
 
         // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->

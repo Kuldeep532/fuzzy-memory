@@ -1,6 +1,10 @@
 package com.nexuswavetech.nexusplus.ads
 
-import androidx.compose.foundation.background
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,75 +14,99 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 // ── Live Ad Unit IDs (Nexus Wave Technologies) ────────────────────────────────
 object NexusAdIds {
-    // Banner — shown inline in scrollable content (non-intrusive)
-    const val BANNER_ANDROID    = "ca-app-pub-9723434393305967/3163996172"
-    // Interstitial — shown on natural transition points (not during active use)
+    const val BANNER_ANDROID       = "ca-app-pub-9723434393305967/3163996172"
     const val INTERSTITIAL_ANDROID = "ca-app-pub-9723434393305967/6401326195"
-
-    // iOS Unit IDs (future)
     const val BANNER_IOS           = "ca-app-pub-9723434393305967/3163996172"
     const val INTERSTITIAL_IOS     = "ca-app-pub-9723434393305967/6401326195"
 }
 
 // ── Ad frequency controller ───────────────────────────────────────────────────
-// Tracks per-session screen views so interstitials don't fire too often.
 object NexusAdController {
     private var sessionScreenViews = 0
 
-    /** Call once per feature screen entry. Returns true when an interstitial should fire. */
     fun onScreenView(): Boolean {
         sessionScreenViews++
-        // Interstitial every 6 navigations — enough to earn without annoying
         return sessionScreenViews % 6 == 0
     }
 
     fun resetSession() { sessionScreenViews = 0 }
 }
 
+// ── Ad load state ─────────────────────────────────────────────────────────────
+enum class AdLoadState { IDLE, LOADING, LOADED, FAILED }
+
 // ── Compact Banner Ad (50 dp) ─────────────────────────────────────────────────
-// Shown at the bottom of every feature screen, pinned above keyboard.
-// Wire: replace inner Box with AndroidView { AdView(ctx).apply { adUnitId = …; loadAd(…) } }
+// Only rendered once the ad is LOADED — never shows an empty placeholder.
+// When integrating a real AdMob AndroidView, call onAdLoaded() in the
+// AdListener.onAdLoaded callback and onAdFailed() in onAdFailedToLoad.
 @Composable
 fun NexusBannerAd(
     modifier: Modifier = Modifier,
     adUnitId: String = NexusAdIds.BANNER_ANDROID,
+    onAdLoaded: (() -> Unit)? = null,
+    onAdFailed: (() -> Unit)? = null,
 ) {
-    Surface(
-        modifier        = modifier.fillMaxWidth().height(50.dp),
-        color           = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        tonalElevation  = 1.dp,
+    var loadState by remember { mutableStateOf(AdLoadState.LOADING) }
+
+    // Simulate ad load lifecycle (replace with real AdMob callback).
+    LaunchedEffect(adUnitId) {
+        loadState = AdLoadState.LOADING
+        delay(1200)
+        loadState = AdLoadState.LOADED
+        onAdLoaded?.invoke()
+    }
+
+    AnimatedVisibility(
+        visible = loadState == AdLoadState.LOADED,
+        enter   = slideInVertically { it } + fadeIn(),
+        exit    = slideOutVertically { it } + fadeOut(),
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(
-                text      = "Advertisement",
-                style     = MaterialTheme.typography.labelSmall,
-                color     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
-                textAlign = TextAlign.Center,
-            )
+        Surface(
+            modifier       = modifier.fillMaxWidth().height(50.dp),
+            color          = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+            tonalElevation = 1.dp,
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                Text(
+                    text      = "Advertisement",
+                    style     = MaterialTheme.typography.labelSmall,
+                    color     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.45f),
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }
 
 // ── Medium Rectangle Ad (250 dp) ─────────────────────────────────────────────
-// Used in result-heavy screens (Currency, Weather) between content sections.
 @Composable
 fun NexusMediumRectangleAd(
     modifier: Modifier = Modifier,
     adUnitId: String = NexusAdIds.BANNER_ANDROID,
 ) {
-    Surface(
-        modifier       = modifier.fillMaxWidth().height(250.dp),
-        color          = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
-        tonalElevation = 1.dp,
+    var loadState by remember { mutableStateOf(AdLoadState.LOADING) }
+
+    LaunchedEffect(adUnitId) {
+        loadState = AdLoadState.LOADING
+        delay(1200)
+        loadState = AdLoadState.LOADED
+    }
+
+    AnimatedVisibility(
+        visible = loadState == AdLoadState.LOADED,
+        enter   = fadeIn(),
+        exit    = fadeOut(),
     ) {
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
+        Surface(
+            modifier       = modifier.fillMaxWidth().height(250.dp),
+            color          = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+            tonalElevation = 1.dp,
+        ) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 Text(
                     "Advertisement",
                     style = MaterialTheme.typography.labelSmall,
@@ -90,48 +118,60 @@ fun NexusMediumRectangleAd(
 }
 
 // ── Native-style Ad Card ──────────────────────────────────────────────────────
-// Used inside LazyColumn item lists — blends naturally with list content.
 @Composable
 fun NexusNativeAdCard(
     modifier: Modifier = Modifier,
     adUnitId: String = NexusAdIds.BANNER_ANDROID,
 ) {
-    Surface(
-        modifier       = modifier.fillMaxWidth().defaultMinSize(minHeight = 80.dp),
-        shape          = MaterialTheme.shapes.medium,
-        color          = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        tonalElevation = 1.dp,
+    var loadState by remember { mutableStateOf(AdLoadState.LOADING) }
+
+    LaunchedEffect(adUnitId) {
+        loadState = AdLoadState.LOADING
+        delay(1200)
+        loadState = AdLoadState.LOADED
+    }
+
+    AnimatedVisibility(
+        visible = loadState == AdLoadState.LOADED,
+        enter   = fadeIn(),
+        exit    = fadeOut(),
     ) {
-        Row(
-            modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment     = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        Surface(
+            modifier       = modifier.fillMaxWidth().defaultMinSize(minHeight = 80.dp),
+            shape          = MaterialTheme.shapes.medium,
+            color          = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            tonalElevation = 1.dp,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f),
-                        shape = MaterialTheme.shapes.small,
+            Row(
+                modifier              = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(56.dp)
+                        .then(
+                            Modifier.padding(0.dp)
+                        )
+                )
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "Sponsored",
+                        style    = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                        fontSize = 10.sp,
                     )
-            )
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    "Sponsored",
-                    style    = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color    = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                    fontSize = 10.sp,
-                )
-                Text(
-                    "Ad Headline — Your product here",
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                )
-                Text(
-                    "Short ad description for your service or app",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                )
+                    Text(
+                        "Ad Headline — Your product here",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                    )
+                    Text(
+                        "Short ad description for your service or app",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    )
+                }
             }
         }
     }
@@ -139,35 +179,27 @@ fun NexusNativeAdCard(
 
 // ── NexusAdScaffold ───────────────────────────────────────────────────────────
 // Master wrapper — wrap ANY feature screen with this to get a sticky bottom
-// banner ad (50dp) pinned above the system nav bar.
+// banner ad (50dp) that only appears after the ad is loaded (no empty gap).
 //
 // Usage:
 //   NexusAdScaffold { YourFeatureContent() }
-//
-// The ad is pinned at the very bottom and never overlaps scrollable content.
-// The inner Box applies the Scaffold's bottomPadding automatically so the
-// screen content scrolls above the ad.
 @Composable
 fun NexusAdScaffold(
     modifier: Modifier = Modifier,
     adUnitId: String   = NexusAdIds.BANNER_ANDROID,
     content: @Composable () -> Unit,
 ) {
-    Scaffold(
-        modifier  = modifier,
-        bottomBar = {
-            NexusBannerAd(
-                modifier = Modifier.fillMaxWidth(),
-                adUnitId = adUnitId,
-            )
-        },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding()),
-        ) {
+    var adLoaded by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Box(modifier = Modifier.weight(1f)) {
             content()
         }
+        NexusBannerAd(
+            modifier    = Modifier.fillMaxWidth(),
+            adUnitId    = adUnitId,
+            onAdLoaded  = { adLoaded = true },
+            onAdFailed  = { adLoaded = false },
+        )
     }
 }

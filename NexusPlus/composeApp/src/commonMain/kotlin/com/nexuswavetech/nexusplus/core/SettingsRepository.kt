@@ -62,6 +62,9 @@ class SettingsRepository(private val store: SettingsStore) {
         // Reminder snooze options (minutes)
         val REMINDER_SNOOZE_OPTIONS = listOf(5, 10, 15, 30, 60)
         const val REMINDER_SNOOZE_DEFAULT = 10
+
+        // Sound Effects
+        const val SOUND_EFFECTS_DEFAULT = true
     }
 
     // ── Private keys ─────────────────────────────────────────────────────────
@@ -89,6 +92,7 @@ class SettingsRepository(private val store: SettingsStore) {
     private val KEY_TRANSLATOR_AUTO     = "translator_auto_detect"
     private val KEY_REMINDER_SNOOZE_MIN = "reminder_snooze_minutes"
     private val KEY_CALC_ANGLE_UNIT     = "calculator_angle_unit"
+    private val KEY_SOUND_EFFECTS       = "sound_effects_enabled"
 
     // ── Appearance ───────────────────────────────────────────────────────────
     val theme: Flow<String>         = store.stringFlow(KEY_THEME, THEME_SYSTEM)
@@ -132,6 +136,9 @@ class SettingsRepository(private val store: SettingsStore) {
     // ── Feature: Calculator ───────────────────────────────────────────────────
     val calculatorAngleUnit: Flow<String> = store.stringFlow(KEY_CALC_ANGLE_UNIT, ANGLE_DEG)
 
+    // ── Sound Effects ─────────────────────────────────────────────────────────
+    val soundEffectsEnabled: Flow<Boolean> = store.booleanFlow(KEY_SOUND_EFFECTS, SOUND_EFFECTS_DEFAULT)
+
     // ── Setters ───────────────────────────────────────────────────────────────
     suspend fun setTheme(v: String)                = store.setString(KEY_THEME, v)
     suspend fun setDynamicColor(v: Boolean)        = store.setBoolean(KEY_DYNAMIC_COLOR, v)
@@ -157,4 +164,5 @@ class SettingsRepository(private val store: SettingsStore) {
     suspend fun setTranslatorAutoDetect(v: Boolean)= store.setBoolean(KEY_TRANSLATOR_AUTO, v)
     suspend fun setReminderSnoozeMins(v: Int)      = store.setInt(KEY_REMINDER_SNOOZE_MIN, v)
     suspend fun setCalculatorAngleUnit(v: String)  = store.setString(KEY_CALC_ANGLE_UNIT, v)
+    suspend fun setSoundEffectsEnabled(v: Boolean) = store.setBoolean(KEY_SOUND_EFFECTS, v)
 }

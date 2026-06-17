@@ -92,6 +92,10 @@ sealed class Screen(val route: String) {
     // ── Stage 5 features ────────────────────────────────────────────────────
     object UrlShortener : Screen("feature/url_shortener")
 
+    // ── News & Science ──────────────────────────────────────────────────────
+    object News    : Screen("feature/news")
+    object Science : Screen("feature/science")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

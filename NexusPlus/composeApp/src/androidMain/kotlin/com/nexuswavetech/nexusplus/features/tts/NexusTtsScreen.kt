@@ -96,7 +96,7 @@ fun NexusTtsScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        NexusTopBar(title = "NSE Auto TTS Screen Reader", onBack = onBack)
+        NexusTopBar(title = "Nexus Auto Speech Engine", onBack = onBack)
         SnackbarHost(hostState = snackbarHost, modifier = Modifier.padding(8.dp))
 
         Column(
@@ -128,7 +128,7 @@ fun NexusTtsScreen(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Nexus Speech Engine 4.0",
+                            "Nexus Auto Speech Engine 4.0",
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
@@ -390,8 +390,8 @@ fun NexusTtsScreen(
 
             // ── Info ─────────────────────────────────────────────────
             Text(
-                "Nexus Speech Engine is registered as a system TTS provider and Accessibility Service. " +
-                    "Enable it in Settings \u2192 Accessibility to use the Auto TTS Screen Reader device-wide.",
+                "Nexus Auto Speech Engine is registered as a system TTS provider and Accessibility Service. " +
+                    "Enable it in Settings \u2192 Accessibility to use the screen reader device-wide.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -506,7 +506,7 @@ private fun EngineStatusBanner(state: NseState) {
         exit = fadeOut(tween(150)) + shrinkVertically(),
     ) {
         val (text, color) = when (state) {
-            is NseState.Initialising -> "Nexus Speech Engine initialising\u2026" to
+            is NseState.Initialising -> "Nexus Auto Speech Engine initialising\u2026" to
                 MaterialTheme.colorScheme.onSurfaceVariant
             is NseState.Error -> "\u26a0 ${state.message}" to
                 MaterialTheme.colorScheme.error

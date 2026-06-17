@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
- * Nexus Speech Engine — System TTS Service.
+ * Nexus Auto Speech Engine — System TTS Service.
  *
  * Registers NSE as a selectable TTS engine in the device's Text-to-Speech
  * settings (Settings → Accessibility → Text-to-Speech output).

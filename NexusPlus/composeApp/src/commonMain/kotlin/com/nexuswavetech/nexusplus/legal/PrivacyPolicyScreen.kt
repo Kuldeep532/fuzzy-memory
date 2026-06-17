@@ -44,7 +44,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
                         modifier = Modifier.semantics { heading() }
                     )
                     Text(
-                        text = "Effective Date: January 1, 2025",
+                        text = "Effective Date: June 1, 2025",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

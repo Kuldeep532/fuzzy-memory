@@ -44,7 +44,7 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
                         modifier = Modifier.semantics { heading() }
                     )
                     Text(
-                        text = "Last Updated: January 1, 2025",
+                        text = "Last Updated: June 1, 2025",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

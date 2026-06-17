@@ -147,12 +147,12 @@ object FeatureCatalog {
         // ── Utilities ─────────────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEXUS_TTS,
-            name        = "Nexus Speech Engine",
+            name        = "Nexus Auto Speech Engine",
             description = "Multi-language text-to-speech with auto-locale detection",
             icon        = Icons.Filled.RecordVoiceOver,
             route       = Screen.NexusTts.route,
             category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("tts", "text to speech", "speak", "voice", "read aloud", "language", "nse", "audio"),
+            keywords    = listOf("tts", "text to speech", "speak", "voice", "read aloud", "language", "nse", "audio", "nexus auto speech engine", "nase"),
         ),
         FeatureItem(
             id          = FeatureId.VOICE_TYPER,
@@ -525,6 +525,30 @@ object FeatureCatalog {
             route       = Screen.UrlShortener.route,
             category    = FeatureCategory.UTILITIES,
             keywords    = listOf("url", "shortener", "link", "shorten", "tinyurl", "isgd", "share", "web"),
+            isNew       = true,
+        ),
+
+        // ── News & ePapers ────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.NEWS,
+            name        = "News & ePapers",
+            description = "Read top headlines and ePapers from public RSS and news feeds",
+            icon        = Icons.Filled.Newspaper,
+            route       = Screen.News.route,
+            category    = FeatureCategory.UTILITIES,
+            keywords    = listOf("news", "headline", "rss", "feed", "newspaper", "epaper", "read", "article", "current affairs"),
+            isNew       = true,
+        ),
+
+        // ── Science ──────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.SCIENCE,
+            name        = "Science Explorer",
+            description = "Explore science facts, discoveries and articles from open sources",
+            icon        = Icons.Filled.Science,
+            route       = Screen.Science.route,
+            category    = FeatureCategory.UTILITIES,
+            keywords    = listOf("science", "facts", "discover", "research", "physics", "biology", "chemistry", "space", "article"),
             isNew       = true,
         ),
 

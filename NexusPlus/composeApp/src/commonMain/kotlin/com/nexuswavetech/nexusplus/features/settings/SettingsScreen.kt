@@ -38,6 +38,9 @@ fun SettingsScreen(onBack: () -> Unit) {
     // ── Haptics ─────────────────────────────────────────────────────────────
     val touchVibration by settings.touchVibration.collectAsState(initial = true)
 
+    // ── Sound Effects ────────────────────────────────────────────────────────
+    val soundEffects        by settings.soundEffectsEnabled.collectAsState(initial = true)
+
     // ── Feature settings ────────────────────────────────────────────────────
     val ttsRate             by settings.ttsDefaultRate.collectAsState(initial = 1.0f)
     val ttsLang             by settings.ttsDefaultLanguage.collectAsState(initial = SettingsRepository.TTS_LANG_AUTO)
@@ -208,6 +211,26 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
 
+            // ── Sound Effects ─────────────────────────────────────────────
+            item {
+                SettingsSectionHeader(
+                    title = "Sound Effects",
+                    icon  = Icons.Filled.VolumeUp,
+                )
+            }
+
+            item {
+                SettingsCard {
+                    SettingsToggleRow(
+                        icon     = Icons.Filled.MusicNote,
+                        title    = "Sound Effects",
+                        subtitle = "Play audio feedback for navigation, actions and events",
+                        checked  = soundEffects,
+                        onToggle = { scope.launch { settings.setSoundEffectsEnabled(it) } },
+                    )
+                }
+            }
+
             // ── Feature Settings ──────────────────────────────────────────
             item {
                 SettingsSectionHeader(
@@ -222,7 +245,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Icon(Icons.Filled.RecordVoiceOver, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                            Text("Speech Engine (TTS)", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
+                            Text("Nexus Auto Speech Engine", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
                         }
                         Text(
                             "Default speed: ${"%.1f".format(ttsRate)}×",

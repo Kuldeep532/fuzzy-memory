@@ -1,8 +1,10 @@
 - [NseRepository API](nse-repo-api.md) — speak/stop/initialise are NOT suspend; observe nseRepo.state (StateFlow) for speaking status
 - [FileManager viewer routing](filemanager-routing.md) — FileManagerScreen has onOpenImageViewer/onOpenDocReader lambda params; NavHost passes navigate lambdas
-- [Nexus Plus feature names](nexusplus-names.md) — canonical names: NSE=Nexus Speech Engine, Music Player→Nexus Media Player, new: Aira AI, Nexus Image Viewer, Nexus Document Reader
-- [FeatureCatalog icons](nexusplus-names.md) — PlayCircleFilled=Nexus Media Player, MenuBook=NexusDocReader, AutoAwesome=Aira AI, Photo=NexusImageViewer
+- [Nexus Plus feature names](nexusplus-names.md) — canonical names: NSE=Nexus Auto Speech Engine (NASE), Aira AI, Nexus Image Viewer, Nexus Document Reader, News & ePapers, Science Explorer
+- [FeatureCatalog icons](nexusplus-names.md) — PlayCircleFilled=Nexus Media Player, MenuBook=NexusDocReader, AutoAwesome=Aira AI, Photo=NexusImageViewer, Newspaper=News, Science=Science Explorer
 - [AppModule viewModel registration](nexusplus-names.md) — all new ViewModels (AiraViewModel, RadioViewModel) use `viewModel { }` not singleton
 - [ML Kit Object Detection](nexusplus-names.md) — intentionally removed from build.gradle.kts; do NOT re-add (caused build failures)
 - [KMP migration approach](kmp-migration.md) — pragmatic: files in composeApp/src/{commonMain,androidMain,iosMain}/; app/ adds these as sourceSets; NO separate Gradle module for composeApp
-- [Ad placement — NexusAdScaffold](ad-placement.md) — ALL feature screens wrapped with NexusAdScaffold in NavHost (51 wrappers); real Ad IDs set; Banner=3163996172 Interstitial=6401326195
+- [Ad placement — NexusAdScaffold](ad-placement.md) — ALL feature screens wrapped with NexusAdScaffold in NavHost; real Ad IDs set; Banner=3163996172 Interstitial=6401326195; banner uses AnimatedVisibility — no empty placeholder gap
+- [FeatureRegistry typed keys](feature-registry.md) — FeatureRegistry keyed by FeatureId enum (not String); FeatureCatalog.registerAllFeatures() calls FeatureRegistry.registerAll(allFeatures)
+- [NexusSoundManager](sound-manager.md) — androidMain/sound/NexusSoundManager.kt; SoundPool-based; gated by SettingsRepository.soundEffectsEnabled; init(context, settings) in Application/Activity
