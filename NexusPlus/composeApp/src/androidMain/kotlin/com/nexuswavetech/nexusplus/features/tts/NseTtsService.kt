@@ -71,7 +71,9 @@ class NseTtsService : TextToSpeechService() {
 
     override fun onSynthesizeText(request: SynthesisRequest, callback: SynthesisCallback) {
         val text = request.charSequenceText?.toString() ?: return
-        val locale = request.locale ?: Locale.getDefault()
+        val lang = request.language?.takeIf { it.isNotBlank() } ?: "en"
+        val country = request.country?.takeIf { it.isNotBlank() } ?: ""
+        val locale = if (country.isBlank()) Locale(lang) else Locale(lang, country)
 
         val startResult = callback.start(SAMPLE_RATE, AudioFormat.ENCODING_PCM_16BIT, 1)
         if (startResult != TextToSpeech.SUCCESS) {

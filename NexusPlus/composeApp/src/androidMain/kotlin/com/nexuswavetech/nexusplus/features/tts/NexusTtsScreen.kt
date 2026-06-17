@@ -19,6 +19,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel

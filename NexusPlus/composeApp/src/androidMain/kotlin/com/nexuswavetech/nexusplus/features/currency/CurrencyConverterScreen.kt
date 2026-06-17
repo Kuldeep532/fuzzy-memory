@@ -65,8 +65,8 @@ private val FALLBACK: Map<String,Double> = mapOf(
 
 data class CurrencyUiState(
     val fromIndex:Int=0, val toIndex:Int=3, val input:String="",
-    val rates:Map<String,Double>=emptyMap(), val isLoading:Boolean=false,
-    val ratesError:String?=null, val lastUpdated:String="", val copiedText:String?=null,
+    val rates: Map<String, Double> = emptyMap(), val isLoading: Boolean = false,
+    val ratesError: String? = null, val lastUpdated: String = "", val copiedText: String? = null,
 )
 
 class CurrencyViewModel : ViewModel() {

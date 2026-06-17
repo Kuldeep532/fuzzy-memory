@@ -61,4 +61,7 @@
     <!-- Sacred greeting — screen-reader optimised -->
     <string name="jai_shri_krishna">Jai Shri Krishna</string>
     <string name="cd_jai_shri_krishna">Jai Shri Krishna</string>
+
+    <!-- Google Sign-In web client ID (overridden by google-services.json plugin in production) -->
+    <string name="default_web_client_id">your-web-client-id-here</string>
 </resources>

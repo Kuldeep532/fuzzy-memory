@@ -406,11 +406,11 @@ fun RadioPlayerScreen(
                             }
                         }
                     }
+                    item {
+                        NexusBannerAd(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp))
+                        Spacer(Modifier.height(8.dp))
+                    }
                 }
-            }
-            item {
-                NexusBannerAd(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp))
-                Spacer(Modifier.height(8.dp))
             }
         }
     }

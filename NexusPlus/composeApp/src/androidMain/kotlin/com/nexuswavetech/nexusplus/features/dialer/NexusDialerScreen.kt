@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.Dispatchers
@@ -249,7 +251,7 @@ private fun DialerPadSection(
             )
             if (number.isNotEmpty()) {
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.BackspaceOutlined, contentDescription = "Delete digit")
+                    Icon(Icons.AutoMirrored.Filled.Backspace, contentDescription = "Delete digit")
                 }
             }
         }

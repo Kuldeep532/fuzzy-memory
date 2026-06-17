@@ -63,6 +63,7 @@ private fun getFileIcon(file: File): ImageVector = when {
     else -> Icons.AutoMirrored.Filled.InsertDriveFile
 }
 
+@androidx.compose.runtime.Composable
 private fun getFileIconTint(file: File, primary: Color, onSurface: Color): Color = when {
     file.isDirectory -> primary
     file.extension.lowercase() in setOf("jpg","jpeg","png","gif","webp","bmp","heic") -> primary

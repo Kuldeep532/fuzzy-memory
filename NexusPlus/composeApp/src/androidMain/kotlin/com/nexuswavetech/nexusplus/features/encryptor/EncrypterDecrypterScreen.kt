@@ -234,7 +234,11 @@ class EncrypterDecrypterViewModel : ViewModel() {
     fun processFile(context: Context) {
         val s = _uiState.value
         if (!checkValidation(s)) return
-        val uri = s.selectedFileUri ?: run { _uiState.update { it.copy(error = "Select target file payload architecture block first") } return }
+        val uri = s.selectedFileUri
+            ?: run {
+                _uiState.update { it.copy(error = "Select target file payload architecture block first") }
+                return
+            }
         val activeKey = if (s.useCustomKey) s.passphrase else INTERNAL_FALLBACK_KEY
 
         viewModelScope.launch {
@@ -358,7 +362,7 @@ fun EncrypterDecrypterScreen(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
                         modifier = Modifier.menuAnchor().fillMaxWidth()
                     )
-                    ExposedDropdownMenu(expanded = dropdownExpanded, onExpandedChange = { dropdownExpanded = false }) {
+                    ExposedDropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
                         EncryptMode.entries.forEach { selectionMode ->
                             DropdownMenuItem(
                                 text = { Text(selectionMode.name.lowercase().replaceFirstChar { it.uppercase() }) },
@@ -480,7 +484,7 @@ fun EncrypterDecrypterScreen(
                         EncryptMode.AUDIO -> Icons.Filled.MusicNote
                         else -> Icons.Filled.AttachFile
                     }
-                } else Icons.Filled.Encrypted
+                } else Icons.Filled.Lock
 
                 OutlinedCard(
                     onClick = { if (!isLockedOut) fileLauncher.launch(filterType) },
