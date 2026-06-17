@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -19,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinViewModel
 import kotlin.math.roundToInt
 
 data class PasswordConfig(
@@ -36,7 +35,7 @@ class PasswordGeneratorViewModel : ViewModel() {
         private set
     var password by mutableStateOf("")
         private set
-    var strength by mutableStateOf(0)    // 0-4
+    var strength by mutableStateOf(0)
         private set
 
     init { generate() }
@@ -51,23 +50,20 @@ class PasswordGeneratorViewModel : ViewModel() {
         if (config.useSymbols)    charset += "!@#\$%^&*()-_=+[]{}|;:,.<>?"
         if (charset.isBlank())    charset  = "abcdefghijklmnopqrstuvwxyz"
 
-        password = (1..config.config_length()).map { charset.random() }.joinToString("")
+        password = (1..config.length).map { charset.random() }.joinToString("")
 
-        // Strength heuristic
         var score = 0
-        if (config.length >= 12)     score++
-        if (config.length >= 20)     score++
+        if (config.length >= 12)                        score++
+        if (config.length >= 20)                        score++
         if (config.useUppercase && config.useLowercase) score++
-        if (config.useDigits)        score++
-        if (config.useSymbols)       score++
+        if (config.useDigits)                           score++
+        if (config.useSymbols)                          score++
         strength = score.coerceAtMost(4)
     }
-
-    private fun PasswordConfig.config_length() = length
 }
 
 private val strengthLabels = listOf("Very Weak", "Weak", "Fair", "Strong", "Very Strong")
-private val strengthColors  = listOf(
+private val strengthColors = listOf(
     androidx.compose.ui.graphics.Color(0xFFEF5350),
     androidx.compose.ui.graphics.Color(0xFFFF7043),
     androidx.compose.ui.graphics.Color(0xFFFFCA28),
@@ -78,7 +74,6 @@ private val strengthColors  = listOf(
 @Composable
 fun PasswordGeneratorScreen(onBack: () -> Unit, viewModel: PasswordGeneratorViewModel = koinViewModel()) {
     val clipboard = LocalClipboardManager.current
-    val view      = LocalView.current
     val c         = viewModel.config
 
     Column(Modifier.fillMaxSize()) {
@@ -91,7 +86,6 @@ fun PasswordGeneratorScreen(onBack: () -> Unit, viewModel: PasswordGeneratorView
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Generated password display
             Card(
                 colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                 modifier = Modifier.fillMaxWidth()
@@ -112,30 +106,23 @@ fun PasswordGeneratorScreen(onBack: () -> Unit, viewModel: PasswordGeneratorView
                     ) {
                         Text(
                             strengthLabels[viewModel.strength],
-                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                            color = strengthColors[viewModel.strength],
+                            style    = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color    = strengthColors[viewModel.strength],
                             modifier = Modifier.semantics {
                                 contentDescription = "Password strength: ${strengthLabels[viewModel.strength]}"
                             }
                         )
                         Row {
                             IconButton(
-                                onClick  = {
-                                    clipboard.setText(AnnotatedString(viewModel.password))
-                                    view.announceForAccessibility("Password copied to clipboard")
-                                },
+                                onClick  = { clipboard.setText(AnnotatedString(viewModel.password)) },
                                 modifier = Modifier.semantics { contentDescription = "Copy password to clipboard" }
                             ) { Icon(Icons.Filled.ContentCopy, null) }
                             IconButton(
-                                onClick  = {
-                                    viewModel.generate()
-                                    view.announceForAccessibility("New password generated")
-                                },
+                                onClick  = { viewModel.generate() },
                                 modifier = Modifier.semantics { contentDescription = "Generate new password" }
                             ) { Icon(Icons.Filled.Refresh, null) }
                         }
                     }
-                    // Strength meter
                     LinearProgressIndicator(
                         progress = { (viewModel.strength + 1) / 5f },
                         modifier = Modifier.fillMaxWidth(),
@@ -145,26 +132,32 @@ fun PasswordGeneratorScreen(onBack: () -> Unit, viewModel: PasswordGeneratorView
             }
 
             HorizontalDivider()
-            Text("Configuration", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary, modifier = Modifier.semantics { heading() })
+            Text(
+                "Configuration",
+                style    = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color    = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.semantics { heading() }
+            )
 
-            // Length slider
             Column {
-                Text("Length: ${c.length} characters", modifier = Modifier.semantics { contentDescription = "Password length: ${c.length} characters" })
+                Text(
+                    "Length: ${c.length} characters",
+                    modifier = Modifier.semantics { contentDescription = "Password length: ${c.length} characters" }
+                )
                 Slider(
-                    value        = c.length.toFloat(),
+                    value         = c.length.toFloat(),
                     onValueChange = { viewModel.updateConfig(c.copy(length = it.roundToInt())) },
-                    valueRange   = 6f..64f,
-                    steps        = 57,
-                    modifier     = Modifier.semantics { contentDescription = "Password length slider. Current: ${c.length}" }
+                    valueRange    = 6f..64f,
+                    steps         = 57,
+                    modifier      = Modifier.semantics { contentDescription = "Password length slider. Current: ${c.length}" }
                 )
             }
 
-            // Toggles
             listOf(
-                Triple("Uppercase letters (A–Z)", c.useUppercase) { v: Boolean -> viewModel.updateConfig(c.copy(useUppercase = v)) },
-                Triple("Lowercase letters (a–z)", c.useLowercase) { v: Boolean -> viewModel.updateConfig(c.copy(useLowercase = v)) },
-                Triple("Numbers (0–9)",           c.useDigits)    { v: Boolean -> viewModel.updateConfig(c.copy(useDigits = v)) },
-                Triple("Symbols (!@#\$…)",        c.useSymbols)   { v: Boolean -> viewModel.updateConfig(c.copy(useSymbols = v)) },
+                Triple("Uppercase letters (A–Z)", c.useUppercase)    { v: Boolean -> viewModel.updateConfig(c.copy(useUppercase = v)) },
+                Triple("Lowercase letters (a–z)", c.useLowercase)    { v: Boolean -> viewModel.updateConfig(c.copy(useLowercase = v)) },
+                Triple("Numbers (0–9)",           c.useDigits)        { v: Boolean -> viewModel.updateConfig(c.copy(useDigits = v)) },
+                Triple("Symbols (!@#\$…)",         c.useSymbols)      { v: Boolean -> viewModel.updateConfig(c.copy(useSymbols = v)) },
                 Triple("Exclude ambiguous (0, O, l, 1…)", c.excludeAmbiguous) { v: Boolean -> viewModel.updateConfig(c.copy(excludeAmbiguous = v)) }
             ).forEach { (label, checked, onToggle) ->
                 Row(
@@ -182,10 +175,7 @@ fun PasswordGeneratorScreen(onBack: () -> Unit, viewModel: PasswordGeneratorView
             }
 
             Button(
-                onClick  = {
-                    viewModel.generate()
-                    view.announceForAccessibility("Password regenerated")
-                },
+                onClick  = { viewModel.generate() },
                 modifier = Modifier.fillMaxWidth().height(52.dp)
             ) {
                 Icon(Icons.Filled.Key, null)

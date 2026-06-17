@@ -528,6 +528,17 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
+        // ── Form X ───────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.FORM_X,
+            name        = "Form X",
+            description = "Reactive Material 3 form with live validation and password strength",
+            icon        = Icons.AutoMirrored.Filled.Assignment,
+            route       = Screen.FormX.route,
+            category    = FeatureCategory.UTILITIES,
+            keywords    = listOf("form", "validation", "password", "email", "reactive", "strength"),
+        ),
+
         // ── News & ePapers ────────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEWS,

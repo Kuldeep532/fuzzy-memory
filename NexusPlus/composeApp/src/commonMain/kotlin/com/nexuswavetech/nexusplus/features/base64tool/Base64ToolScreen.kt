@@ -1,6 +1,7 @@
 package com.nexuswavetech.nexusplus.features.base64tool
 
-import java.util.Base64
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -11,7 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -19,10 +19,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 
+@OptIn(ExperimentalEncodingApi::class)
 @Composable
 fun Base64ToolScreen(onBack: () -> Unit) {
     val clipboard   = LocalClipboardManager.current
-    val view        = LocalView.current
     var input       by remember { mutableStateOf("") }
     var output      by remember { mutableStateOf("") }
     var mode        by remember { mutableStateOf(Base64Mode.ENCODE) }
@@ -34,9 +34,9 @@ fun Base64ToolScreen(onBack: () -> Unit) {
         if (input.isBlank()) { error = "Input is empty"; return }
         output = try {
             if (mode == Base64Mode.ENCODE)
-                Base64.getEncoder().encodeToString(input.toByteArray(Charsets.UTF_8))
+                Base64.Default.encode(input.toByteArray(Charsets.UTF_8))
             else
-                String(Base64.getDecoder().decode(input.trim()), Charsets.UTF_8)
+                Base64.Default.decode(input.trim()).toString(Charsets.UTF_8)
         } catch (e: Exception) {
             error = "Invalid Base64 input"
             ""
@@ -110,10 +110,7 @@ fun Base64ToolScreen(onBack: () -> Unit) {
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
-                            onClick  = {
-                                clipboard.setText(AnnotatedString(output))
-                                view.announceForAccessibility("Result copied to clipboard")
-                            },
+                            onClick  = { clipboard.setText(AnnotatedString(output)) },
                             modifier = Modifier.weight(1f)
                         ) { Icon(Icons.Filled.ContentCopy, null); Spacer(Modifier.width(4.dp)); Text("Copy") }
                         OutlinedButton(

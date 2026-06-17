@@ -73,6 +73,7 @@ import com.nexuswavetech.nexusplus.ads.NexusAdScaffold
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
+import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 
 private const val ANIM_DURATION     = 320
 private const val ANIM_DURATION_OUT = 200
@@ -241,6 +242,9 @@ fun NexusNavHost() {
         // ── News & Science (commonMain screens) ──────────────────────────────────
         composable(Screen.News.route)    { NexusAdScaffold { NewsScreen   (onBack = { navController.popBackStack() }) } }
         composable(Screen.Science.route) { NexusAdScaffold { ScienceScreen(onBack = { navController.popBackStack() }) } }
+
+        // ── Form X ────────────────────────────────────────────────────────────
+        composable(Screen.FormX.route) { NexusAdScaffold { AutoUniversalFormX(onBack = { navController.popBackStack() }) } }
 
         // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->

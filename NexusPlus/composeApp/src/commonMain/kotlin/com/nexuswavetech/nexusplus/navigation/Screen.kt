@@ -96,6 +96,9 @@ sealed class Screen(val route: String) {
     object News    : Screen("feature/news")
     object Science : Screen("feature/science")
 
+    // ── Form X (reactive demo form) ─────────────────────────────────────────
+    object FormX : Screen("feature/form_x")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

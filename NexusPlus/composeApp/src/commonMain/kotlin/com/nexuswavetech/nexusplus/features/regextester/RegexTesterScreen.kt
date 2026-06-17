@@ -9,14 +9,13 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinViewModel
 
 data class RegexMatch(val start: Int, val end: Int, val value: String, val groups: List<String>)
 
@@ -48,10 +47,6 @@ class RegexTesterViewModel : ViewModel() {
         val input   = uiState.testInput
         if (pattern.isBlank()) { uiState = uiState.copy(matches = emptyList(), isValid = null, error = null, replacedOutput = ""); return }
 
-        var flags = 0
-        if (uiState.ignoreCase) flags = flags or RegexOption.IGNORE_CASE.ordinal
-        if (uiState.multiline)  flags = flags or RegexOption.MULTILINE.ordinal
-
         val options = mutableSetOf<RegexOption>().apply {
             if (uiState.ignoreCase) add(RegexOption.IGNORE_CASE)
             if (uiState.multiline)  add(RegexOption.MULTILINE)
@@ -70,15 +65,14 @@ class RegexTesterViewModel : ViewModel() {
             val replaced = if (uiState.replacement.isNotBlank()) regex.replace(input, uiState.replacement) else ""
             uiState.copy(matches = matches, isValid = true, error = null, replacedOutput = replaced)
         } catch (e: Exception) {
-            uiState.copy(matches = emptyList(), isValid = false, error = "Regex error: ${e.localizedMessage}", replacedOutput = "")
+            uiState.copy(matches = emptyList(), isValid = false, error = "Regex error: ${e.message}", replacedOutput = "")
         }
     }
 }
 
 @Composable
 fun RegexTesterScreen(onBack: () -> Unit, viewModel: RegexTesterViewModel = koinViewModel()) {
-    val s    = viewModel.uiState
-    val view = LocalView.current
+    val s = viewModel.uiState
 
     Column(Modifier.fillMaxSize()) {
         NexusTopBar(title = "Regex Tester", onBack = onBack)
@@ -90,68 +84,68 @@ fun RegexTesterScreen(onBack: () -> Unit, viewModel: RegexTesterViewModel = koin
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Pattern input
             OutlinedTextField(
-                value         = s.pattern,
-                onValueChange = viewModel::onPatternChanged,
-                label         = { Text("Regular expression pattern") },
-                placeholder   = { Text("e.g. \\d{3}-\\d{4}") },
-                isError       = s.isValid == false,
+                value          = s.pattern,
+                onValueChange  = viewModel::onPatternChanged,
+                label          = { Text("Regular expression pattern") },
+                placeholder    = { Text("e.g. \\d{3}-\\d{4}") },
+                isError        = s.isValid == false,
                 supportingText = { if (s.error != null) Text(s.error!!) },
-                modifier      = Modifier
+                modifier       = Modifier
                     .fillMaxWidth()
                     .semantics { contentDescription = "Regex pattern input. Matches are highlighted in real time." },
-                textStyle     = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
-                trailingIcon  = {
-                    if (s.isValid == true) Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.secondary)
+                textStyle      = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+                trailingIcon   = {
+                    if (s.isValid == true)  Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.secondary)
                     else if (s.isValid == false) Icon(Icons.Filled.Error, null, tint = MaterialTheme.colorScheme.error)
                 },
-                singleLine    = true
+                singleLine = true
             )
 
-            // Flags
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Row(
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                    modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "Ignore case flag. ${if (s.ignoreCase) "Enabled" else "Disabled"}." }
+                    modifier = Modifier.semantics(mergeDescendants = true) {
+                        contentDescription = "Ignore case flag. ${if (s.ignoreCase) "Enabled" else "Disabled"}."
+                    }
                 ) {
                     Checkbox(checked = s.ignoreCase, onCheckedChange = { viewModel.onIgnoreCaseToggled() })
                     Text("Ignore case", style = MaterialTheme.typography.bodySmall)
                 }
                 Row(
                     verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                    modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "Multiline flag. ${if (s.multiline) "Enabled" else "Disabled"}." }
+                    modifier = Modifier.semantics(mergeDescendants = true) {
+                        contentDescription = "Multiline flag. ${if (s.multiline) "Enabled" else "Disabled"}."
+                    }
                 ) {
                     Checkbox(checked = s.multiline, onCheckedChange = { viewModel.onMultilineToggled() })
                     Text("Multiline", style = MaterialTheme.typography.bodySmall)
                 }
-                IconButton(onClick = viewModel::clearAll, modifier = Modifier.semantics { contentDescription = "Clear all fields" }) {
-                    Icon(Icons.Filled.Clear, null)
-                }
+                IconButton(
+                    onClick  = viewModel::clearAll,
+                    modifier = Modifier.semantics { contentDescription = "Clear all fields" }
+                ) { Icon(Icons.Filled.Clear, null) }
             }
 
-            // Test input
             OutlinedTextField(
-                value         = s.testInput,
-                onValueChange = viewModel::onTestInputChanged,
-                label         = { Text("Test input string") },
-                modifier      = Modifier
+                value          = s.testInput,
+                onValueChange  = viewModel::onTestInputChanged,
+                label          = { Text("Test input string") },
+                modifier       = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 100.dp)
                     .semantics { contentDescription = "Test string input. Regex is applied as you type." },
-                maxLines      = 8
+                maxLines = 8
             )
 
-            // Replacement
             OutlinedTextField(
-                value         = s.replacement,
-                onValueChange = viewModel::onReplacementChanged,
-                label         = { Text("Replacement string (optional)") },
-                modifier      = Modifier.fillMaxWidth().semantics { contentDescription = "Replacement string for regex replace. Leave empty to skip." },
-                singleLine    = true
+                value          = s.replacement,
+                onValueChange  = viewModel::onReplacementChanged,
+                label          = { Text("Replacement string (optional)") },
+                modifier       = Modifier.fillMaxWidth().semantics { contentDescription = "Replacement string. Leave empty to skip." },
+                singleLine     = true
             )
 
-            // Match summary
             if (s.pattern.isNotBlank() && s.isValid == true) {
                 Surface(
                     shape = MaterialTheme.shapes.small,
@@ -168,11 +162,15 @@ fun RegexTesterScreen(onBack: () -> Unit, viewModel: RegexTesterViewModel = koin
                 }
             }
 
-            // Matches list
             AnimatedVisibility(s.matches.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     HorizontalDivider()
-                    Text("Matches", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary, modifier = Modifier.semantics { heading() })
+                    Text(
+                        "Matches",
+                        style    = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color    = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.semantics { heading() }
+                    )
                     s.matches.forEachIndexed { i, match ->
                         Card(
                             colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -192,11 +190,15 @@ fun RegexTesterScreen(onBack: () -> Unit, viewModel: RegexTesterViewModel = koin
                 }
             }
 
-            // Replacement output
             AnimatedVisibility(s.replacedOutput.isNotBlank()) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     HorizontalDivider()
-                    Text("Replaced Output", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.primary, modifier = Modifier.semantics { heading() })
+                    Text(
+                        "Replaced Output",
+                        style    = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color    = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.semantics { heading() }
+                    )
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
                         Text(s.replacedOutput, Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace))
                     }
