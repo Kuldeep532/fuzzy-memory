@@ -34,13 +34,13 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
             implementation(compose.ui)
-            implementation(compose.navigation)
+            implementation(libs.androidx.navigation.compose)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.kotlinx.serialization.json)
-            implementation(libs.koin.core)
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+            implementation("io.insert-koin:koin-core:3.5.6")
             implementation(libs.koin.compose)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
@@ -89,7 +89,7 @@ kotlin {
 
         val desktopMain by getting {
             dependencies {
-                implementation(libs.kotlinx.coroutines.swing)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
                 implementation(libs.ktor.client.java)
             }
         }
