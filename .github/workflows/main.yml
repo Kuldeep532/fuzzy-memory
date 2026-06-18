@@ -1,0 +1,25 @@
+# This workflow file has been intentionally disabled.
+# Use the YAML source code provided by Nexus Wave Technologies
+# to set up your own GitHub Actions workflow in your private repository.
+#
+# Trigger: Manual only (workflow_dispatch)
+# Options: Build APK  |  Build AAB (Play Store)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+          - apk
+          - aab
+
+jobs:
+  disabled:
+    runs-on: ubuntu-latest
+    if: false
+    steps:
+      - run: echo "Workflow disabled in this repo."

@@ -87,7 +87,10 @@ val appModule = module {
     single { HealthVaultRepository(androidContext()) }
     single<SearchManager>            { SearchManager() }
     single<NotificationRepository>   { NotificationRepository(androidContext()) }
-    single<BiometricVaultRepository> { BiometricVaultRepository(androidContext()) }
+    single<BiometricVaultRepository>   { BiometricVaultRepository(androidContext()) }
+    single<com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesRepository> {
+        com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesRepository(androidContext())
+    }
     single { HapticHelper(get()) }
     single<com.nexuswavetech.nexusplus.platform.PlatformToast> { com.nexuswavetech.nexusplus.platform.PlatformToast(androidContext()) }
     single<com.nexuswavetech.nexusplus.platform.PlatformOcr> { com.nexuswavetech.nexusplus.platform.PlatformOcr(androidContext()) }
@@ -127,6 +130,7 @@ val appModule = module {
             settingsRepository = get(),
         )
     }
+    viewModel { com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesViewModel(repository = get()) }
 
     // Utilities
     viewModel { TextTranslatorViewModel() }

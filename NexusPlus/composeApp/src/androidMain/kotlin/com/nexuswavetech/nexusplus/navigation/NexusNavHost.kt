@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -93,6 +94,9 @@ import com.nexuswavetech.nexusplus.features.voices.DownloadVoicesScreen
 import com.nexuswavetech.nexusplus.features.ott.NexusOttScreen
 import com.nexuswavetech.nexusplus.features.ott.NexusOttPlayerScreen
 import com.nexuswavetech.nexusplus.features.ott.ottCatalogueById
+import com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesScreen
+import com.nexuswavetech.nexusplus.features.speedometer.SpeedometerScreen
+import com.nexuswavetech.nexusplus.features.taskmanager.TaskManagerScreen
 
 private const val ANIM_DURATION     = 320
 private const val ANIM_DURATION_OUT = 200
@@ -133,10 +137,10 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         )
     }
 
-    // Shared URI state — FileManager passes a Uri when opening viewer/reader.
-    // NavHost retains it across recompositions so the target screen can read it.
-    var pendingViewerUri    by remember { mutableStateOf<Uri?>(null) }
-    var pendingDocReaderUri by remember { mutableStateOf<Uri?>(null) }
+    // Shared URI state — stored as String via rememberSaveable so it survives
+    // process death and activity recreation (e.g. back from recent apps).
+    var pendingViewerUri    by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingDocReaderUri by rememberSaveable { mutableStateOf<String?>(null) }
 
     NavHost(
         navController    = navController,
@@ -253,11 +257,11 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
                 FileManagerScreen(
                     onBack            = { navController.popBackStack() },
                     onOpenImageViewer = { uri ->
-                        pendingViewerUri = uri
+                        pendingViewerUri = uri.toString()
                         navController.navigate(Screen.NexusImageViewer.route)
                     },
                     onOpenDocReader   = { uri ->
-                        pendingDocReaderUri = uri
+                        pendingDocReaderUri = uri.toString()
                         navController.navigate(Screen.NexusDocReader.route)
                     },
                 )
@@ -277,7 +281,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
 
         // ── Image Viewer ──────────────────────────────────────────────────
         composable(Screen.NexusImageViewer.route) {
-            val uri = pendingViewerUri
+            val uri = pendingViewerUri?.let { Uri.parse(it) }
             NexusAdScaffold {
                 NexusImageViewerScreen(
                     initialUri   = uri,
@@ -289,7 +293,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
 
         // ── Document Reader ───────────────────────────────────────────────
         composable(Screen.NexusDocReader.route) {
-            val uri = pendingDocReaderUri
+            val uri = pendingDocReaderUri?.let { Uri.parse(it) }
             NexusAdScaffold {
                 NexusDocumentReaderScreen(
                     initialUri = uri,
@@ -360,6 +364,21 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         // ── Social Media & Community ───────────────────────────────────────────
         composable(Screen.SocialMedia.route) {
             NexusAdScaffold { SocialMediaScreen(onBack = { navController.popBackStack() }) }
+        }
+
+        // ── Security: Encrypted Notes ─────────────────────────────────────
+        composable(Screen.EncryptedNotes.route) {
+            NexusAdScaffold { EncryptedNotesScreen(onBack = { navController.popBackStack() }) }
+        }
+
+        // ── Tools: Speedometer ────────────────────────────────────────────
+        composable(Screen.Speedometer.route) {
+            NexusAdScaffold { SpeedometerScreen(onBack = { navController.popBackStack() }) }
+        }
+
+        // ── Tools: Task Manager ───────────────────────────────────────────
+        composable(Screen.TaskManager.route) {
+            NexusAdScaffold { TaskManagerScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Stub catch-all ────────────────────────────────────────────────

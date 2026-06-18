@@ -117,6 +117,12 @@ sealed class Screen(val route: String) {
     // ── Social Media & Community ─────────────────────────────────────────────
     object SocialMedia : Screen("community/social_media")
 
+    // ── New fully implemented features ──────────────────────────────────────
+    object EncryptedNotes : Screen("feature/encrypted_notes")
+    object Speedometer    : Screen("feature/speedometer")
+    object TaskManager    : Screen("feature/task_manager")
+    object ContactBackup  : Screen("feature/contact_backup")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }
