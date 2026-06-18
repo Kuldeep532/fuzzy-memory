@@ -88,6 +88,9 @@ enum class FeatureId {
     // ── Games Hub ─────────────────────────────────────────────────────────
     NEXUS_GAMES,
 
+    // ── OTT ───────────────────────────────────────────────────────────────
+    NEXUS_OTT,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
     TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER

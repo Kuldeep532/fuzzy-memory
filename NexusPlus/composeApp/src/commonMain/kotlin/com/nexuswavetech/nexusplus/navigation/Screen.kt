@@ -102,6 +102,12 @@ sealed class Screen(val route: String) {
     // ── Nexus Games Hub ─────────────────────────────────────────────────────
     object NexusGames : Screen("feature/nexus_games")
 
+    // ── Nexus OTT ───────────────────────────────────────────────────────────
+    object NexusOtt : Screen("feature/nexus_ott")
+    object NexusOttPlayer : Screen("feature/nexus_ott/player/{itemId}") {
+        fun route(itemId: String) = "feature/nexus_ott/player/$itemId"
+    }
+
     // ── Download Voices (TTS model manager) ─────────────────────────────────
     object DownloadVoices : Screen("settings/download_voices")
 

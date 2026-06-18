@@ -539,6 +539,18 @@ object FeatureCatalog {
             keywords    = listOf("form", "validation", "password", "email", "reactive", "strength"),
         ),
 
+        // ── Nexus OTT ─────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.NEXUS_OTT,
+            name        = "Nexus OTT",
+            description = "Stream public-domain movies, documentaries and classic TV — legally free",
+            icon        = Icons.Filled.VideoLibrary,
+            route       = Screen.NexusOtt.route,
+            category    = FeatureCategory.MEDIA,
+            keywords    = listOf("ott", "movie", "stream", "video", "film", "documentary", "classic", "public domain", "archive", "free", "watch"),
+            isNew       = true,
+        ),
+
         // ── Nexus Games Hub ───────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEXUS_GAMES,

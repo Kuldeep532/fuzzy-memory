@@ -76,6 +76,9 @@ import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
 import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 import com.nexuswavetech.nexusplus.features.games.NexusGamesScreen
 import com.nexuswavetech.nexusplus.features.voices.DownloadVoicesScreen
+import com.nexuswavetech.nexusplus.features.ott.NexusOttScreen
+import com.nexuswavetech.nexusplus.features.ott.NexusOttPlayerScreen
+import com.nexuswavetech.nexusplus.features.ott.ottCatalogueById
 
 private const val ANIM_DURATION     = 320
 private const val ANIM_DURATION_OUT = 200
@@ -250,6 +253,32 @@ fun NexusNavHost() {
 
         // ── Nexus Games Hub ───────────────────────────────────────────────────
         composable(Screen.NexusGames.route) { NexusGamesScreen(onBack = { navController.popBackStack() }) }
+
+        // ── Nexus OTT ─────────────────────────────────────────────────────────
+        composable(Screen.NexusOtt.route) {
+            NexusAdScaffold {
+                NexusOttScreen(
+                    onBack      = { navController.popBackStack() },
+                    onPlayVideo = { item ->
+                        navController.navigate(Screen.NexusOttPlayer.route(item.id))
+                    },
+                )
+            }
+        }
+        composable(
+            route     = Screen.NexusOttPlayer.route,
+            arguments = listOf(androidx.navigation.navArgument("itemId") {
+                type = androidx.navigation.NavType.StringType
+            }),
+        ) { backStack ->
+            val itemId = backStack.arguments?.getString("itemId") ?: ""
+            val item   = ottCatalogueById(itemId)
+            if (item != null) {
+                NexusOttPlayerScreen(item = item, onBack = { navController.popBackStack() })
+            } else {
+                navController.popBackStack()
+            }
+        }
 
         // ── Download Voices ───────────────────────────────────────────────────
         composable(Screen.DownloadVoices.route) { DownloadVoicesScreen(onBack = { navController.popBackStack() }) }
