@@ -305,9 +305,9 @@ button{margin-top:12px;padding:10px 24px;font-size:1em;border:none;border-radius
 const EMOJIS=['🍎','🍌','🍇','🍉','🎮','🎯','⭐','🌙'];
 let cards,flipped,matched,moves,lock;
 function init(){const deck=[...EMOJIS,...EMOJIS].sort(()=>Math.random()-.5);flipped=[];matched=0;moves=0;lock=false;cards=deck.map((e,i)=>({emoji:e,id:i,isFlipped:false,isMatched:false}));render();}
-function render(){const g=document.getElementById('grid');g.innerHTML='';cards.forEach((c,i)=>{const d=document.createElement('div');d.className='card'+(c.isFlipped||c.isMatched?' flipped':'')+(c.isMatched?' matched':'');d.textContent=c.isFlipped||c.isMatched?c.emoji:'';d.onclick=()=>flip(i);g.appendChild(d);});document.getElementById('info').textContent=`Moves: ${moves} · Pairs: ${matched}/8`;}
+function render(){const g=document.getElementById('grid');g.innerHTML='';cards.forEach((c,i)=>{const d=document.createElement('div');d.className='card'+(c.isFlipped||c.isMatched?' flipped':'')+(c.isMatched?' matched':'');d.textContent=c.isFlipped||c.isMatched?c.emoji:'';d.onclick=()=>flip(i);g.appendChild(d);});document.getElementById('info').textContent=`Moves: ${'$'}{moves} · Pairs: ${'$'}{matched}/8`;}
 function flip(i){if(lock||cards[i].isFlipped||cards[i].isMatched||flipped.length>=2)return;cards[i].isFlipped=true;flipped.push(i);render();if(flipped.length===2){moves++;check();}}
-function check(){lock=true;const[a,b]=flipped;if(cards[a].emoji===cards[b].emoji){cards[a].isMatched=cards[b].isMatched=true;matched++;flipped=[];lock=false;render();if(matched===8)document.getElementById('info').textContent=`Completed in ${moves} moves! 🎉`;}else{setTimeout(()=>{cards[a].isFlipped=cards[b].isFlipped=false;flipped=[];lock=false;render();},900);}}
+function check(){lock=true;const[a,b]=flipped;if(cards[a].emoji===cards[b].emoji){cards[a].isMatched=cards[b].isMatched=true;matched++;flipped=[];lock=false;render();if(matched===8)document.getElementById('info').textContent=`Completed in ${'$'}{moves} moves! 🎉`;}else{setTimeout(()=>{cards[a].isFlipped=cards[b].isFlipped=false;flipped=[];lock=false;render();},900);}}
 init();
 </script></body></html>"""
     ),
@@ -330,7 +330,7 @@ const C=document.getElementById('c'),X=C.getContext('2d');
 const W=300,H=380,PR=50,PH=10,BR=6,BCOLS=8,BROWS=5;
 let px,bx,by,bdx,bdy,bricks,score,lives,raf,running;
 function start(){px=W/2-PR;bx=W/2;by=H-60;bdx=2.5;bdy=-3;lives=3;score=0;running=true;
-bricks=Array.from({length:BROWS},(_,r)=>Array.from({length:BCOLS},(_,c)=>({x:c*(W/BCOLS)+2,y:r*22+40,w:W/BCOLS-4,h:16,alive:true,color:`hsl(${r*40+180},70%,55%)`})));
+bricks=Array.from({length:BROWS},(_,r)=>Array.from({length:BCOLS},(_,c)=>({x:c*(W/BCOLS)+2,y:r*22+40,w:W/BCOLS-4,h:16,alive:true,color:`hsl(${'$'}{r*40+180},70%,55%)`})));
 cancelAnimationFrame(raf);loop();}
 function loop(){if(!running)return;raf=requestAnimationFrame(loop);X.fillStyle='#121212';X.fillRect(0,0,W,H);
 bricks.flat().forEach(b=>{if(!b.alive)return;X.fillStyle=b.color;X.fillRect(b.x,b.y,b.w,b.h);});

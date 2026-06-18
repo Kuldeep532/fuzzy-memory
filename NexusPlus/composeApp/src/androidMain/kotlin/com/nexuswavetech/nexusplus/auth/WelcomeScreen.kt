@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -33,6 +34,7 @@ import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.nexuswavetech.nexusplus.R
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusWaveLogo
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
@@ -54,6 +56,7 @@ fun WelcomeScreen(
     val googleSignInEnabled = remember { remoteConfig.googleSignInEnabled }
 
     val context = LocalContext.current
+    val defaultWebClientId = stringResource(id = R.string.default_web_client_id)
 
     // ── Real Google Sign-In launcher ────────────────────────────────────────
     val googleLauncher = rememberLauncherForActivityResult(
@@ -142,7 +145,7 @@ fun WelcomeScreen(
                 enabled   = consentGranted,
                 onClick   = {
                     runCatching {
-                        context.getString(com.nexuswavetech.nexusplus.R.string.default_web_client_id)
+                        defaultWebClientId
                     }.onFailure {
                         viewModel.onGoogleSignInError(
                             "Google Sign-In not configured — add a valid google-services.json with OAuth web client ID"
