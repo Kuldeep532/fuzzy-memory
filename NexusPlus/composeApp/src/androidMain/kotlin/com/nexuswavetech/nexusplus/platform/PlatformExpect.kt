@@ -1,6 +1,8 @@
 package com.nexuswavetech.nexusplus.platform
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.speech.tts.TextToSpeech
 import android.view.HapticFeedbackConstants
 import android.view.View
@@ -82,12 +84,14 @@ actual class PlatformOcr(private val context: Context) {
 actual class PlatformUrlHandler(private val context: Context) {
     actual fun openUrl(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
     }
     actual fun openEmail(to: String, subject: String) {
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:$to")
             putExtra(Intent.EXTRA_SUBJECT, subject)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         runCatching { context.startActivity(intent) }
     }

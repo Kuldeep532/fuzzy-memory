@@ -30,6 +30,7 @@ import com.nexuswavetech.nexusplus.features.tts.NseRepository
 import com.nexuswavetech.nexusplus.features.tts.NseSpeechMode
 import com.nexuswavetech.nexusplus.features.tts.NseSpeechRequest
 import com.nexuswavetech.nexusplus.features.tts.NseState
+import com.nexuswavetech.nexusplus.sound.NexusSoundManager
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.*
 import org.koin.compose.koinInject
@@ -65,6 +66,7 @@ fun NexusDocumentReaderScreen(
     var scale         by remember { mutableFloatStateOf(1f) }
     var pdfRenderer   by remember { mutableStateOf<PdfRenderer?>(null) }
     var plainText     by remember { mutableStateOf<String?>(null) }
+    var isFirstPageLoad by remember { mutableStateOf(true) }
 
     val nseRepo: NseRepository = koinInject()
     val nseState by nseRepo.state.collectAsState()
@@ -131,6 +133,12 @@ fun NexusDocumentReaderScreen(
                 plainText = "Preview not available for this file type.\n\nFile: ${doc.name}\n\nType: ${doc.type}"
                 isLoading = false
             }
+        }
+    }
+
+    LaunchedEffect(currentPage) {
+        if (isFirstPageLoad) { isFirstPageLoad = false } else {
+            NexusSoundManager.play(NexusSoundManager.SoundEvent.PAGE_FLIP)
         }
     }
 

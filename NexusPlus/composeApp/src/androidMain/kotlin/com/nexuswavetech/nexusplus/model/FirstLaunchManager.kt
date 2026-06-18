@@ -2,6 +2,7 @@ package com.nexuswavetech.nexusplus.model
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.nexuswavetech.nexusplus.sound.NexusSoundManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -52,12 +53,17 @@ class FirstLaunchManager(
             val missing = findMissingDefaultModels()
             if (missing.isNotEmpty()) {
                 val onWifi = downloadManager.isOnWifi(context)
+                var anyEnqueued = false
                 missing.forEach { model ->
                     if (!model.requiresWifi || onWifi) {
                         if (downloadManager.hasStorageFor(model)) {
                             downloadManager.enqueue(model)
+                            anyEnqueued = true
                         }
                     }
+                }
+                if (anyEnqueued) {
+                    NexusSoundManager.play(NexusSoundManager.SoundEvent.BACKGROUND_PROCESSING)
                 }
             }
             markLaunched()

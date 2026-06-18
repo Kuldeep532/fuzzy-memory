@@ -1,35 +1,32 @@
 package com.nexuswavetech.nexusplus.platform
 
-/** Platform-specific interface for TTS operations. */
-expect interface PlatformTts {
+/** Platform-specific class for TTS operations. */
+expect class PlatformTts {
     fun speak(text: String, language: String? = null)
     fun stop()
     fun isSpeaking(): Boolean
     fun shutdown()
 }
 
-/** Platform-specific interface for haptic feedback. */
-expect interface PlatformHaptics {
+/** Platform-specific class for haptic feedback. */
+expect class PlatformHaptics {
     fun performClick()
     fun performConfirm()
 }
 
-/** Platform-specific interface for toast/snackbar messages. */
-expect interface PlatformToast {
+/** Platform-specific class for toast/snackbar messages. */
+expect class PlatformToast {
     fun show(message: String, isLong: Boolean = false)
 }
 
-/** Platform-specific interface for OCR (Optical Character Recognition). */
-expect interface PlatformOcr {
-    /** Recognize text from an image file at the given path. */
+/** Platform-specific class for OCR (Optical Character Recognition). */
+expect class PlatformOcr {
     suspend fun recognizeText(imagePath: String): OcrResult
 }
 
-/** Platform-specific interface for opening URLs / external links. */
-expect interface PlatformUrlHandler {
-    /** Open the given URL in the platform's default browser/app. */
+/** Platform-specific class for opening URLs / external links. */
+expect class PlatformUrlHandler {
     fun openUrl(url: String)
-    /** Open an email composer with the given address and subject. */
     fun openEmail(to: String, subject: String)
 }
 

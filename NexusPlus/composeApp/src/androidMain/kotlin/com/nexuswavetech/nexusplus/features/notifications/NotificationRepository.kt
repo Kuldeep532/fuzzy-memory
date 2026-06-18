@@ -2,6 +2,7 @@ package com.nexuswavetech.nexusplus.features.notifications
 
 import android.content.Context
 import com.nexuswavetech.nexusplus.core.FeatureCatalog
+import com.nexuswavetech.nexusplus.sound.NexusSoundManager
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -72,6 +73,7 @@ actual class NotificationRepository(private val context: Context) {
      * Use [sendAdminNotification] from UI to enforce the admin check.
      */
     actual suspend fun addNotification(notif: NexusNotification) {
+        NexusSoundManager.play(NexusSoundManager.SoundEvent.NOTIFICATION_RECEIVED)
         context.notifStore.edit { prefs ->
             val raw = prefs[NOTIF_KEY] ?: JSONArray().toString()
             val arr = JSONArray(raw)

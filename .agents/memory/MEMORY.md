@@ -1,3 +1,6 @@
+- [KMP expect/actual patterns](kmp-expect-actual.md) — use `expect class` (never `expect interface`) for platform types; actual can have extra members; Firebase must NOT be in commonMain
+- [PlatformContext init](kmp-expect-actual.md) — androidMain PlatformContext requires PlatformContext.init(ctx) call in Application.onCreate() BEFORE Koin starts; desktopMain/iosMain use no-arg get()
+- [Audio assets location](nexusplus-names.md) — res/raw files in composeApp/src/androidMain/res/raw/; page_flip.mp3, notification_sound.mp3, background_processing.mp3; loaded via R.raw.* in NexusSoundManager
 - [NseRepository API](nse-repo-api.md) — speak/stop/initialise are NOT suspend; observe nseRepo.state (StateFlow) for speaking status
 - [FileManager viewer routing](filemanager-routing.md) — FileManagerScreen has onOpenImageViewer/onOpenDocReader lambda params; NavHost passes navigate lambdas
 - [Nexus Plus feature names](nexusplus-names.md) — canonical names: NSE=Nexus Auto Speech Engine (NASE), Aira AI, Nexus Image Viewer, Nexus Document Reader

@@ -9,9 +9,7 @@ import com.nexuswavetech.nexusplus.core.RecentActivityRepository
 import com.nexuswavetech.nexusplus.core.SearchManager
 import com.nexuswavetech.nexusplus.core.SessionManager
 import com.nexuswavetech.nexusplus.core.SettingsRepository
-import com.nexuswavetech.nexusplus.core.registry.FeatureRegistry
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesViewModel
-import com.nexuswavetech.nexusplus.features.notifications.NexusNotification
 import com.nexuswavetech.nexusplus.features.tts.NseRepository
 import com.nexuswavetech.nexusplus.features.tts.NseViewModel
 import com.nexuswavetech.nexusplus.features.weather.WeatherService
@@ -20,13 +18,11 @@ import com.nexuswavetech.nexusplus.news.NewsService
 import com.nexuswavetech.nexusplus.news.NewsViewModel
 import com.nexuswavetech.nexusplus.science.ScienceService
 import com.nexuswavetech.nexusplus.science.ScienceViewModel
-import com.nexuswavetech.nexusplus.platform.PlatformContext
-import com.nexuswavetech.nexusplus.platform.SettingsStore
 import org.koin.dsl.module
 
 /**
  * CommonMain Koin module — platform-agnostic dependencies.
- * Android adds platform bindings via single<SettingsStore> { SettingsStore(androidContext()) }.
+ * Android adds platform bindings via appModule in androidMain.
  */
 val commonModule = module {
 
@@ -51,16 +47,8 @@ val commonModule = module {
     factory { NewsViewModel(service = get()) }
     factory { ScienceViewModel(service = get()) }
 
-    // ── Platform abstractions ───────────────────────────────────────────────
-    single<com.nexuswavetech.nexusplus.platform.PlatformOcr> {
-        com.nexuswavetech.nexusplus.platform.PlatformOcr()
-    }
-    single<com.nexuswavetech.nexusplus.platform.PlatformUrlHandler> {
-        com.nexuswavetech.nexusplus.platform.PlatformUrlHandler()
-    }
-
     // ── Auth (placeholder for non-Android) ─────────────────────────────────────────
-    // Android overrides with FirebaseAuthRepository
+    // Android overrides with FirebaseAuthRepository in appModule
     single<AuthRepository> { GuestAuthRepository() }
 }
 

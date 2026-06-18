@@ -3,7 +3,7 @@ package com.nexuswavetech.nexusplus.sound
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
-
+import com.nexuswavetech.nexusplus.R
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -13,6 +13,10 @@ import kotlinx.coroutines.runBlocking
  *
  * Plays short UI sound effects for navigation, dialogs, selections, toggles,
  * success, errors, button presses, feature launches, and page transitions.
+ *
+ * Real audio files are used for PAGE_FLIP, NOTIFICATION_RECEIVED, and
+ * BACKGROUND_PROCESSING events (loaded from res/raw).  All other events use
+ * procedurally generated sine-wave tones so no additional assets are needed.
  *
  * All playback is gated by the Sound Effects setting in [SettingsRepository].
  * Uses [SoundPool] for low-latency non-blocking playback.
@@ -37,6 +41,12 @@ object NexusSoundManager {
         FEATURE_LAUNCH,
         PAGE_TURN_FORWARD,
         PAGE_TURN_BACKWARD,
+        /** Real audio: page-flip sound for PDF/Document reader page changes. */
+        PAGE_FLIP,
+        /** Real audio: notification chime for new notifications. */
+        NOTIFICATION_RECEIVED,
+        /** Real audio: background processing indicator. */
+        BACKGROUND_PROCESSING,
     }
 
     private var soundPool: SoundPool? = null
@@ -59,24 +69,30 @@ object NexusSoundManager {
 
         soundPool?.setOnLoadCompleteListener { _, _, _ -> isReady = true }
 
-        loadGeneratedSounds(context)
+        loadSounds(context)
     }
 
-    private fun loadGeneratedSounds(context: Context) {
+    private fun loadSounds(context: Context) {
         soundPool?.let { pool ->
-            soundMap[SoundEvent.NAVIGATE]           = generateAndLoad(pool, context, 880f, 80L, 0.4f)
-            soundMap[SoundEvent.BACK]               = generateAndLoad(pool, context, 660f, 60L, 0.3f)
-            soundMap[SoundEvent.SELECT]             = generateAndLoad(pool, context, 1000f, 50L, 0.5f)
-            soundMap[SoundEvent.TOGGLE_ON]          = generateAndLoad(pool, context, 1200f, 70L, 0.45f)
-            soundMap[SoundEvent.TOGGLE_OFF]         = generateAndLoad(pool, context, 800f,  70L, 0.35f)
+            // ── Procedurally generated tones ──────────────────────────────────
+            soundMap[SoundEvent.NAVIGATE]           = generateAndLoad(pool, context, 880f,  80L,  0.4f)
+            soundMap[SoundEvent.BACK]               = generateAndLoad(pool, context, 660f,  60L,  0.3f)
+            soundMap[SoundEvent.SELECT]             = generateAndLoad(pool, context, 1000f, 50L,  0.5f)
+            soundMap[SoundEvent.TOGGLE_ON]          = generateAndLoad(pool, context, 1200f, 70L,  0.45f)
+            soundMap[SoundEvent.TOGGLE_OFF]         = generateAndLoad(pool, context, 800f,  70L,  0.35f)
             soundMap[SoundEvent.SUCCESS]            = generateAndLoad(pool, context, 1320f, 120L, 0.6f)
             soundMap[SoundEvent.ERROR]              = generateAndLoad(pool, context, 330f,  150L, 0.5f)
-            soundMap[SoundEvent.BUTTON_TAP]         = generateAndLoad(pool, context, 950f,  40L, 0.3f)
+            soundMap[SoundEvent.BUTTON_TAP]         = generateAndLoad(pool, context, 950f,  40L,  0.3f)
             soundMap[SoundEvent.DIALOG_OPEN]        = generateAndLoad(pool, context, 1100f, 100L, 0.4f)
-            soundMap[SoundEvent.DIALOG_CLOSE]       = generateAndLoad(pool, context, 900f,  80L, 0.35f)
+            soundMap[SoundEvent.DIALOG_CLOSE]       = generateAndLoad(pool, context, 900f,  80L,  0.35f)
             soundMap[SoundEvent.FEATURE_LAUNCH]     = generateAndLoad(pool, context, 1400f, 130L, 0.55f)
-            soundMap[SoundEvent.PAGE_TURN_FORWARD]  = generateAndLoad(pool, context, 1050f, 60L, 0.35f)
-            soundMap[SoundEvent.PAGE_TURN_BACKWARD] = generateAndLoad(pool, context, 850f,  60L, 0.35f)
+            soundMap[SoundEvent.PAGE_TURN_FORWARD]  = generateAndLoad(pool, context, 1050f, 60L,  0.35f)
+            soundMap[SoundEvent.PAGE_TURN_BACKWARD] = generateAndLoad(pool, context, 850f,  60L,  0.35f)
+
+            // ── Real audio files from res/raw ──────────────────────────────────
+            runCatching { soundMap[SoundEvent.PAGE_FLIP] = pool.load(context, R.raw.page_flip, 1) }
+            runCatching { soundMap[SoundEvent.NOTIFICATION_RECEIVED] = pool.load(context, R.raw.notification_sound, 1) }
+            runCatching { soundMap[SoundEvent.BACKGROUND_PROCESSING] = pool.load(context, R.raw.background_processing, 1) }
         }
         isReady = true
     }
@@ -168,5 +184,4 @@ object NexusSoundManager {
         buf[offset]     = (value and 0xFF).toByte()
         buf[offset + 1] = (value shr 8  and 0xFF).toByte()
     }
-
 }
