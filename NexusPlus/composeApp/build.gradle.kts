@@ -94,7 +94,7 @@ kotlin {
             }
         }
 
-        val iosMain by getting {
+        val iosX64()  by getting {
             dependencies {
                 implementation(libs.ktor.client.darwin)
             }
