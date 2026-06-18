@@ -50,6 +50,7 @@ import com.nexuswavetech.nexusplus.ai.GeminiRepository
 import com.nexuswavetech.nexusplus.model.ModelDownloadManager
 import com.nexuswavetech.nexusplus.model.FirstLaunchManager
 import com.nexuswavetech.nexusplus.platform.SettingsStore
+import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -58,6 +59,9 @@ val appModule = module {
 
     // ── Platform layer ──────────────────────────────────────────────────
     single<SettingsStore> { SettingsStore(androidContext()) }
+
+    // ── Remote Config ─────────────────────────────────────────────────────
+    single { RemoteConfigRepository() }
 
     // ── AI layer ───────────────────────────────────────────────────────────
     single { GeminiRepository(get()) }

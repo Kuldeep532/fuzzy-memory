@@ -102,6 +102,7 @@ fun NexusDocumentReaderScreen(
 
     LaunchedEffect(currentDoc) {
         val doc = currentDoc ?: return@LaunchedEffect
+        NexusSoundManager.play(NexusSoundManager.SoundEvent.BACKGROUND_PROCESSING)
         isLoading = true
         pageBitmap = null
         plainText = null

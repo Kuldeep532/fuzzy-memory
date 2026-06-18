@@ -31,6 +31,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.nexuswavetech.nexusplus.navigation.Screen
+import com.nexuswavetech.nexusplus.sound.NexusSoundManager
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import android.content.ContentValues
 import android.net.Uri
@@ -75,6 +76,12 @@ fun NexusImageViewerScreen(
     LaunchedEffect(Unit) {
         if (currentUri == null && !imagePermission.status.isGranted) {
             imagePermission.launchPermissionRequest()
+        }
+    }
+
+    LaunchedEffect(currentUri) {
+        if (currentUri != null) {
+            NexusSoundManager.play(NexusSoundManager.SoundEvent.BACKGROUND_PROCESSING)
         }
     }
 

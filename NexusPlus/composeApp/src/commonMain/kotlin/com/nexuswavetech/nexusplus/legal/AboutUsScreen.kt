@@ -2,9 +2,11 @@ package com.nexuswavetech.nexusplus.legal
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,7 +20,10 @@ import com.nexuswavetech.nexusplus.core.FeatureCatalog
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 
 @Composable
-fun AboutUsScreen(onBack: () -> Unit) {
+fun AboutUsScreen(
+    onBack: () -> Unit,
+    onSocialMedia: () -> Unit = {},
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "About", onBack = onBack)
 
@@ -86,6 +91,16 @@ fun AboutUsScreen(onBack: () -> Unit) {
                         textAlign = TextAlign.Center
                     )
                 }
+            }
+
+            Button(
+                onClick = onSocialMedia,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+            ) {
+                Icon(Icons.Filled.Group, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Community & Social Media", fontWeight = FontWeight.SemiBold)
             }
 
             Spacer(modifier = Modifier.height(8.dp))

@@ -114,6 +114,9 @@ sealed class Screen(val route: String) {
     // ── Download Voices (TTS model manager) ─────────────────────────────────
     object DownloadVoices : Screen("settings/download_voices")
 
+    // ── Social Media & Community ─────────────────────────────────────────────
+    object SocialMedia : Screen("community/social_media")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

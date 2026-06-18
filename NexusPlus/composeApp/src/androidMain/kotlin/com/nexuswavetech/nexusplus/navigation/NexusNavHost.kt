@@ -11,9 +11,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.nexuswavetech.nexusplus.features.social.SocialMediaScreen
+import com.nexuswavetech.nexusplus.platform.PlatformUrlHandler
+import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
+import org.koin.compose.koinInject
 import com.nexuswavetech.nexusplus.auth.WelcomeScreen
 import com.nexuswavetech.nexusplus.features.hub.AIHubScreen
 import com.nexuswavetech.nexusplus.features.hub.DocumentsHubScreen
@@ -93,6 +101,33 @@ private const val SLIDE_FRACTION    = 6
 @Composable
 fun NexusNavHost() {
     val navController = rememberNavController()
+
+    val remoteConfig: RemoteConfigRepository = koinInject()
+    val urlHandler: PlatformUrlHandler       = koinInject()
+
+    // ── Update dialog state ────────────────────────────────────────────────
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (remoteConfig.updateDialogEnabled) {
+            showUpdateDialog = true
+        }
+    }
+    if (showUpdateDialog) {
+        AlertDialog(
+            onDismissRequest = { showUpdateDialog = false },
+            title   = { Text(remoteConfig.updateDialogTitle) },
+            text    = { Text(remoteConfig.updateDialogMessage) },
+            confirmButton = {
+                TextButton(onClick = {
+                    urlHandler.openUrl(remoteConfig.updateDialogUrl)
+                    showUpdateDialog = false
+                }) { Text("Update Now") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUpdateDialog = false }) { Text("Later") }
+            },
+        )
+    }
 
     // Shared URI state — FileManager passes a Uri when opening viewer/reader.
     // NavHost retains it across recompositions so the target screen can read it.
@@ -265,7 +300,12 @@ fun NexusNavHost() {
         composable(Screen.NetworkSpeedTest.route)   { NexusAdScaffold { NetworkSpeedTestScreen  (onBack = { navController.popBackStack() }) } }
 
         // ── Legal ─────────────────────────────────────────────────────────
-        composable(Screen.AboutUs.route)         { AboutUsScreen        (onBack = { navController.popBackStack() }) }
+        composable(Screen.AboutUs.route) {
+            AboutUsScreen(
+                onBack        = { navController.popBackStack() },
+                onSocialMedia = { navController.navigate(Screen.SocialMedia.route) },
+            )
+        }
         composable(Screen.PrivacyPolicy.route)   { PrivacyPolicyScreen  (onBack = { navController.popBackStack() }) }
         composable(Screen.TermsConditions.route) { TermsConditionsScreen(onBack = { navController.popBackStack() }) }
 
@@ -312,6 +352,11 @@ fun NexusNavHost() {
 
         // ── Download Voices ───────────────────────────────────────────────────
         composable(Screen.DownloadVoices.route) { DownloadVoicesScreen(onBack = { navController.popBackStack() }) }
+
+        // ── Social Media & Community ───────────────────────────────────────────
+        composable(Screen.SocialMedia.route) {
+            NexusAdScaffold { SocialMediaScreen(onBack = { navController.popBackStack() }) }
+        }
 
         // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->

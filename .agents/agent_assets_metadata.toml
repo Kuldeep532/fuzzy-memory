@@ -1,0 +1,32 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "1FpXcSpg8flDAm6A_sx8w"
+uri = "file://NexusPlus/app/src/main/res/drawable/ic_nexusplus_icon.png"
+type = "image"
+title = "nexus_plus_app_icon"
+
+[[generated]]
+id = "ilvCHord5BnTd2c_iE9hI"
+uri = "file://NexusPlus/screenshots/screenshot_home.png"
+type = "image"
+title = "nexus_plus_home_screenshot"
+
+[[generated]]
+id = "dgZ7wSygnAT8cisK1JxQ_"
+uri = "file://NexusPlus/screenshots/screenshot_ai_features.png"
+type = "image"
+title = "nexus_plus_ai_screenshot"
+
+[[generated]]
+id = "KfFJ76ICOC_S1I42Y6zTi"
+uri = "file://NexusPlus/screenshots/screenshot_security.png"
+type = "image"
+title = "nexus_plus_security_screenshot"
+
+[[generated]]
+id = "PSHlXpcFV1kOL58Tykkrs"
+uri = "file://NexusPlus/screenshots/feature_graphic.png"
+type = "image"
+title = "nexus_plus_feature_graphic"

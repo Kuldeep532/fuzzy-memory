@@ -35,6 +35,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusPlusLogo
+import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
+import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -47,6 +49,9 @@ fun WelcomeScreen(
     val privacyAccepted by viewModel.privacyAccepted.collectAsState()
     val termsAccepted   by viewModel.termsAccepted.collectAsState()
     val consentGranted  by viewModel.legalConsentGranted.collectAsState()
+
+    val remoteConfig: RemoteConfigRepository = koinInject()
+    val googleSignInEnabled = remember { remoteConfig.googleSignInEnabled }
 
     val context = LocalContext.current
 
@@ -136,8 +141,8 @@ fun WelcomeScreen(
                 onOpenTerms      = { navController?.navigate(Screen.TermsConditions.route) },
             )
 
-            // ── Google Sign-In button (real launcher) ───────────────────────
-            GoogleSignInButton(
+            // ── Google Sign-In button — visibility controlled by Firebase Remote Config ──
+            if (googleSignInEnabled) GoogleSignInButton(
                 isLoading = uiState.isLoading,
                 enabled   = consentGranted,
                 onClick   = {

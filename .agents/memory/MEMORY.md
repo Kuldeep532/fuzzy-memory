@@ -1,3 +1,4 @@
+- [Firebase Remote Config setup](firebase-remote-config.md) — RemoteConfigRepository in androidMain/remoteconfig/; all defaults in RemoteConfigDefaults.kt; fetchAndActivate() called in Application.onCreate() after Koin; update dialog in NavHost LaunchedEffect
 - [KMP expect/actual patterns](kmp-expect-actual.md) — use `expect class` (never `expect interface`) for platform types; actual can have extra members; Firebase must NOT be in commonMain
 - [PlatformContext init](kmp-expect-actual.md) — androidMain PlatformContext requires PlatformContext.init(ctx) call in Application.onCreate() BEFORE Koin starts; desktopMain/iosMain use no-arg get()
 - [Audio assets location](nexusplus-names.md) — res/raw files in composeApp/src/androidMain/res/raw/; page_flip.mp3, notification_sound.mp3, background_processing.mp3; loaded via R.raw.* in NexusSoundManager

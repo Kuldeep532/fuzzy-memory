@@ -86,6 +86,7 @@ kotlin {
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
             implementation(libs.firebase.messaging)
+            implementation(libs.firebase.config)
             implementation(libs.google.play.auth)
         }
 
