@@ -102,6 +102,12 @@ android {
         versionCode = 3
         versionName = "1.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // AdMob App ID — set ADMOB_APP_ID in GitHub Secrets / local env.
+        // Falls back to Google's official test App ID so debug builds always work.
+        val admobAppId = environmentVariable("ADMOB_APP_ID")
+            ?: "ca-app-pub-3940256099942544~3347511713"
+        manifestPlaceholders["ADMOB_APP_ID"] = admobAppId
     }
 
     signingConfigs {

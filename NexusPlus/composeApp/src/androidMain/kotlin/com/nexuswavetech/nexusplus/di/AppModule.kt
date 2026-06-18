@@ -92,7 +92,7 @@ val appModule = module {
     // ── NSE 4.0 — Nexus Auto Speech Engine (Pipeline) ──────────────────────
     single  { NsePcmCache() }
     factory { NseAudioFocusManager(androidContext()) }
-    factory<NseEngine> { NsePipelineAndroidEngine(androidContext(), get(), get()) }
+    factory<NseEngine> { NsePipelineAndroidEngine(androidContext(), get(), get(), get<ModelDownloadManager>().modelsDir) }
     factory { NseRepository(get<NseEngine>()) }
 
     // ── ViewModels ────────────────────────────────────────────────────────

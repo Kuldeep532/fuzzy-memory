@@ -23,7 +23,7 @@ import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}) {
     val settings = koinInject<SettingsRepository>()
     val scope    = rememberCoroutineScope()
 
@@ -301,6 +301,16 @@ fun SettingsScreen(onBack: () -> Unit) {
                             selected = nseVoice,
                             onSelect = { scope.launch { settings.setNseVoice(it) } },
                         )
+
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick   = onDownloadVoices,
+                            modifier  = Modifier.fillMaxWidth(),
+                        ) {
+                            Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Download Voices — 28 languages")
+                        }
                     }
                 }
             }

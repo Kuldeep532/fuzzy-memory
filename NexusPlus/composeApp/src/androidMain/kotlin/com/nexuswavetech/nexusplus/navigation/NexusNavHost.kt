@@ -75,6 +75,7 @@ import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
 import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 import com.nexuswavetech.nexusplus.features.games.NexusGamesScreen
+import com.nexuswavetech.nexusplus.features.voices.DownloadVoicesScreen
 
 private const val ANIM_DURATION     = 320
 private const val ANIM_DURATION_OUT = 200
@@ -127,7 +128,7 @@ fun NexusNavHost() {
         composable(Screen.UtilitiesHub.route) { UtilitiesHubScreen(onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
 
         // ── Global screens ────────────────────────────────────────────────
-        composable(Screen.Settings.route)           { SettingsScreen          (onBack = { navController.popBackStack() }) }
+        composable(Screen.Settings.route)           { SettingsScreen(onBack = { navController.popBackStack() }, onDownloadVoices = { navController.navigate(Screen.DownloadVoices.route) }) }
         composable(Screen.Profile.route) {
             ProfileScreen(
                 onBack = { navController.popBackStack() },
@@ -249,6 +250,9 @@ fun NexusNavHost() {
 
         // ── Nexus Games Hub ───────────────────────────────────────────────────
         composable(Screen.NexusGames.route) { NexusGamesScreen(onBack = { navController.popBackStack() }) }
+
+        // ── Download Voices ───────────────────────────────────────────────────
+        composable(Screen.DownloadVoices.route) { DownloadVoicesScreen(onBack = { navController.popBackStack() }) }
 
         // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->

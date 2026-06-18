@@ -40,6 +40,7 @@ class NsePipelineAndroidEngine(
     private val context: Context,
     private val audioFocus: NseAudioFocusManager,
     val pcmCache: NsePcmCache,
+    private val modelsDir: java.io.File? = null,
 ) : NseEngine {
 
     override var utteranceResultListener: ((NseUtteranceResult) -> Unit)? = null
@@ -329,7 +330,7 @@ class NsePipelineAndroidEngine(
 
     override fun availableVoices(locale: Locale?): List<NseVoiceProfile> {
         val engine = tts ?: return emptyList()
-        return try {
+        val systemVoices: List<NseVoiceProfile> = try {
             engine.voices
                 ?.filter { locale == null || it.locale == locale }
                 ?.map { v ->
@@ -342,6 +343,35 @@ class NsePipelineAndroidEngine(
                     )
                 } ?: emptyList()
         } catch (_: Exception) { emptyList() }
+
+        // Merge downloaded Piper TTS voices into the voice list so they appear
+        // in the NSE voice picker alongside the system TTS voices.
+        val piperVoices: List<NseVoiceProfile> = modelsDir?.let { dir ->
+            try {
+                com.nexuswavetech.nexusplus.model.ModelRegistry.allVoices()
+                    .filter { model ->
+                        val onnxFile = java.io.File(dir, "${model.id}.onnx")
+                        onnxFile.exists() && onnxFile.length() > 0
+                    }
+                    .map { model ->
+                        val parts = model.locale.split("-")
+                        val piperLocale = when (parts.size) {
+                            2    -> Locale(parts[0], parts[1])
+                            else -> Locale(model.locale)
+                        }
+                        NseVoiceProfile(
+                            name              = "Nexus/${model.name} [Piper]",
+                            locale            = piperLocale,
+                            isNetworkRequired = false,
+                            quality           = android.speech.tts.Voice.QUALITY_VERY_HIGH,
+                            latency           = android.speech.tts.Voice.LATENCY_LOW,
+                        )
+                    }
+                    .filter { pv -> locale == null || pv.locale == locale }
+            } catch (_: Exception) { emptyList() }
+        } ?: emptyList()
+
+        return piperVoices + systemVoices
     }
 
     override fun shutdown() {

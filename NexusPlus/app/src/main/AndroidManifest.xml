@@ -67,10 +67,10 @@
         android:largeHeap="true"
         android:usesCleartextTraffic="true">
 
-        <!-- Google AdMob — replace test App ID with your live com.google.android.gms.ads.APPLICATION_ID -->
+        <!-- Google AdMob App ID — injected from ADMOB_APP_ID env var in CI; falls back to Google test ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" />
+            android:value="${ADMOB_APP_ID}" />
         <!-- Delay app measurement until MobileAds.initialize() is called -->
         <meta-data
             android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
