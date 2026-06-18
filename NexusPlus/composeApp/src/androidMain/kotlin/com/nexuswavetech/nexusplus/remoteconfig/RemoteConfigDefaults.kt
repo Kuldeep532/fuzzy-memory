@@ -81,8 +81,8 @@ object RemoteConfigDefaults {
         RemoteConfigKeys.OFFICIAL_WEBSITE to "https://nexuswavetech.com",
 
         // Contact
-        RemoteConfigKeys.SUPPORT_EMAIL    to "nexuswave.technologies@gmail.com",
-        RemoteConfigKeys.CONTACT_EMAIL    to "nexuswave.technologies@gmail.com",
+        RemoteConfigKeys.SUPPORT_EMAIL    to "nexuswave@zohomail.in",
+        RemoteConfigKeys.CONTACT_EMAIL    to "nexuswave@zohomail.in",
 
         // Legal
         RemoteConfigKeys.TERMS_URL        to "https://nexuswavetech.com/terms",

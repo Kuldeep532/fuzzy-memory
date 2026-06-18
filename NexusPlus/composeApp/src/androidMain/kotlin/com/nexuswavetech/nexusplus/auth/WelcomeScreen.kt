@@ -34,7 +34,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.nexuswavetech.nexusplus.navigation.Screen
-import com.nexuswavetech.nexusplus.ui.components.NexusPlusLogo
+import com.nexuswavetech.nexusplus.ui.components.NexusWaveLogo
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
 import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
@@ -104,12 +104,7 @@ fun WelcomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
 
-            NexusPlusLogo(
-                modifier     = Modifier.size(100.dp),
-                primaryColor = MaterialTheme.colorScheme.onPrimary,
-                accentColor  = MaterialTheme.colorScheme.secondary,
-                strokeWidth  = 3.5.dp,
-            )
+            NexusWaveLogo(modifier = Modifier.size(100.dp))
 
             Text(
                 text  = "Nexus Plus",

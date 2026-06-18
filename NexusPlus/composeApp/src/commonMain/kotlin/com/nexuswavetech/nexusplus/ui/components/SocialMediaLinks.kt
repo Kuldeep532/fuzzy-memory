@@ -140,8 +140,8 @@ fun HelpSection(modifier: Modifier = Modifier) {
         OutlinedCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics { contentDescription = "Support email: nexuswavetech@yahoo.com" },
-            onClick = { urlHandler.openEmail("nexuswavetech@yahoo.com", "Nexus Plus Support") }
+                .semantics { contentDescription = "Support email: nexuswave@zohomail.in" },
+            onClick = { urlHandler.openEmail("nexuswave@zohomail.in", "Nexus Plus Support") }
         ) {
             Row(
                 modifier = Modifier
@@ -163,7 +163,7 @@ fun HelpSection(modifier: Modifier = Modifier) {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "nexuswavetech@yahoo.com",
+                        text = "nexuswave@zohomail.in",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary
                     )
