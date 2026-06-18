@@ -8,7 +8,6 @@ plugins {
     alias(libs.plugins.compose)
     alias(libs.plugins.kotlin.serialization)
 }
-
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -16,9 +15,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-
     jvm("desktop")
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -27,13 +24,13 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-        }
-    }
-
     applyDefaultHierarchyTemplate()
-
     sourceSets {
         commonMain.dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-messaging")
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -42,7 +39,6 @@ kotlin {
             implementation(libs.androidx.navigation.compose)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-
             implementation(libs.kotlinx.coroutines.core)
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
             implementation("io.insert-koin:koin-core:3.5.6")
@@ -51,8 +47,6 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
-        }
-
         androidMain.dependencies {
             implementation(libs.androidx.core.ktx)
             implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -68,7 +62,6 @@ kotlin {
             implementation(libs.androidx.camera.lifecycle)
             implementation(libs.androidx.camera.view)
             implementation(libs.androidx.camera.mlkit)
-            implementation(libs.androidx.navigation.compose)
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.media3.exoplayer)
@@ -90,43 +83,25 @@ kotlin {
             implementation(libs.firebase.firestore)
             implementation(libs.firebase.messaging)
             implementation(libs.google.play.auth)
-        }
-
         val desktopMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.9.0")
                 implementation(libs.ktor.client.java)
             }
-        }
-
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-        }
-    }
-}
-
 android {
     namespace = "com.nexuswavetech.nexusplus"
     compileSdk = 35
-
     defaultConfig {
         minSdk = 26
         targetSdk = 35
-    }
-
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-}
