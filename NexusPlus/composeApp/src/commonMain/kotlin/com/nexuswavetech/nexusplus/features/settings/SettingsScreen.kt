@@ -13,6 +13,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
@@ -44,11 +46,19 @@ fun SettingsScreen(onBack: () -> Unit) {
     // ── Feature settings ────────────────────────────────────────────────────
     val ttsRate             by settings.ttsDefaultRate.collectAsState(initial = 1.0f)
     val ttsLang             by settings.ttsDefaultLanguage.collectAsState(initial = SettingsRepository.TTS_LANG_AUTO)
+    val nseVoice            by settings.nseVoice.collectAsState(initial = SettingsRepository.NSE_VOICE_AUTO)
     val morseSpeed          by settings.morseVibrationSpeed.collectAsState(initial = SettingsRepository.MORSE_SPEED_NORMAL)
     val bufferQuality       by settings.bufferQuality.collectAsState(initial = SettingsRepository.BUFFER_NORMAL)
     val translatorAuto      by settings.translatorAutoDetect.collectAsState(initial = true)
     val reminderSnooze      by settings.reminderSnoozeMins.collectAsState(initial = SettingsRepository.REMINDER_SNOOZE_DEFAULT)
     val calcAngleUnit       by settings.calculatorAngleUnit.collectAsState(initial = SettingsRepository.ANGLE_DEG)
+
+    // ── Aira AI / Gemini settings ────────────────────────────────────────────
+    val airaGeminiPrimary   by settings.airaGeminiPrimary.collectAsState(initial = false)
+    val geminiApiKeyFlow    by settings.geminiApiKey.collectAsState(initial = "")
+    val geminiModel         by settings.geminiModel.collectAsState(initial = SettingsRepository.GEMINI_MODEL_FLASH)
+    var geminiKeyInput      by remember(geminiApiKeyFlow) { mutableStateOf(geminiApiKeyFlow) }
+    var showGeminiKey       by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Settings", onBack = onBack)
@@ -279,6 +289,18 @@ fun SettingsScreen(onBack: () -> Unit) {
                             selected = ttsLang,
                             onSelect = { scope.launch { settings.setTtsDefaultLanguage(it) } },
                         )
+
+                        Spacer(Modifier.height(4.dp))
+                        Text("Built-in voice engine", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.NSE_VOICE_AUTO         to "Auto (use language setting)",
+                                SettingsRepository.NSE_VOICE_NEXUS_HINDI  to "Nexus Hindi (offline)",
+                                SettingsRepository.NSE_VOICE_NEXUS_ENGLISH to "Nexus English (offline)",
+                            ),
+                            selected = nseVoice,
+                            onSelect = { scope.launch { settings.setNseVoice(it) } },
+                        )
                     }
                 }
             }
@@ -376,6 +398,70 @@ fun SettingsScreen(onBack: () -> Unit) {
                             ),
                             selected = calcAngleUnit,
                             onSelect = { scope.launch { settings.setCalculatorAngleUnit(it) } },
+                        )
+                    }
+                }
+            }
+
+            // ── Aira AI (Gemini) ──────────────────────────────────────────
+            item {
+                SettingsSectionHeader(
+                    title = "Aira AI",
+                    icon  = Icons.Filled.AutoAwesome,
+                )
+            }
+
+            item {
+                SettingsCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Filled.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                            Text("Gemini Integration", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
+                        }
+                        Text(
+                            "Add a Gemini API key to unlock Google AI responses in Aira. Free key available at aistudio.google.com",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+
+                        OutlinedTextField(
+                            value = geminiKeyInput,
+                            onValueChange = { geminiKeyInput = it },
+                            label = { Text("Gemini API Key") },
+                            placeholder = { Text("AIza…") },
+                            singleLine = true,
+                            visualTransformation = if (showGeminiKey) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                Row {
+                                    IconButton(onClick = { showGeminiKey = !showGeminiKey }) {
+                                        Icon(if (showGeminiKey) Icons.Filled.VisibilityOff else Icons.Filled.Visibility, contentDescription = if (showGeminiKey) "Hide key" else "Show key")
+                                    }
+                                    IconButton(onClick = { scope.launch { settings.setGeminiApiKey(geminiKeyInput.trim()) } }) {
+                                        Icon(Icons.Filled.Check, contentDescription = "Save key", tint = MaterialTheme.colorScheme.primary)
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Gemini API key input. Tap the check icon to save." },
+                        )
+
+                        Spacer(Modifier.height(2.dp))
+                        Text("Gemini model", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.GEMINI_MODEL_FLASH to "Gemini 1.5 Flash (fast, efficient)",
+                                SettingsRepository.GEMINI_MODEL_PRO   to "Gemini 1.5 Pro (more capable)",
+                            ),
+                            selected = geminiModel,
+                            onSelect = { scope.launch { settings.setGeminiModel(it) } },
+                        )
+
+                        Spacer(Modifier.height(2.dp))
+                        SettingsToggleRow(
+                            icon     = Icons.Filled.Star,
+                            title    = "Use Gemini as Primary",
+                            subtitle = "When key is set, prefer Gemini over free AI endpoints",
+                            checked  = airaGeminiPrimary,
+                            onToggle = { scope.launch { settings.setAiraGeminiPrimary(it) } },
                         )
                     }
                 }

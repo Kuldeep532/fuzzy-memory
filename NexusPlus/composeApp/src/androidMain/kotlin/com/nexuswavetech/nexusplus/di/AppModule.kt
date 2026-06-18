@@ -46,6 +46,9 @@ import com.nexuswavetech.nexusplus.news.NewsService
 import com.nexuswavetech.nexusplus.news.NewsViewModel
 import com.nexuswavetech.nexusplus.science.ScienceService
 import com.nexuswavetech.nexusplus.science.ScienceViewModel
+import com.nexuswavetech.nexusplus.ai.GeminiRepository
+import com.nexuswavetech.nexusplus.model.ModelDownloadManager
+import com.nexuswavetech.nexusplus.model.FirstLaunchManager
 import com.nexuswavetech.nexusplus.platform.SettingsStore
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -55,6 +58,13 @@ val appModule = module {
 
     // ── Platform layer ──────────────────────────────────────────────────
     single<SettingsStore> { SettingsStore(androidContext()) }
+
+    // ── AI layer ───────────────────────────────────────────────────────────
+    single { GeminiRepository(get()) }
+
+    // ── Model management ──────────────────────────────────────────────────
+    single { ModelDownloadManager(androidContext()) }
+    single { FirstLaunchManager(androidContext(), get()) }
 
     // ── Core singletons ───────────────────────────────────────────────────
     single<SessionManager>           { SessionManager() }
@@ -101,7 +111,7 @@ val appModule = module {
     viewModel { AiImageViewModel() }
     viewModel { IptvViewModel() }
     viewModel { MusicViewModel() }
-    viewModel { AiraViewModel() }
+    viewModel { AiraViewModel(settings = get(), geminiRepo = get()) }
 
     // Security
     viewModel { EncrypterDecrypterViewModel() }

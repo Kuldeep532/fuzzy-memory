@@ -99,6 +99,9 @@ sealed class Screen(val route: String) {
     // ── Form X (reactive demo form) ─────────────────────────────────────────
     object FormX : Screen("feature/form_x")
 
+    // ── Nexus Games Hub ─────────────────────────────────────────────────────
+    object NexusGames : Screen("feature/nexus_games")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

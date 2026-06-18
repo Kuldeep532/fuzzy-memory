@@ -74,6 +74,7 @@ import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
 import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
+import com.nexuswavetech.nexusplus.features.games.NexusGamesScreen
 
 private const val ANIM_DURATION     = 320
 private const val ANIM_DURATION_OUT = 200
@@ -245,6 +246,9 @@ fun NexusNavHost() {
 
         // ── Form X ────────────────────────────────────────────────────────────
         composable(Screen.FormX.route) { NexusAdScaffold { AutoUniversalFormX(onBack = { navController.popBackStack() }) } }
+
+        // ── Nexus Games Hub ───────────────────────────────────────────────────
+        composable(Screen.NexusGames.route) { NexusGamesScreen(onBack = { navController.popBackStack() }) }
 
         // ── Stub catch-all ────────────────────────────────────────────────
         composable("${Screen.Stub.route}/{feature_key}") { backStack ->

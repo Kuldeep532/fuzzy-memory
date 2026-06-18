@@ -29,6 +29,9 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
+import com.nexuswavetech.nexusplus.ai.GeminiMessage
+import com.nexuswavetech.nexusplus.ai.GeminiRepository
+import com.nexuswavetech.nexusplus.core.SettingsRepository
 import org.koin.androidx.compose.koinViewModel
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -122,7 +125,10 @@ private object AiraOfflineCache {
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 
-class AiraViewModel : ViewModel() {
+class AiraViewModel(
+    private val settingsRepo: SettingsRepository,
+    private val geminiRepo: GeminiRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AiraUiState())
     val uiState: StateFlow<AiraUiState> = _uiState.asStateFlow()
@@ -160,8 +166,28 @@ Keep responses clear and well-structured. Use markdown formatting where helpful.
             }
 
             val history = _uiState.value.messages.takeLast(10)
-            val messagesJson = buildMessagesJson(history)
 
+            // Try Gemini first (if key is set and user has enabled it as primary)
+            val geminiPrimary = settingsRepo.airaGeminiPrimary.first()
+            if (geminiPrimary && geminiRepo.isAvailable()) {
+                try {
+                    val geminiHistory = history
+                        .filter { !it.isError }
+                        .map { GeminiMessage(it.content, it.role == "user") }
+                    val reply = geminiRepo.chat(geminiHistory)
+                    if (!reply.isNullOrBlank()) {
+                        AiraOfflineCache.put(input, reply)
+                        _uiState.update {
+                            it.copy(messages = it.messages + AiraMessage(role = "assistant", content = reply), isLoading = false)
+                        }
+                        return@launch
+                    }
+                } catch (_: Exception) {
+                    // Gemini failed — fall through to multi-endpoint fallback below
+                }
+            }
+
+            val messagesJson = buildMessagesJson(history)
             val response = tryEndpointsWithRetry(messagesJson, input)
             _uiState.update { it.copy(messages = it.messages + response, isLoading = false) }
         }

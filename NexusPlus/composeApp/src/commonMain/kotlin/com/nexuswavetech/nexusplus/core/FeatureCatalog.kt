@@ -539,6 +539,18 @@ object FeatureCatalog {
             keywords    = listOf("form", "validation", "password", "email", "reactive", "strength"),
         ),
 
+        // ── Nexus Games Hub ───────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.NEXUS_GAMES,
+            name        = "Nexus Games",
+            description = "6 offline HTML5 mini-games: Snake, 2048, Tic-Tac-Toe, Memory, Breakout & Minesweeper",
+            icon        = Icons.Filled.SportsEsports,
+            route       = Screen.NexusGames.route,
+            category    = FeatureCategory.UTILITIES,
+            keywords    = listOf("game", "games", "snake", "2048", "tictactoe", "memory", "breakout", "minesweeper", "play", "fun", "offline"),
+            isNew       = true,
+        ),
+
         // ── News & ePapers ────────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEWS,

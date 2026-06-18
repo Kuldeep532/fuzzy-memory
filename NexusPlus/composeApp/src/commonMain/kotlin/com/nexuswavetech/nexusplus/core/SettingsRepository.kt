@@ -65,6 +65,17 @@ class SettingsRepository(private val store: SettingsStore) {
 
         // Sound Effects
         const val SOUND_EFFECTS_DEFAULT = true
+
+        // NSE Voice Engine (built-in voices)
+        const val NSE_VOICE_AUTO         = "AUTO"
+        const val NSE_VOICE_NEXUS_HINDI   = "NEXUS_HINDI"
+        const val NSE_VOICE_NEXUS_ENGLISH = "NEXUS_ENGLISH"
+        val NSE_VOICE_OPTIONS = listOf(NSE_VOICE_AUTO, NSE_VOICE_NEXUS_HINDI, NSE_VOICE_NEXUS_ENGLISH)
+
+        // Gemini AI model options
+        const val GEMINI_MODEL_FLASH = "gemini-1.5-flash-latest"
+        const val GEMINI_MODEL_PRO   = "gemini-1.5-pro-latest"
+        val GEMINI_MODEL_OPTIONS = listOf(GEMINI_MODEL_FLASH, GEMINI_MODEL_PRO)
     }
 
     // ── Private keys ─────────────────────────────────────────────────────────
@@ -93,6 +104,10 @@ class SettingsRepository(private val store: SettingsStore) {
     private val KEY_REMINDER_SNOOZE_MIN = "reminder_snooze_minutes"
     private val KEY_CALC_ANGLE_UNIT     = "calculator_angle_unit"
     private val KEY_SOUND_EFFECTS       = "sound_effects_enabled"
+    private val KEY_NSE_VOICE           = "nse_voice_engine"
+    private val KEY_GEMINI_API_KEY      = "gemini_api_key"
+    private val KEY_GEMINI_MODEL        = "gemini_model"
+    private val KEY_AIRA_GEMINI_PRIMARY = "aira_gemini_primary"
 
     // ── Appearance ───────────────────────────────────────────────────────────
     val theme: Flow<String>         = store.stringFlow(KEY_THEME, THEME_SYSTEM)
@@ -139,6 +154,14 @@ class SettingsRepository(private val store: SettingsStore) {
     // ── Sound Effects ─────────────────────────────────────────────────────────
     val soundEffectsEnabled: Flow<Boolean> = store.booleanFlow(KEY_SOUND_EFFECTS, SOUND_EFFECTS_DEFAULT)
 
+    // ── NSE Voice Engine ──────────────────────────────────────────────────────
+    val nseVoice: Flow<String> = store.stringFlow(KEY_NSE_VOICE, NSE_VOICE_AUTO)
+
+    // ── Aira AI / Gemini ──────────────────────────────────────────────────────
+    val geminiApiKey: Flow<String>      = store.stringFlow(KEY_GEMINI_API_KEY, "")
+    val geminiModel: Flow<String>       = store.stringFlow(KEY_GEMINI_MODEL, GEMINI_MODEL_FLASH)
+    val airaGeminiPrimary: Flow<Boolean>= store.booleanFlow(KEY_AIRA_GEMINI_PRIMARY, false)
+
     // ── Setters ───────────────────────────────────────────────────────────────
     suspend fun setTheme(v: String)                = store.setString(KEY_THEME, v)
     suspend fun setDynamicColor(v: Boolean)        = store.setBoolean(KEY_DYNAMIC_COLOR, v)
@@ -165,4 +188,8 @@ class SettingsRepository(private val store: SettingsStore) {
     suspend fun setReminderSnoozeMins(v: Int)      = store.setInt(KEY_REMINDER_SNOOZE_MIN, v)
     suspend fun setCalculatorAngleUnit(v: String)  = store.setString(KEY_CALC_ANGLE_UNIT, v)
     suspend fun setSoundEffectsEnabled(v: Boolean) = store.setBoolean(KEY_SOUND_EFFECTS, v)
+    suspend fun setNseVoice(v: String)             = store.setString(KEY_NSE_VOICE, v)
+    suspend fun setGeminiApiKey(v: String)         = store.setString(KEY_GEMINI_API_KEY, v)
+    suspend fun setGeminiModel(v: String)          = store.setString(KEY_GEMINI_MODEL, v)
+    suspend fun setAiraGeminiPrimary(v: Boolean)   = store.setBoolean(KEY_AIRA_GEMINI_PRIMARY, v)
 }

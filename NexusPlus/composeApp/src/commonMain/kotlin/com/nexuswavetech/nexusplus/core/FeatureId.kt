@@ -85,6 +85,9 @@ enum class FeatureId {
     // ── Stage 5 ───────────────────────────────────────────────────────────
     URL_SHORTENER,
 
+    // ── Games Hub ─────────────────────────────────────────────────────────
+    NEXUS_GAMES,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
     TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER
