@@ -91,6 +91,9 @@ enum class FeatureId {
     // ── OTT ───────────────────────────────────────────────────────────────
     NEXUS_OTT,
 
+    // ── Finance ───────────────────────────────────────────────────────────────
+    EXPENSE_TRACKER,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
     TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER

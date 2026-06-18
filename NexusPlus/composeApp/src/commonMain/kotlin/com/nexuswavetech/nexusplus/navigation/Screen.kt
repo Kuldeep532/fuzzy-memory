@@ -108,6 +108,9 @@ sealed class Screen(val route: String) {
         fun route(itemId: String) = "feature/nexus_ott/player/$itemId"
     }
 
+    // ── Finance Tracker ──────────────────────────────────────────────────────
+    object ExpenseTracker : Screen("feature/expense_tracker")
+
     // ── Download Voices (TTS model manager) ─────────────────────────────────
     object DownloadVoices : Screen("settings/download_voices")
 

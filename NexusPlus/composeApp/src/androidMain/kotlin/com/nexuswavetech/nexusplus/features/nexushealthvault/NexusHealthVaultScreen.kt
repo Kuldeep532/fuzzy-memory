@@ -1,6 +1,6 @@
 package com.nexuswavetech.nexusplus.features.nexushealthvault
 
-import android.app.Activity
+import androidx.activity.ComponentActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.horizontalScroll
@@ -24,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import org.koin.androidx.compose.koinViewModel
@@ -72,7 +71,7 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
         if (canAuth == BiometricManager.BIOMETRIC_SUCCESS) {
             val executor = ContextCompat.getMainExecutor(context)
             BiometricPrompt(
-                context as FragmentActivity, executor,
+                context as ComponentActivity, executor,
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(r: BiometricPrompt.AuthenticationResult) {
                         isLocked = false; authError = null

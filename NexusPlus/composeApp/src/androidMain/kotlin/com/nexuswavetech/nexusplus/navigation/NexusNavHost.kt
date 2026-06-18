@@ -1,11 +1,16 @@
 package com.nexuswavetech.nexusplus.navigation
 
+import android.net.Uri
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -75,6 +80,7 @@ import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
 import com.nexuswavetech.nexusplus.features.formx.AutoUniversalFormX
 import com.nexuswavetech.nexusplus.features.games.NexusGamesScreen
+import com.nexuswavetech.nexusplus.features.expense.NexusExpenseTrackerScreen
 import com.nexuswavetech.nexusplus.features.voices.DownloadVoicesScreen
 import com.nexuswavetech.nexusplus.features.ott.NexusOttScreen
 import com.nexuswavetech.nexusplus.features.ott.NexusOttPlayerScreen
@@ -87,6 +93,11 @@ private const val SLIDE_FRACTION    = 6
 @Composable
 fun NexusNavHost() {
     val navController = rememberNavController()
+
+    // Shared URI state — FileManager passes a Uri when opening viewer/reader.
+    // NavHost retains it across recompositions so the target screen can read it.
+    var pendingViewerUri    by remember { mutableStateOf<Uri?>(null) }
+    var pendingDocReaderUri by remember { mutableStateOf<Uri?>(null) }
 
     NavHost(
         navController    = navController,
@@ -202,8 +213,14 @@ fun NexusNavHost() {
             NexusAdScaffold {
                 FileManagerScreen(
                     onBack            = { navController.popBackStack() },
-                    onOpenImageViewer = { navController.navigate(Screen.NexusImageViewer.route) },
-                    onOpenDocReader   = { navController.navigate(Screen.NexusDocReader.route) }
+                    onOpenImageViewer = { uri ->
+                        pendingViewerUri = uri
+                        navController.navigate(Screen.NexusImageViewer.route)
+                    },
+                    onOpenDocReader   = { uri ->
+                        pendingDocReaderUri = uri
+                        navController.navigate(Screen.NexusDocReader.route)
+                    },
                 )
             }
         }
@@ -221,9 +238,11 @@ fun NexusNavHost() {
 
         // ── Image Viewer ──────────────────────────────────────────────────
         composable(Screen.NexusImageViewer.route) {
+            val uri = pendingViewerUri
             NexusAdScaffold {
                 NexusImageViewerScreen(
-                    onBack       = { navController.popBackStack() },
+                    initialUri   = uri,
+                    onBack       = { pendingViewerUri = null; navController.popBackStack() },
                     onOpenEditor = { navController.navigate(Screen.SmartImageEditor.route) }
                 )
             }
@@ -231,7 +250,13 @@ fun NexusNavHost() {
 
         // ── Document Reader ───────────────────────────────────────────────
         composable(Screen.NexusDocReader.route) {
-            NexusAdScaffold { NexusDocumentReaderScreen(onBack = { navController.popBackStack() }) }
+            val uri = pendingDocReaderUri
+            NexusAdScaffold {
+                NexusDocumentReaderScreen(
+                    initialUri = uri,
+                    onBack     = { pendingDocReaderUri = null; navController.popBackStack() },
+                )
+            }
         }
 
         // ── Health & Wellbeing ────────────────────────────────────────────
@@ -278,6 +303,11 @@ fun NexusNavHost() {
             } else {
                 navController.popBackStack()
             }
+        }
+
+        // ── Expense Tracker ────────────────────────────────────────────────────
+        composable(Screen.ExpenseTracker.route) {
+            NexusAdScaffold { NexusExpenseTrackerScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Download Voices ───────────────────────────────────────────────────

@@ -587,6 +587,18 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
+        // ── Finance ───────────────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.EXPENSE_TRACKER,
+            name        = "Nexus Expense Tracker",
+            description = "Track income and expenses with categories, summaries and local storage",
+            icon        = Icons.Filled.AccountBalanceWallet,
+            route       = Screen.ExpenseTracker.route,
+            category    = FeatureCategory.PRODUCTIVITY,
+            keywords    = listOf("expense", "budget", "finance", "money", "income", "spend", "tracker", "wallet", "balance"),
+            isNew       = true,
+        ),
+
     )
 
     /** All features grouped by [FeatureHub]. */

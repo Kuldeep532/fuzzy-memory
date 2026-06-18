@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexuswavetech.nexusplus.core.HapticHelper
 import com.nexuswavetech.nexusplus.core.SettingsRepository
@@ -108,7 +107,7 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
         if (canAuth == BiometricManager.BIOMETRIC_SUCCESS) {
             val executor = ContextCompat.getMainExecutor(context)
             val prompt = BiometricPrompt(
-                context as FragmentActivity, executor,
+                activity, executor,
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(r: BiometricPrompt.AuthenticationResult) {
                         vm.onUnlockSuccess()

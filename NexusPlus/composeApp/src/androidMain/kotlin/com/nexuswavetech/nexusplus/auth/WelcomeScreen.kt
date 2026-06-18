@@ -141,13 +141,21 @@ fun WelcomeScreen(
                 isLoading = uiState.isLoading,
                 enabled   = consentGranted,
                 onClick   = {
-                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(context.getString(com.nexuswavetech.nexusplus.R.string.default_web_client_id))
-                        .requestEmail()
-                        .build()
-                    val client = GoogleSignIn.getClient(context, gso)
-                    client.signOut().addOnCompleteListener {
-                        googleLauncher.launch(client.signInIntent)
+                    runCatching {
+                        context.getString(com.nexuswavetech.nexusplus.R.string.default_web_client_id)
+                    }.onFailure {
+                        viewModel.onGoogleSignInError(
+                            "Google Sign-In not configured — add a valid google-services.json with OAuth web client ID"
+                        )
+                    }.onSuccess { webClientId ->
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(webClientId)
+                            .requestEmail()
+                            .build()
+                        val client = GoogleSignIn.getClient(context, gso)
+                        client.signOut().addOnCompleteListener {
+                            googleLauncher.launch(client.signInIntent)
+                        }
                     }
                 },
             )
