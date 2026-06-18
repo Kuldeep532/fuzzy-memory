@@ -65,7 +65,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.NexusPlus"
         android:largeHeap="true"
-        android:usesCleartextTraffic="true">
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <!-- Google AdMob App ID — injected from ADMOB_APP_ID env var in CI; falls back to Google test ID -->
         <meta-data

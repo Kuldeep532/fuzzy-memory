@@ -1,4 +1,4 @@
-name: Build NexusPlus APK
+name: Build NexusPlus Release
 
 on:
   workflow_dispatch:
@@ -35,35 +35,44 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Securely Inject Keystore
+      - name: Verify Required Secrets
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "Error: KEYSTORE_BASE64 secret is missing."
+          MISSING=""
+          [ -z "$GOOGLE_SERVICES_JSON" ] && MISSING="$MISSING GOOGLE_SERVICES_JSON"
+          [ -z "$KEYSTORE_BASE64" ]      && MISSING="$MISSING KEYSTORE_BASE64"
+          [ -z "$KEYSTORE_PASSWORD" ]    && MISSING="$MISSING KEYSTORE_PASSWORD"
+          [ -z "$KEY_ALIAS" ]            && MISSING="$MISSING KEY_ALIAS"
+          [ -z "$KEY_PASSWORD" ]         && MISSING="$MISSING KEY_PASSWORD"
+          [ -z "$ADMOB_APP_ID" ]         && MISSING="$MISSING ADMOB_APP_ID"
+          if [ -n "$MISSING" ]; then
+            echo "Error: Missing required secrets:$MISSING"
             exit 1
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
-
-      - name: Verify Environment Secrets
-        run: |
-          if [ -z "$GOOGLE_SERVICES_JSON" ] || [ -z "$ADMOB_APP_ID" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "Error: One or more critical build secrets are missing."
-            exit 1
-          fi
-          echo "All secrets successfully verified."
+          echo "All required secrets are present."
 
       - name: Grant Execute Permission for Gradlew
         run: chmod +x gradlew
 
-      - name: Build Production APK
+      - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      - name: Clean Up Sensitive Build Artifacts
-        if: always()
-        run: rm -f app/release.keystore
+      - name: Build Release AAB (Play Store)
+        run: ./gradlew bundleRelease
 
-      - name: Upload APK Artifact
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-APK
           path: NexusPlus/app/build/outputs/apk/release/*.apk
-          retention-days: 1
+          retention-days: 7
+
+      - name: Upload Release AAB (Play Store)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexusPlus-Release-AAB
+          path: NexusPlus/app/build/outputs/bundle/release/*.aab
+          retention-days: 7
+
+      - name: Clean Up Sensitive Signing Artifacts
+        if: always()
+        run: rm -rf app/build/signing/

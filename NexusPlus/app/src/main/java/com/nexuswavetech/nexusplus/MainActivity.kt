@@ -11,9 +11,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val versionCode = packageManager
+            .getPackageInfo(packageName, 0)
+            .longVersionCode.toInt()
         setContent {
             NexusPlusTheme {
-                NexusNavHost()
+                NexusNavHost(currentVersionCode = versionCode)
             }
         }
     }

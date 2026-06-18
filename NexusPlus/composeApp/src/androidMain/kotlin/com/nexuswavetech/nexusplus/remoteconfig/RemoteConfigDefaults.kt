@@ -16,7 +16,6 @@ object RemoteConfigKeys {
     const val FACEBOOK_URL       = "facebook_url"
     const val TWITTER_URL        = "twitter_url"
     const val YOUTUBE_URL        = "youtube_url"
-    const val TIKTOK_URL         = "tiktok_url"
     const val TELEGRAM_URL       = "telegram_url"
     const val WHATSAPP_URL       = "whatsapp_url"
     const val DISCORD_URL        = "discord_url"
@@ -74,7 +73,6 @@ object RemoteConfigDefaults {
         RemoteConfigKeys.FACEBOOK_URL     to "https://www.facebook.com/profile.php?id=61590971301245",
         RemoteConfigKeys.TWITTER_URL      to "https://x.com/nexuswavetech?s=09",
         RemoteConfigKeys.YOUTUBE_URL      to "https://youtube.com/@nexuswavetech?si=dxhKCVUZjfh85nVj",
-        RemoteConfigKeys.TIKTOK_URL       to "https://www.tiktok.com/@nexuswavetech?_t=ZS-8uQFNGEFamQ&_r=1",
         RemoteConfigKeys.TELEGRAM_URL     to "https://t.me/NexusWaveTechnologies27",
         RemoteConfigKeys.WHATSAPP_URL     to "https://whatsapp.com/channel/0029VbDI2cL42Dcc9m6nfm3T",
         RemoteConfigKeys.DISCORD_URL      to "https://discord.gg/3yp8MMwJe",

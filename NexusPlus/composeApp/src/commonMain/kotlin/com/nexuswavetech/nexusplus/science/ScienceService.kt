@@ -114,13 +114,13 @@ class ScienceService {
     suspend fun fetchIssPosition(): Result<IssPosition> =
         withContext(Dispatchers.IO) {
             try {
-                val url = "http://api.open-notify.org/iss-now.json"
+                val url = "https://api.wheretheiss.at/v1/satellites/25544"
                 val response = fetchHttp(url)
                 val result = json.decodeFromString<IssNowResponse>(response)
                 Result.success(
                     IssPosition(
-                        latitude = result.iss_position.latitude.toDouble(),
-                        longitude = result.iss_position.longitude.toDouble(),
+                        latitude = result.latitude,
+                        longitude = result.longitude,
                         timestamp = result.timestamp,
                     )
                 )
@@ -231,16 +231,11 @@ data class NeoVelocity(
     val kilometers_per_hour: String,
 )
 
-// ── ISS API DTOs ────────────────────────────────────────────────────────────
+// ── ISS API DTOs (wheretheiss.at v1) ─────────────────────────────────────────
 
 @Serializable
 data class IssNowResponse(
-    val iss_position: IssPositionRaw,
+    val latitude: Double,
+    val longitude: Double,
     val timestamp: Long,
-)
-
-@Serializable
-data class IssPositionRaw(
-    val latitude: String,
-    val longitude: String,
 )

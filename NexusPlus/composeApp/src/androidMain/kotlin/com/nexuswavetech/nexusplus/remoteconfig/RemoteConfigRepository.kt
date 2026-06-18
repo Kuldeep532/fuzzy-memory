@@ -62,7 +62,6 @@ class RemoteConfigRepository {
     val facebookUrl: String   get() = getString(RemoteConfigKeys.FACEBOOK_URL)
     val twitterUrl: String    get() = getString(RemoteConfigKeys.TWITTER_URL)
     val youtubeUrl: String    get() = getString(RemoteConfigKeys.YOUTUBE_URL)
-    val tiktokUrl: String     get() = getString(RemoteConfigKeys.TIKTOK_URL)
     val telegramUrl: String   get() = getString(RemoteConfigKeys.TELEGRAM_URL)
     val whatsappUrl: String   get() = getString(RemoteConfigKeys.WHATSAPP_URL)
     val discordUrl: String    get() = getString(RemoteConfigKeys.DISCORD_URL)

@@ -49,9 +49,6 @@ fun SocialMediaScreen(onBack: () -> Unit) {
             remoteConfig.youtubeUrl.takeIf { it.isNotBlank() }?.let {
                 add(RemoteSocialLink("YouTube", "@nexuswavetech", it, Icons.Filled.PlayCircle))
             }
-            remoteConfig.tiktokUrl.takeIf { it.isNotBlank() }?.let {
-                add(RemoteSocialLink("TikTok", "@nexuswavetech", it, Icons.Filled.VideoLibrary))
-            }
             remoteConfig.telegramUrl.takeIf { it.isNotBlank() }?.let {
                 add(RemoteSocialLink("Telegram", "NexusWaveTechnologies27", it, Icons.AutoMirrored.Filled.Message))
             }

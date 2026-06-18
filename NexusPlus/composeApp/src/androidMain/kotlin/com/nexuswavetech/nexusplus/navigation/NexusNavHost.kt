@@ -99,28 +99,32 @@ private const val ANIM_DURATION_OUT = 200
 private const val SLIDE_FRACTION    = 6
 
 @Composable
-fun NexusNavHost() {
+fun NexusNavHost(currentVersionCode: Int = 0) {
     val navController = rememberNavController()
 
     val remoteConfig: RemoteConfigRepository = koinInject()
     val urlHandler: PlatformUrlHandler       = koinInject()
 
     // ── Update dialog state ────────────────────────────────────────────────
+    // Shows when Remote Config has update_dialog_enabled = true AND
+    // (update_dialog_min_version = 0  OR  installed versionCode < minVersion)
     var showUpdateDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         if (remoteConfig.updateDialogEnabled) {
-            showUpdateDialog = true
+            val minVersion = remoteConfig.updateMinVersion
+            if (minVersion <= 0L || currentVersionCode < minVersion) {
+                showUpdateDialog = true
+            }
         }
     }
     if (showUpdateDialog) {
         AlertDialog(
-            onDismissRequest = { showUpdateDialog = false },
+            onDismissRequest = { /* force update — tap outside does nothing */ },
             title   = { Text(remoteConfig.updateDialogTitle) },
             text    = { Text(remoteConfig.updateDialogMessage) },
             confirmButton = {
                 TextButton(onClick = {
                     urlHandler.openUrl(remoteConfig.updateDialogUrl)
-                    showUpdateDialog = false
                 }) { Text("Update Now") }
             },
             dismissButton = {
