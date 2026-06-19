@@ -9,7 +9,8 @@
 - [FeatureCatalog icons](nexusplus-names.md) — PlayCircleFilled=Nexus Media Player, MenuBook=NexusDocReader, AutoAwesome=Aira AI, SportsEsports=NexusGames
 - [AppModule viewModel registration](nexusplus-names.md) — AiraViewModel takes (settings, geminiRepo); NsePipelineAndroidEngine factory takes (ctx, audioFocus, pcmCache, modelsDir)
 - [ML Kit Object Detection](nexusplus-names.md) — intentionally removed from build.gradle.kts; do NOT re-add
-- [KMP migration approach](kmp-migration.md) — pragmatic: files in composeApp/src/{commonMain,androidMain,iosMain}/; app/ adds these as sourceSets; NO separate Gradle module for composeApp
+- [KMP migration approach](kmp-migration.md) — pragmatic: files in composeApp/src/{commonMain,androidMain,iosMain}/; app/ depends on :composeApp via project(":composeApp"); NO separate Gradle module for composeApp
+- [BiometricPrompt activity cast](biometric-cast.md) — BiometricPrompt() requires FragmentActivity, NOT ComponentActivity; 3 files affected: BiometricVaultScreen.kt, NexusHealthVaultScreen.kt, EncryptedNotesScreen.kt — all fixed to `context as FragmentActivity`
 - [Ad placement — NexusAdScaffold](ad-placement.md) — ALL feature screens wrapped with NexusAdScaffold; real Ad IDs set; Banner=3163996172 Interstitial=6401326195; ADMOB_APP_ID manifest placeholder injected from GitHub Secrets env var
 - [AdMob App ID secrets](ad-placement.md) — AndroidManifest uses ${ADMOB_APP_ID} placeholder; app/build.gradle.kts injects ADMOB_APP_ID env var, falls back to Google test App ID for local debug builds
 - [Gemini integration](gemini-integration.md) — GeminiRepository in androidMain/ai/; AiraViewModel uses Gemini when key set + airaGeminiPrimary=true; falls back to Pollinations endpoints

@@ -1,8 +1,8 @@
 package com.nexuswavetech.nexusplus.features.nexushealthvault
 
-import androidx.activity.ComponentActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.fragment.app.FragmentActivity
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -71,7 +71,7 @@ fun NexusHealthVaultScreen(onBack: () -> Unit) {
         if (canAuth == BiometricManager.BIOMETRIC_SUCCESS) {
             val executor = ContextCompat.getMainExecutor(context)
             BiometricPrompt(
-                context as ComponentActivity, executor,
+                context as FragmentActivity, executor,
                 object : BiometricPrompt.AuthenticationCallback() {
                     override fun onAuthenticationSucceeded(r: BiometricPrompt.AuthenticationResult) {
                         isLocked = false; authError = null
