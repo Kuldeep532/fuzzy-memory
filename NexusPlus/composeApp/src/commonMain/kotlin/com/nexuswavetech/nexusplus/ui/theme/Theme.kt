@@ -8,7 +8,7 @@ import androidx.compose.runtime.collectAsState
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import org.koin.compose.koinInject
 
-private val DarkColorScheme = androidx.compose.material3.darkColorScheme(
+internal val DarkColorScheme = androidx.compose.material3.darkColorScheme(
     primary              = NexusPrimary,
     onPrimary            = NexusOnPrimary,
     primaryContainer     = NexusPrimaryContainer,
@@ -33,7 +33,7 @@ private val DarkColorScheme = androidx.compose.material3.darkColorScheme(
     onErrorContainer     = NexusOnErrorContainer,
 )
 
-private val LightColorScheme = androidx.compose.material3.lightColorScheme(
+internal val LightColorScheme = androidx.compose.material3.lightColorScheme(
     primary              = NexusPrimaryLight,
     onPrimary            = NexusOnPrimaryLight,
     primaryContainer     = NexusPrimaryContainerLight,

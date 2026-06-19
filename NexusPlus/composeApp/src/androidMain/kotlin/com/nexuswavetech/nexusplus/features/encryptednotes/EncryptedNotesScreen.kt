@@ -4,6 +4,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import androidx.fragment.app.FragmentActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -101,7 +102,7 @@ fun EncryptedNotesScreen(onBack: () -> Unit) {
                                 Icon(Icons.Filled.Lock, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.primary)
                                 Text(
                                     if (state.query.isEmpty()) "No encrypted notes yet.\nTap + to add one."
-                                    else "No notes match "${state.query}".",
+                                    else "No notes match \"${state.query}\".",
                                     style = MaterialTheme.typography.bodyLarge,
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -257,7 +258,7 @@ private fun NoteEditorDialog(
 }
 
 private fun launchBiometric(context: android.content.Context, vm: EncryptedNotesViewModel) {
-    val activity = context as? ComponentActivity ?: return
+    val activity = context as? FragmentActivity ?: return
     val bm = BiometricManager.from(context)
     val authenticators = BiometricManager.Authenticators.BIOMETRIC_STRONG or
             BiometricManager.Authenticators.DEVICE_CREDENTIAL

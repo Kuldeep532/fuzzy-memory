@@ -16,8 +16,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.nexuswavetech.nexusplus.core.FeatureCategory
+import com.nexuswavetech.nexusplus.platform.PlatformToast
 import com.nexuswavetech.nexusplus.ui.components.FeatureCard
 import com.nexuswavetech.nexusplus.ui.components.GatekeeperDialog
+import org.koin.compose.koinInject
 import org.koin.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
