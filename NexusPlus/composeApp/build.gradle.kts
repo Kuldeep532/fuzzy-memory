@@ -42,8 +42,9 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kotlinx.coroutines.core)
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-            implementation("io.insert-koin:koin-core:3.5.6")
+            implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -104,7 +105,7 @@ kotlin {
 }
 
 android {
-    namespace = "com.nexuswavetech.nexusplus"
+    namespace = "com.nexuswavetech.nexusplus.composeapp"
     compileSdk = 35
     defaultConfig {
         minSdk = 26

@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import org.koin.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 enum class NumberBase(val label: String, val radix: Int, val hint: String) {
     DECIMAL    ("Decimal (Base 10)",     10, "e.g. 255"),
