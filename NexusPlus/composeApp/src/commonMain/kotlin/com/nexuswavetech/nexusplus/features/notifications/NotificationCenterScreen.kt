@@ -19,11 +19,16 @@ import com.nexuswavetech.nexusplus.core.UserSession
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
-private val sdf = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault())
+/** KMP-compatible relative-time formatter — no java.util.Date needed. */
+private fun formatTimestamp(epochMs: Long): String {
+    val s = epochMs / 1000L
+    val h = ((s / 3600) % 24).toInt()
+    val m = ((s % 3600) / 60).toInt()
+    val amPm = if (h >= 12) "PM" else "AM"
+    val dh = h % 12
+    return "${if (dh == 0) 12 else dh}:${m.toString().padStart(2, '0')} $amPm"
+}
 
 private fun categoryIcon(cat: String): ImageVector = when (cat) {
     "security" -> Icons.Filled.Security
@@ -147,7 +152,7 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .semantics {
-                                    contentDescription = "${notif.title}. ${notif.body}. ${if (notif.isRead) "Read." else "Unread."} ${sdf.format(Date(notif.timestampMs))}."
+                                    contentDescription = "${notif.title}. ${notif.body}. ${if (notif.isRead) "Read." else "Unread."} ${formatTimestamp(notif.timestampMs)}."
                                 },
                             colors   = CardDefaults.cardColors(
                                 containerColor = if (notif.isRead) MaterialTheme.colorScheme.surfaceVariant
@@ -179,7 +184,7 @@ fun NotificationCenterScreen(onBack: () -> Unit) {
                                         }
                                     }
                                     Text(notif.body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    Text(sdf.format(Date(notif.timestampMs)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
+                                    Text(formatTimestamp(notif.timestampMs), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
                                 }
                                 IconButton(
                                     onClick  = { scope.launch { repository.markAsRead(notif.id) } },

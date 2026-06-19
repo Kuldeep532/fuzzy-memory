@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.util.Locale
 
 /**
  * NSE 4.0 — ViewModel.
@@ -43,7 +42,7 @@ class NseViewModel(
     val engineState: StateFlow<NseState> = repository.state
         .stateIn(viewModelScope, SharingStarted.Eagerly, NseState.Initialising)
 
-    val detectedLocale: StateFlow<Locale?> = repository.detectedLocale
+    val detectedLocale: StateFlow<NseLocale?> = repository.detectedLocale
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     val availableVoices: StateFlow<List<NseVoiceProfile>> = repository.availableVoices
@@ -148,13 +147,13 @@ class NseViewModel(
 
             val savedVoice = settings.ttsVoiceSelection.first()
             if (savedVoice.isNotBlank()) {
-                val locale = Locale.forLanguageTag(savedVoice)
+                val locale = NseLocale.forLanguageTag(savedVoice)
                 _selectedVoice.value = repository.voicesForLocale(locale).firstOrNull()
             }
 
             val savedSecLang = settings.ttsSecondaryLanguage.first()
             if (savedSecLang.isNotBlank() && savedSecLang != SettingsRepository.TTS_LANG_AUTO) {
-                val locale = Locale.forLanguageTag(savedSecLang)
+                val locale = NseLocale.forLanguageTag(savedSecLang)
                 _secondaryVoice.value = repository.voicesForLocale(locale).firstOrNull()
             }
 

@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.Locale
+import java.util.Locale as JavaLocale
 import kotlin.coroutines.resume
 
 /**
@@ -78,7 +78,7 @@ class NseAndroidEngine(
         return synthesise(engine, req.text, locale, req.pitch, req.speechRate, req.utteranceId, flush = true)
     }
 
-    private fun speakSingleVoice(engine: TextToSpeech, req: NseSpeechRequest, locale: Locale): Result<Unit> =
+    private fun speakSingleVoice(engine: TextToSpeech, req: NseSpeechRequest, locale: NseLocale): Result<Unit> =
         synthesise(engine, req.text, locale, req.pitch, req.speechRate, req.utteranceId, flush = true)
 
     private fun speakDual(engine: TextToSpeech, req: NseSpeechRequest): Result<Unit> {
@@ -113,17 +113,21 @@ class NseAndroidEngine(
         return Result.success(Unit)
     }
 
+    private fun NseLocale.toJavaLocale(): JavaLocale =
+        if (country.isEmpty()) JavaLocale(language) else JavaLocale(language, country)
+
     private fun synthesise(
         engine: TextToSpeech,
         text: String,
-        locale: Locale,
+        locale: NseLocale,
         pitch: Float,
         speechRate: Float,
         utteranceId: String,
         flush: Boolean,
     ): Result<Unit> {
-        val supported = engine.isLanguageAvailable(locale)
-        val resolvedLocale = if (supported >= TextToSpeech.LANG_AVAILABLE) locale else Locale.ENGLISH
+        val javaLocale = locale.toJavaLocale()
+        val supported = engine.isLanguageAvailable(javaLocale)
+        val resolvedLocale = if (supported >= TextToSpeech.LANG_AVAILABLE) javaLocale else JavaLocale.ENGLISH
 
         engine.language  = resolvedLocale
         engine.setPitch(pitch)
@@ -147,20 +151,21 @@ class NseAndroidEngine(
         audioFocus.abandonFocus()
     }
 
-    override fun availableVoices(locale: Locale?): List<NseVoiceProfile> {
+    override fun availableVoices(locale: NseLocale?): List<NseVoiceProfile> {
         val engine = tts ?: return emptyList()
         return try {
             engine.voices
-                ?.filter { locale == null || it.locale == locale }
                 ?.map { v ->
                     NseVoiceProfile(
                         name              = v.name,
-                        locale            = v.locale,
+                        locale            = NseLocale(v.locale.language, v.locale.country),
                         isNetworkRequired = v.isNetworkConnectionRequired,
                         quality           = v.quality,
                         latency           = v.latency,
                     )
-                } ?: emptyList()
+                }
+                ?.filter { locale == null || it.locale == locale }
+                ?: emptyList()
         } catch (_: Exception) { emptyList() }
     }
 

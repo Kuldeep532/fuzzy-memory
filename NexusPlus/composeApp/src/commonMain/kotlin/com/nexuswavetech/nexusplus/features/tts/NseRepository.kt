@@ -7,19 +7,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.Locale
+
+/**
+ * Marker interface for pipeline-capable engines.
+ * [NsePipelineAndroidEngine] (androidMain) implements this so that
+ * [NseRepository] can expose [isPipelineEngine] and [cachedPhraseCount]
+ * without a direct androidMain dependency.
+ */
+interface NsePipelineEngine : NseEngine {
+    fun cachedPhraseCount(): Int
+}
 
 /**
  * NSE 3.0 — Repository layer.
- *
- * Owns the engine lifecycle, exposes observable state, and serialises
- * concurrent speak/stop requests through a [SupervisorJob]-scoped
- * coroutine scope.
- *
- * Now accepts [NseEngine] (interface) rather than any concrete engine
- * implementation, enabling platform-specific engines to be injected
- * transparently while preserving the same public API consumed by all
- * ViewModels and screens.
  */
 class NseRepository(private val engine: NseEngine) {
 
@@ -28,24 +28,32 @@ class NseRepository(private val engine: NseEngine) {
     private val _state = MutableStateFlow<NseState>(NseState.Initialising)
     val state: StateFlow<NseState> = _state.asStateFlow()
 
-    private val _detectedLocale = MutableStateFlow<Locale?>(null)
-    val detectedLocale: StateFlow<Locale?> = _detectedLocale.asStateFlow()
+    private val _detectedLocale = MutableStateFlow<NseLocale?>(null)
+    val detectedLocale: StateFlow<NseLocale?> = _detectedLocale.asStateFlow()
 
     private val _availableVoices = MutableStateFlow<List<NseVoiceProfile>>(emptyList())
     val availableVoices: StateFlow<List<NseVoiceProfile>> = _availableVoices.asStateFlow()
+
+    val isPipelineEngine: Boolean get() = engine is NsePipelineEngine
+
+    private val _cachedPhraseCount = MutableStateFlow(0)
+    val cachedPhraseCount: StateFlow<Int> = _cachedPhraseCount.asStateFlow()
 
     init {
         engine.utteranceResultListener = { result ->
             when (result) {
                 is NseUtteranceResult.Started   -> _state.value = NseState.Speaking
-                is NseUtteranceResult.Completed -> _state.value = NseState.Ready
+                is NseUtteranceResult.Completed -> {
+                    _state.value = NseState.Ready
+                    (engine as? NsePipelineEngine)?.let {
+                        _cachedPhraseCount.value = it.cachedPhraseCount()
+                    }
+                }
                 is NseUtteranceResult.Failed    ->
                     _state.value = NseState.Error("Utterance failed (code=${result.error})", null)
             }
         }
     }
-
-    // ── Lifecycle ───────────────────────────────────────────────────────
 
     fun initialise() {
         scope.launch {
@@ -60,8 +68,6 @@ class NseRepository(private val engine: NseEngine) {
                 }
         }
     }
-
-    // ── Synthesis ────────────────────────────────────────────────────────
 
     fun speak(request: NseSpeechRequest) {
         scope.launch {
@@ -81,8 +87,6 @@ class NseRepository(private val engine: NseEngine) {
         _state.value = NseState.Ready
     }
 
-    // ── Query ────────────────────────────────────────────────────────────────
-
     fun updateDetectedLocale(text: String) {
         if (text.length > 5) {
             _detectedLocale.value = NseLanguageDetector.detect(text)
@@ -91,10 +95,8 @@ class NseRepository(private val engine: NseEngine) {
         }
     }
 
-    fun voicesForLocale(locale: Locale): List<NseVoiceProfile> =
+    fun voicesForLocale(locale: NseLocale): List<NseVoiceProfile> =
         engine.availableVoices(locale)
-
-    // ── Cleanup ─────────────────────────────────────────────────────────────
 
     fun shutdown() {
         engine.shutdown()

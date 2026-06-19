@@ -1,26 +1,18 @@
 package com.nexuswavetech.nexusplus.features.tts
 
-import java.util.Locale
-
 /**
  * NSE 2.0 — Language & script detector.
  *
  * Uses Unicode block frequency analysis on a sliding window of the input
- * text.  Supports 16 scripts/languages without any ML model dependency,
+ * text. Supports 16 scripts/languages without any ML model dependency,
  * keeping the cold-start latency near zero.
- *
- * Mix-mode support: [segmentByScript] splits a multi-language string into
- * ordered (text, locale) pairs so the engine can synthesise each segment
- * with its own voice.
  */
 object NseLanguageDetector {
 
-    // ── Script ranges ──────────────────────────────────────────────────────
-
-    private val DEVANAGARI  = 0x0900..0x097F   // Hindi, Sanskrit, Marathi
+    private val DEVANAGARI  = 0x0900..0x097F
     private val BENGALI     = 0x0980..0x09FF
     private val GUJARATI    = 0x0A80..0x0AFF
-    private val GURMUKHI    = 0x0A00..0x0A7F   // Punjabi
+    private val GURMUKHI    = 0x0A00..0x0A7F
     private val TELUGU      = 0x0C00..0x0C7F
     private val TAMIL       = 0x0B80..0x0BFF
     private val KANNADA     = 0x0C80..0x0CFF
@@ -32,45 +24,30 @@ object NseLanguageDetector {
     private val HIRAGANA    = 0x3040..0x309F
     private val KATAKANA    = 0x30A0..0x30FF
     private val HANGUL      = 0xAC00..0xD7AF
-    private val CYRILLIC    = 0x0400..0x04FF   // Russian, Ukrainian…
+    private val CYRILLIC    = 0x0400..0x04FF
     private val GREEK       = 0x0370..0x03FF
 
     private val SPANISH_MARKS = Regex("[áéíóúüñ¿¡]", RegexOption.IGNORE_CASE)
     private val FRENCH_MARKS  = Regex("[àâæçéèêëîïôœùûüÿ]", RegexOption.IGNORE_CASE)
     private val GERMAN_MARKS  = Regex("[äöüÄÖÜß]")
 
-    // ── Public API ─────────────────────────────────────────────────────────
-
-    /**
-     * Detect the dominant language/locale of [text].
-     * Uses the first 400 characters for performance.
-     */
-    fun detect(text: String): Locale {
+    fun detect(text: String): NseLocale {
         val sample = text.take(400)
         val scores = scriptScores(sample)
         val dominant = scores.maxByOrNull { it.second }
-        return dominant?.first ?: Locale.ENGLISH
+        return dominant?.first ?: NseLocale.ENGLISH
     }
 
-    /**
-     * Split [text] into contiguous segments, each paired with the detected
-     * locale for that segment.  Used by Mix mode.
-     *
-     * Strategy: walk character-by-character; when the detected script
-     * changes, flush the current segment and start a new one.
-     */
-    fun segmentByScript(text: String): List<Pair<String, Locale>> {
+    fun segmentByScript(text: String): List<Pair<String, NseLocale>> {
         if (text.isBlank()) return emptyList()
 
-        val result = mutableListOf<Pair<String, Locale>>()
+        val result = mutableListOf<Pair<String, NseLocale>>()
         val buffer = StringBuilder()
-        var currentLocale: Locale? = null
+        var currentLocale: NseLocale? = null
 
         for (ch in text) {
             val charLocale = charLocale(ch)
-            if (currentLocale == null) {
-                currentLocale = charLocale
-            }
+            if (currentLocale == null) currentLocale = charLocale
             if (charLocale != currentLocale && buffer.isNotBlank()) {
                 result += buffer.toString() to currentLocale
                 buffer.clear()
@@ -85,9 +62,7 @@ object NseLanguageDetector {
         return mergeShortSegments(result, minLength = 3)
     }
 
-    // ── Internal helpers ───────────────────────────────────────────────────
-
-    private fun scriptScores(sample: String): List<Pair<Locale, Int>> {
+    private fun scriptScores(sample: String): List<Pair<NseLocale, Int>> {
         var devanagari = 0; var bengali = 0; var gujarati = 0
         var gurmukhi = 0;   var telugu = 0;  var tamil = 0
         var kannada = 0;    var malayalam = 0; var arabic = 0
@@ -121,30 +96,30 @@ object NseLanguageDetector {
 
         val japanese = hiragana + katakana
         val scores = mutableListOf(
-            Locale("hi", "IN") to devanagari,
-            Locale("bn", "BD") to bengali,
-            Locale("gu", "IN") to gujarati,
-            Locale("pa", "IN") to gurmukhi,
-            Locale("te", "IN") to telugu,
-            Locale("ta", "IN") to tamil,
-            Locale("kn", "IN") to kannada,
-            Locale("ml", "IN") to malayalam,
-            Locale("ar", "SA") to arabic,
-            Locale("he", "IL") to hebrew,
-            Locale("th", "TH") to thai,
-            Locale.SIMPLIFIED_CHINESE to cjk,
-            Locale.JAPANESE to japanese,
-            Locale.KOREAN to hangul,
-            Locale("ru", "RU") to cyrillic,
-            Locale("el", "GR") to greek,
+            NseLocale("hi", "IN") to devanagari,
+            NseLocale("bn", "BD") to bengali,
+            NseLocale("gu", "IN") to gujarati,
+            NseLocale("pa", "IN") to gurmukhi,
+            NseLocale("te", "IN") to telugu,
+            NseLocale("ta", "IN") to tamil,
+            NseLocale("kn", "IN") to kannada,
+            NseLocale("ml", "IN") to malayalam,
+            NseLocale("ar", "SA") to arabic,
+            NseLocale("he", "IL") to hebrew,
+            NseLocale("th", "TH") to thai,
+            NseLocale.SIMPLIFIED_CHINESE to cjk,
+            NseLocale.JAPANESE to japanese,
+            NseLocale.KOREAN to hangul,
+            NseLocale("ru", "RU") to cyrillic,
+            NseLocale("el", "GR") to greek,
         )
 
         if (latin > 0) {
-            val bestLatin: Pair<Locale, Int> = when {
-                SPANISH_MARKS.containsMatchIn(sample) -> Locale("es", "ES") to latin
-                FRENCH_MARKS.containsMatchIn(sample)  -> Locale.FRENCH to latin
-                GERMAN_MARKS.containsMatchIn(sample)  -> Locale.GERMAN to latin
-                else                                  -> Locale.ENGLISH to latin
+            val bestLatin: Pair<NseLocale, Int> = when {
+                SPANISH_MARKS.containsMatchIn(sample) -> NseLocale("es", "ES") to latin
+                FRENCH_MARKS.containsMatchIn(sample)  -> NseLocale.FRENCH to latin
+                GERMAN_MARKS.containsMatchIn(sample)  -> NseLocale.GERMAN to latin
+                else                                  -> NseLocale.ENGLISH to latin
             }
             scores += bestLatin
         }
@@ -152,39 +127,35 @@ object NseLanguageDetector {
         return scores.filter { it.second > 0 }
     }
 
-    private fun charLocale(ch: Char): Locale {
+    private fun charLocale(ch: Char): NseLocale {
         val c = ch.code
         return when {
-            c in DEVANAGARI  -> Locale("hi", "IN")
-            c in BENGALI     -> Locale("bn", "BD")
-            c in GUJARATI    -> Locale("gu", "IN")
-            c in GURMUKHI    -> Locale("pa", "IN")
-            c in TELUGU      -> Locale("te", "IN")
-            c in TAMIL       -> Locale("ta", "IN")
-            c in KANNADA     -> Locale("kn", "IN")
-            c in MALAYALAM   -> Locale("ml", "IN")
-            c in ARABIC      -> Locale("ar", "SA")
-            c in HEBREW      -> Locale("he", "IL")
-            c in THAI        -> Locale("th", "TH")
-            c in CJK_UNIFIED -> Locale.SIMPLIFIED_CHINESE
-            c in HIRAGANA || c in KATAKANA -> Locale.JAPANESE
-            c in HANGUL      -> Locale.KOREAN
-            c in CYRILLIC    -> Locale("ru", "RU")
-            c in GREEK       -> Locale("el", "GR")
-            else             -> Locale.ENGLISH
+            c in DEVANAGARI  -> NseLocale("hi", "IN")
+            c in BENGALI     -> NseLocale("bn", "BD")
+            c in GUJARATI    -> NseLocale("gu", "IN")
+            c in GURMUKHI    -> NseLocale("pa", "IN")
+            c in TELUGU      -> NseLocale("te", "IN")
+            c in TAMIL       -> NseLocale("ta", "IN")
+            c in KANNADA     -> NseLocale("kn", "IN")
+            c in MALAYALAM   -> NseLocale("ml", "IN")
+            c in ARABIC      -> NseLocale("ar", "SA")
+            c in HEBREW      -> NseLocale("he", "IL")
+            c in THAI        -> NseLocale("th", "TH")
+            c in CJK_UNIFIED -> NseLocale.SIMPLIFIED_CHINESE
+            c in HIRAGANA || c in KATAKANA -> NseLocale.JAPANESE
+            c in HANGUL      -> NseLocale.KOREAN
+            c in CYRILLIC    -> NseLocale("ru", "RU")
+            c in GREEK       -> NseLocale("el", "GR")
+            else             -> NseLocale.ENGLISH
         }
     }
 
-    /**
-     * Merge segments shorter than [minLength] into their neighbour to avoid
-     * voice-switching for punctuation and whitespace-only runs.
-     */
     private fun mergeShortSegments(
-        segments: List<Pair<String, Locale>>,
+        segments: List<Pair<String, NseLocale>>,
         minLength: Int,
-    ): List<Pair<String, Locale>> {
+    ): List<Pair<String, NseLocale>> {
         if (segments.size <= 1) return segments
-        val merged = mutableListOf<Pair<String, Locale>>()
+        val merged = mutableListOf<Pair<String, NseLocale>>()
         for ((text, locale) in segments) {
             if (text.trim().length < minLength && merged.isNotEmpty()) {
                 val (prevText, prevLocale) = merged.last()

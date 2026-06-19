@@ -284,14 +284,15 @@ class NseAccessibilityService : AccessibilityService() {
         val secondary = settings.ttsSecondaryLanguage.first()
         val voiceSel = settings.ttsVoiceSelection.first()
 
-        val primaryLocale = if (lang == SettingsRepository.TTS_LANG_AUTO) Locale.getDefault()
-        else Locale.forLanguageTag(lang)
-        val secondaryLocale = if (secondary == SettingsRepository.TTS_LANG_AUTO) Locale.ENGLISH
-        else Locale.forLanguageTag(secondary)
+        val primaryLocale = if (lang == SettingsRepository.TTS_LANG_AUTO)
+            NseLocale(Locale.getDefault().language, Locale.getDefault().country)
+        else NseLocale.forLanguageTag(lang)
+        val secondaryLocale = if (secondary == SettingsRepository.TTS_LANG_AUTO) NseLocale.ENGLISH
+        else NseLocale.forLanguageTag(secondary)
 
         return when (modeStr) {
             SettingsRepository.TTS_MODE_SINGLE -> {
-                val voiceLocale = if (voiceSel.isNotBlank()) Locale.forLanguageTag(voiceSel)
+                val voiceLocale = if (voiceSel.isNotBlank()) NseLocale.forLanguageTag(voiceSel)
                 else primaryLocale
                 NseSpeechMode.SingleVoice(voiceLocale)
             }

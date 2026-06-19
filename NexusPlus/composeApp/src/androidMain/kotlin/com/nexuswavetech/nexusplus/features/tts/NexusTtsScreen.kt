@@ -71,7 +71,7 @@ fun NexusTtsScreen(
         val extra = voices.map { it.locale.language }
             .distinct()
             .sorted()
-            .map { code -> code to (Locale(code).displayLanguage.ifBlank { code }) }
+            .map { code -> code to (java.util.Locale(code).displayLanguage.ifBlank { code }) }
         listOf(SettingsRepository.TTS_LANG_AUTO to "Auto (system locale)") + extra
     }
 
@@ -85,14 +85,14 @@ fun NexusTtsScreen(
 
     val voiceOptions: List<Pair<NseVoiceProfile?, String>> = remember(filteredVoices) {
         listOf(null to "Auto") + filteredVoices.map { v ->
-            v to v.locale.displayName.ifBlank { v.locale.language }
+            v to java.util.Locale(v.locale.language, v.locale.country).displayName.ifBlank { v.locale.language }
         }
     }
 
     val secondaryVoiceOptions: List<Pair<NseVoiceProfile?, String>> = remember(filteredVoices, selectedVoice) {
         listOf(null to "Auto") + filteredVoices
             .filter { it != selectedVoice }
-            .map { v -> v to v.locale.displayName.ifBlank { v.locale.language } }
+            .map { v -> v to java.util.Locale(v.locale.language, v.locale.country).displayName.ifBlank { v.locale.language } }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -140,7 +140,7 @@ fun NexusTtsScreen(
                         )
                         if (detectedLocale != null) {
                             Text(
-                                "Detected: ${detectedLocale?.displayName}",
+                                "Detected: ${detectedLocale?.let { java.util.Locale(it.language, it.country).displayName }}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.75f),
                             )

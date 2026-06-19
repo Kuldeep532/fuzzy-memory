@@ -41,7 +41,7 @@ class NsePipelineAndroidEngine(
     private val audioFocus: NseAudioFocusManager,
     val pcmCache: NsePcmCache,
     private val modelsDir: java.io.File? = null,
-) : NseEngine {
+) : NsePipelineEngine {
 
     override var utteranceResultListener: ((NseUtteranceResult) -> Unit)? = null
 
@@ -99,7 +99,7 @@ class NsePipelineAndroidEngine(
                 utteranceResultListener?.invoke(NseUtteranceResult.Started(request.utteranceId))
 
                 // Build sentence-level task list
-                data class Task(val text: String, val locale: Locale)
+                data class Task(val text: String, val locale: NseLocale)
                 val tasks: List<Task> = when (request.mode) {
                     is NseSpeechMode.Auto ->
                         NseSentenceSplitter.split(request.text)
@@ -172,9 +172,12 @@ class NsePipelineAndroidEngine(
 
     // ── Pre-synthesis (WAV → PCM) ─────────────────────────────────────────────
 
+    private fun NseLocale.toJavaLocale(): Locale =
+        if (country.isEmpty()) Locale(language) else Locale(language, country)
+
     private suspend fun synthesizeToPcm(
         text: String,
-        locale: Locale,
+        locale: NseLocale,
         req: NseSpeechRequest,
     ): NsePcmCache.Entry? = withContext(Dispatchers.IO) {
         val engine = tts ?: return@withContext null
@@ -183,9 +186,10 @@ class NsePipelineAndroidEngine(
         val cacheKey = pcmCache.key(text, locale.toLanguageTag(), req.speechRate, req.pitch)
         pcmCache.get(cacheKey)?.let { return@withContext it }
 
+        val javaLocale = locale.toJavaLocale()
         // Configure voice (safe: called from synthesis coroutine only, sequential)
-        val langStatus   = engine.isLanguageAvailable(locale)
-        engine.language  = if (langStatus >= TextToSpeech.LANG_AVAILABLE) locale else Locale.ENGLISH
+        val langStatus   = engine.isLanguageAvailable(javaLocale)
+        engine.language  = if (langStatus >= TextToSpeech.LANG_AVAILABLE) javaLocale else Locale.ENGLISH
         engine.setPitch(req.pitch)
         engine.setSpeechRate(req.speechRate)
 
@@ -328,24 +332,23 @@ class NsePipelineAndroidEngine(
         audioFocus.abandonFocus()
     }
 
-    override fun availableVoices(locale: Locale?): List<NseVoiceProfile> {
+    override fun availableVoices(locale: NseLocale?): List<NseVoiceProfile> {
         val engine = tts ?: return emptyList()
         val systemVoices: List<NseVoiceProfile> = try {
             engine.voices
-                ?.filter { locale == null || it.locale == locale }
                 ?.map { v ->
                     NseVoiceProfile(
                         name              = v.name,
-                        locale            = v.locale,
+                        locale            = NseLocale(v.locale.language, v.locale.country),
                         isNetworkRequired = v.isNetworkConnectionRequired,
                         quality           = v.quality,
                         latency           = v.latency,
                     )
-                } ?: emptyList()
+                }
+                ?.filter { locale == null || it.locale == locale }
+                ?: emptyList()
         } catch (_: Exception) { emptyList() }
 
-        // Merge downloaded Piper TTS voices into the voice list so they appear
-        // in the NSE voice picker alongside the system TTS voices.
         val piperVoices: List<NseVoiceProfile> = modelsDir?.let { dir ->
             try {
                 com.nexuswavetech.nexusplus.model.ModelRegistry.allVoices()
@@ -356,8 +359,8 @@ class NsePipelineAndroidEngine(
                     .map { model ->
                         val parts = model.locale.split("-")
                         val piperLocale = when (parts.size) {
-                            2    -> Locale(parts[0], parts[1])
-                            else -> Locale(model.locale)
+                            2    -> NseLocale(parts[0], parts[1])
+                            else -> NseLocale(model.locale)
                         }
                         NseVoiceProfile(
                             name              = "Nexus/${model.name} [Piper]",

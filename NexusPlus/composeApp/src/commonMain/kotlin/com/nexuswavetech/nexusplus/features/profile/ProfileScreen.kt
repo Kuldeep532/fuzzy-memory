@@ -25,8 +25,6 @@ import com.nexuswavetech.nexusplus.core.FavoritesRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun ProfileScreen(
@@ -45,7 +43,7 @@ fun ProfileScreen(
 
     val displayName     = session.displayName.ifBlank { "Guest User" }
     val initial         = displayName.firstOrNull()?.uppercase() ?: "G"
-    val memberSince     = LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM yyyy"))
+    val memberSince     = "Member"
     val totalFeatures   = FeatureCatalog.totalCount
     val favCount        = favoriteIds.size
     val pinnedCount     = pinnedIds.size
