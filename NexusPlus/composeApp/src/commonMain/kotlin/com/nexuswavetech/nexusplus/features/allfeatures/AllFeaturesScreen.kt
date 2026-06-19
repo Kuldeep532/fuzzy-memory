@@ -20,7 +20,7 @@ import com.nexuswavetech.nexusplus.platform.PlatformToast
 import com.nexuswavetech.nexusplus.ui.components.FeatureCard
 import com.nexuswavetech.nexusplus.ui.components.GatekeeperDialog
 import org.koin.compose.koinInject
-import org.koin.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

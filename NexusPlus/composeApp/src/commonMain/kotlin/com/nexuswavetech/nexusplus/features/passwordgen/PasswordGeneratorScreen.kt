@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import org.koin.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.roundToInt
 
 data class PasswordConfig(

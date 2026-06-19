@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import org.koin.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 data class RegexMatch(val start: Int, val end: Int, val value: String, val groups: List<String>)
 
