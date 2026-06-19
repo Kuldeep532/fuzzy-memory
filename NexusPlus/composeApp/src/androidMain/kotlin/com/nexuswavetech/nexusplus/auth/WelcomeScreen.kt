@@ -34,7 +34,7 @@ import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.nexuswavetech.nexusplus.R
+import com.nexuswavetech.nexusplus.composeapp.R
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusWaveLogo
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository

@@ -3,7 +3,7 @@ package com.nexuswavetech.nexusplus.sound
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
-import com.nexuswavetech.nexusplus.R
+import com.nexuswavetech.nexusplus.composeapp.R
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
