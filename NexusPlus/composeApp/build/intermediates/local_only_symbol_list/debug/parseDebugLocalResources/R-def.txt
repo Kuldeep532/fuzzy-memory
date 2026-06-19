@@ -1,0 +1,7 @@
+R_DEF: Internal format may change without notice
+local
+drawable nexus_wave_logo
+raw background_processing
+raw notification_sound
+raw page_flip
+string default_web_client_id

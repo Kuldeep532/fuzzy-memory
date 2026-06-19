@@ -1,0 +1,5 @@
+int drawable nexus_wave_logo 0x0
+int raw background_processing 0x0
+int raw notification_sound 0x0
+int raw page_flip 0x0
+int string default_web_client_id 0x0
