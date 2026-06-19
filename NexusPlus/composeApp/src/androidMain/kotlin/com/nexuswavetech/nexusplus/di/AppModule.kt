@@ -118,7 +118,7 @@ val appModule = module {
     viewModel { AiImageViewModel() }
     viewModel { IptvViewModel() }
     viewModel { MusicViewModel() }
-    viewModel { AiraViewModel(settings = get(), geminiRepo = get()) }
+    viewModel { AiraViewModel(settingsRepo = get(), geminiRepo = get()) }
 
     // Security
     viewModel { EncrypterDecrypterViewModel() }

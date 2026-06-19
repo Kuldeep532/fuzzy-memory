@@ -82,7 +82,7 @@ kotlin {
             implementation(libs.mlkit.image.labeling)
             implementation(libs.accompanist.permissions)
             implementation(libs.zxing.core)
-            implementation(platform(libs.firebase.bom))
+            implementation(project.dependencies.platform(libs.firebase.bom.get()))
             implementation(libs.firebase.auth)
             implementation(libs.firebase.firestore)
             implementation(libs.firebase.messaging)
