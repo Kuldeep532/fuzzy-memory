@@ -49,7 +49,7 @@ val prepareGoogleServicesJson by tasks.registering {
     group = "build setup"
     description = "Writes app/google-services.json from GOOGLE_SERVICES_JSON when supplied by CI."
 
-    onlyIf { googleServicesJson != null && !file("google-services.json").isFile }
+    onlyIf { googleServicesJson != null }
 
     doLast {
         file("google-services.json").writeText(googleServicesJson ?: return@doLast)

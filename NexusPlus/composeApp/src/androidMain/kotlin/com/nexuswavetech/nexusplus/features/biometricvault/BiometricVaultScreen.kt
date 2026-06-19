@@ -29,7 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentActivity
+import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nexuswavetech.nexusplus.core.HapticHelper
@@ -84,7 +84,7 @@ fun BiometricVaultScreen(onBack: () -> Unit) {
     val hapticEnabled by settings.touchVibration.collectAsState(initial = true)
     // Activity-scoped so the ViewModel survives navigation back/forward within the same task.
     // Previously per-backstack-entry, which caused a re-lock on every navigate().
-    val activity = context as FragmentActivity
+    val activity = context as ComponentActivity
     val vm: BiometricVaultViewModel = koinViewModel(viewModelStoreOwner = activity)
     val state by vm.state.collectAsStateWithLifecycle()
 
