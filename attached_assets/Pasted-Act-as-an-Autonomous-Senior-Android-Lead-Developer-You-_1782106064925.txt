@@ -1,0 +1,23 @@
+Act as an Autonomous Senior Android Lead Developer. You have direct access to all project files. Execute the following protocol with the highest human-safety priority to deliver a zero-error, production-ready 'Emergency Guardian' module.
+
+PART 1: ZERO-ERROR SYSTEMATIC COMPILATION & SELF-TESTING
+- Preemptive Error Elimination: Before writing any file, run a rigorous static analysis. Completely eliminate 'Unresolved reference: R', coroutine context leaks, missing imports, lifecycle scope mismatches, and XML compilation breaks.
+- Dry-Run Logical Verification: Perform deep, multi-layered dry-run execution trees to verify null-safety (?), precise type casting, and edge cases. Ensure the code is 100% syntactically perfect and guaranteed to build on the first attempt.
+- Perfect Manifest & Gradle Sync: Synchronize the AndroidManifest.xml package namespace, application IDs, and physical folder structures perfectly to prevent any R-file generation failures.
+
+PART 2: 'EMERGENCY GUARDIAN' (TOP-TIER & ISOLATED)
+- Top-Level Clean Architecture: This feature must reside at the absolute top hierarchy of the app. The architecture must be completely decoupled, lightweight, and clean, ensuring it functions flawlessly regardless of any other app modules or background processes.
+- 100% Offline Local Storage: Implement a rock-solid, ultra-fast Room Database for emergency contact management with absolute zero external network dependencies.
+- Fail-Safe Foreground Service: Create a low-power, persistent Foreground Service utilizing SensorEventListener (Accelerometer) that bypasses aggressive OS battery throttling.
+- Intelligent Crisis Logic: 
+   1. Detection: Trigger instantly upon high-velocity, abnormal movement signatures.
+   2. Immediate Action: Automatically dispatch an emergency SMS with live GPS coordinates to all saved contacts. Execute native Intent.ACTION_CALL sequentially to ensure immediate voice connectivity even in low-balance scenarios.
+- Flawless Screen-Reader Accessibility: The entire emergency UI and interaction layers must be 100% screen-reader compliant. Ensure precise contentDescription, optimized touch targets, and logical accessibility focus orders.
+
+CRITICAL CONSTRAINTS:
+- No Textual Explanations: Provide no documentation, markdown guides, or theoretical explanations. Output only the complete, ready-to-paste, fully stabilized code.
+- 'Satvik' Code Standards: Code must be exceptionally clean, heavily optimized for memory, resource-light, and robust against crashes.
+- Absolute Autonomy: Do not pause for feedback or ask questions. If a potential compilation or logic error is detected during your self-testing phase, automatically patch it, re-verify, and output only the final, stabilized implementation.
+- Immediate Permission Matrix: Update AndroidManifest.xml directly with all critical dangerous permissions (CALL_PHONE, SEND_SMS, ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION, POST_NOTIFICATIONS) and embed seamless runtime check logic.
+
+Begin by running the static analysis, tracing the code for any potential compilation failure, and generating the final, error-free production code.

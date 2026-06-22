@@ -97,6 +97,7 @@ import com.nexuswavetech.nexusplus.features.ott.ottCatalogueById
 import com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesScreen
 import com.nexuswavetech.nexusplus.features.speedometer.SpeedometerScreen
 import com.nexuswavetech.nexusplus.features.taskmanager.TaskManagerScreen
+import com.nexuswavetech.nexusplus.features.emergencyguardian.EmergencyGuardianScreen
 
 private const val ANIM_DURATION     = 320
 private const val ANIM_DURATION_OUT = 200
@@ -379,6 +380,11 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         // ── Tools: Task Manager ───────────────────────────────────────────
         composable(Screen.TaskManager.route) {
             NexusAdScaffold { TaskManagerScreen(onBack = { navController.popBackStack() }) }
+        }
+
+        // ── Emergency Guardian ────────────────────────────────────────────
+        composable(Screen.EmergencyGuardian.route) {
+            NexusAdScaffold { EmergencyGuardianScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Stub catch-all ────────────────────────────────────────────────

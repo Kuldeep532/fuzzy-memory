@@ -387,6 +387,16 @@ object FeatureCatalog {
 
         // ── Security & Privacy ────────────────────────────────────────────────
         FeatureItem(
+            id          = FeatureId.EMERGENCY_GUARDIAN,
+            name        = "Emergency Guardian",
+            description = "Shake-triggered SOS: auto-sends GPS location via SMS and calls contacts",
+            icon        = Icons.Filled.Shield,
+            route       = Screen.EmergencyGuardian.route,
+            category    = FeatureCategory.SECURITY,
+            keywords    = listOf("emergency", "sos", "guardian", "shake", "sms", "call", "gps", "safety", "alert", "distress"),
+            isNew       = true,
+        ),
+        FeatureItem(
             id          = FeatureId.BIOMETRIC_VAULT,
             name        = "Biometric Vault",
             description = "AES-256-GCM encrypted vault for passwords, cards & documents",

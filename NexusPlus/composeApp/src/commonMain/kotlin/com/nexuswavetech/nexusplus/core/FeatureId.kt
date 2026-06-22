@@ -64,6 +64,7 @@ enum class FeatureId {
     AIRA_AI,
 
     // ── Security & Privacy ────────────────────────────────────────────────
+    EMERGENCY_GUARDIAN,
     BIOMETRIC_VAULT,
     ENCRYPTER_DECRYPTER,
     HASH_GENERATOR,

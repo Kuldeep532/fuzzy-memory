@@ -123,6 +123,9 @@ sealed class Screen(val route: String) {
     object TaskManager    : Screen("feature/task_manager")
     object ContactBackup  : Screen("feature/contact_backup")
 
+    // ── Emergency Guardian ───────────────────────────────────────────────────
+    object EmergencyGuardian : Screen("feature/emergency_guardian")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }
