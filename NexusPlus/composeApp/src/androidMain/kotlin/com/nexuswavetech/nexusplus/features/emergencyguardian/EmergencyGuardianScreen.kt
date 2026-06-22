@@ -1,7 +1,6 @@
 package com.nexuswavetech.nexusplus.features.emergencyguardian
 
 import android.Manifest
-import android.content.Context
 import android.os.Build
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
@@ -30,8 +29,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.ShieldMoon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -229,7 +228,7 @@ private fun GuardStatusCard(
                 ) {
                     AnimatedContent(targetState = isActive, label = "shieldIcon") { active ->
                         Icon(
-                            imageVector = if (active) Icons.Filled.Shield else Icons.Filled.ShieldMoon,
+                            imageVector = if (active) Icons.Filled.Shield else Icons.Filled.Security,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(28.dp),
