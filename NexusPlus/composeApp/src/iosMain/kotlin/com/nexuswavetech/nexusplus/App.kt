@@ -1,20 +1,17 @@
 package com.nexuswavetech.nexusplus
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import com.nexuswavetech.nexusplus.navigation.NexusIosNavHost
 import com.nexuswavetech.nexusplus.ui.theme.NexusPlusTheme
 
 /**
- * iOS app root composable.
+ * iOS actual for [App]. MainViewController calls this composable.
+ * Uses NexusIosNavHost which wires up all available cross-platform features
+ * and shows StubFeatureScreen for Android-only features.
  */
 @Composable
 actual fun App() {
     NexusPlusTheme {
-        // Placeholder: iOS navigation will use NavigationScreenRegistry
-        // For now, show a simple placeholder
-        androidx.compose.material3.Text(
-            "Nexus Plus on iOS",
-            style = MaterialTheme.typography.headlineMedium,
-        )
+        NexusIosNavHost()
     }
 }

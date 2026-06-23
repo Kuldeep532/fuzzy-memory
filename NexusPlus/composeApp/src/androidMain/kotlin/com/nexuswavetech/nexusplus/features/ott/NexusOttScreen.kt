@@ -264,6 +264,7 @@ fun ottCatalogueById(id: String): OttItem? = compliantOttCatalogue.firstOrNull {
 // OTT Home Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun NexusOttScreen(
     onBack: () -> Unit,
@@ -676,7 +677,7 @@ private fun OttContentCard(item: OttItem, onClick: () -> Unit, modifier: Modifie
 // OTT Player Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-@OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun NexusOttPlayerScreen(
     item: OttItem,

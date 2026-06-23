@@ -139,6 +139,7 @@ private fun GameCard(game: GameItem, onClick: () -> Unit) {
 // ── WebView game player ───────────────────────────────────────────────────────
 
 @SuppressLint("SetJavaScriptEnabled")
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun GameWebViewScreen(game: GameItem, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {

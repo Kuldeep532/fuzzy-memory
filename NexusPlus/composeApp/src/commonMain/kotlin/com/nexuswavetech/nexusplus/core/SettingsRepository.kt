@@ -160,7 +160,7 @@ class SettingsRepository(private val store: SettingsStore) {
     // ── Aira AI / Gemini ──────────────────────────────────────────────────────
     val geminiApiKey: Flow<String>      = store.stringFlow(KEY_GEMINI_API_KEY, "")
     val geminiModel: Flow<String>       = store.stringFlow(KEY_GEMINI_MODEL, GEMINI_MODEL_FLASH)
-    val airaGeminiPrimary: Flow<Boolean>= store.booleanFlow(KEY_AIRA_GEMINI_PRIMARY, false)
+    val airaGeminiPrimary: Flow<Boolean> = store.booleanFlow(KEY_AIRA_GEMINI_PRIMARY, false)
 
     // ── Setters ───────────────────────────────────────────────────────────────
     suspend fun setTheme(v: String)                = store.setString(KEY_THEME, v)

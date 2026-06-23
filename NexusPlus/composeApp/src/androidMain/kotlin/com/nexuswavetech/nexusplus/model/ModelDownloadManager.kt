@@ -3,6 +3,7 @@ package com.nexuswavetech.nexusplus.model
 import android.content.Context
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.coroutineContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
@@ -139,7 +140,7 @@ class ModelDownloadManager(private val context: Context) {
                     var downloaded = resumeBytes
                     var n: Int
                     while (inp.read(buf).also { n = it } != -1) {
-                        ensureActive()
+                        coroutineContext.ensureActive()
                         out.write(buf, 0, n)
                         downloaded += n
                         updateProgress(model.id, downloaded, model.sizeBytes, DownloadProgress.State.DOWNLOADING)

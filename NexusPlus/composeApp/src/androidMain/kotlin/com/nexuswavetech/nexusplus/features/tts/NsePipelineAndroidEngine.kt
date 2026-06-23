@@ -388,7 +388,7 @@ class NsePipelineAndroidEngine(
     }
 
     /** Phrases currently held in the PCM cache. */
-    fun cachedPhraseCount(): Int = pcmCache.entryCount()
+    override fun cachedPhraseCount(): Int = pcmCache.entryCount()
 
     // ── Utterance progress listener ──────────────────────────────────────────
 

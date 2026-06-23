@@ -23,7 +23,7 @@ class WeatherRepository(private val store: SettingsStore) {
 
     /** Saved locations (manual city entries). */
     val savedLocations: Flow<List<WeatherLocation>> =
-        store.getStringFlow(SAVED_LOCATIONS_KEY, "")
+        store.stringFlow(SAVED_LOCATIONS_KEY, "")
             .map { raw ->
                 if (raw.isBlank()) return@map emptyList()
                 runCatching { json.decodeFromString<List<WeatherLocation>>(raw) }.getOrDefault(emptyList())
@@ -43,7 +43,7 @@ class WeatherRepository(private val store: SettingsStore) {
             runCatching { json.decodeFromString<MutableList<WeatherLocation>>(raw) }.getOrDefault(mutableListOf())
         val existing = list.indexOfFirst { it.cityName == location.cityName }
         if (existing >= 0) list[existing] = location else list.add(location)
-        store.putString(SAVED_LOCATIONS_KEY, json.encodeToString(list))
+        store.setString(SAVED_LOCATIONS_KEY, json.encodeToString(list))
     }
 
     /** Remove a saved location. */
@@ -52,7 +52,7 @@ class WeatherRepository(private val store: SettingsStore) {
         val list = if (raw.isBlank()) return else
             runCatching { json.decodeFromString<MutableList<WeatherLocation>>(raw) }.getOrDefault(mutableListOf())
         list.removeAll { it.cityName == cityName }
-        store.putString(SAVED_LOCATIONS_KEY, json.encodeToString(list))
+        store.setString(SAVED_LOCATIONS_KEY, json.encodeToString(list))
     }
 
     /** Set the default location. */
@@ -63,7 +63,7 @@ class WeatherRepository(private val store: SettingsStore) {
         list.forEachIndexed { i, loc ->
             list[i] = loc.copy(isDefault = loc.cityName == cityName)
         }
-        store.putString(SAVED_LOCATIONS_KEY, json.encodeToString(list))
+        store.setString(SAVED_LOCATIONS_KEY, json.encodeToString(list))
     }
 
     /** Get the default location, or null if none set. */
@@ -76,8 +76,8 @@ class WeatherRepository(private val store: SettingsStore) {
 
     /** Cache weather data. */
     suspend fun cacheWeather(data: WeatherData) {
-        store.putString(LAST_WEATHER_KEY, json.encodeToString(data))
-        store.putString("${LAST_WEATHER_KEY}_timestamp", System.currentTimeMillis().toString())
+        store.setString(LAST_WEATHER_KEY, json.encodeToString(data))
+        store.setString("${LAST_WEATHER_KEY}_timestamp", System.currentTimeMillis().toString())
     }
 
     /** Get cached weather data. */

@@ -68,13 +68,13 @@ class FirstLaunchManager(
      * Returns the list of default models that are not yet downloaded.
      */
     fun findMissingDefaultModels(): List<ModelRegistry.NexusModel> =
-        ModelRegistry.DEFAULT_MODELS.filter { !downloadManager.isDownloaded(it) }
+        ModelRegistry.defaultModels().filter { model -> !downloadManager.isDownloaded(model) }
 
     /**
      * Returns true when all default models are present.
      */
     fun allDefaultModelsReady(): Boolean =
-        ModelRegistry.DEFAULT_MODELS.all { downloadManager.isDownloaded(it) }
+        ModelRegistry.defaultModels().all { model -> downloadManager.isDownloaded(model) }
 
     /**
      * Force-queue a specific model (called when user explicitly requests a download).
