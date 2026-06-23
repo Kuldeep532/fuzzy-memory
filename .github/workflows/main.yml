@@ -79,25 +79,12 @@ jobs:
           set -eo pipefail
           ./gradlew clean bundleRelease 2>&1 | tee build_output.log
 
-      - name: Locate Build Files
-        id: locate
-        if: success()
-        run: |
-          APK_FILE=$(find . -type f -name "*.apk" | head -n 1 || true)
-          AAB_FILE=$(find . -type f -name "*.aab" | head -n 1 || true)
-
-          echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
-          echo "aab_file=$AAB_FILE" >> $GITHUB_OUTPUT
-
-          echo "APK: $APK_FILE"
-          echo "AAB: $AAB_FILE"
-
       - name: Upload APK
         if: github.event.inputs.build_type == 'apk' && success()
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-APK
-          path: ${{ steps.locate.outputs.apk_file }}
+          path: NexusPlus/app/build/outputs/apk/release/*.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -106,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-AAB
-          path: ${{ steps.locate.outputs.aab_file }}
+          path: NexusPlus/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
           retention-days: 7
 
