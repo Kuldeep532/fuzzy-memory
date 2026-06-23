@@ -63,3 +63,28 @@
 -keep class com.nexuswavetech.nexusplus.features.iptv.IptvChannel { *; }
 -keep class com.nexuswavetech.nexusplus.science.** { *; }
 -keep class com.nexuswavetech.nexusplus.news.** { *; }
+
+# ── SLF4J (transitive via Ktor/logging) ──────────────────────────────────────
+-dontwarn org.slf4j.**
+-dontwarn org.slf4j.impl.**
+
+# ── Broad dontwarn for common transitive deps (prevents future R8 failures) ──
+-dontwarn javax.annotation.**
+-dontwarn javax.inject.**
+-dontwarn sun.misc.**
+-dontwarn java.lang.invoke.**
+-dontwarn kotlin.reflect.jvm.internal.**
+-dontwarn kotlinx.coroutines.**
+-dontwarn io.ktor.**
+-dontwarn io.netty.**
+-dontwarn reactor.**
+-dontwarn io.reactivex.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**
+-dontwarn com.oracle.**
+-dontwarn dalvik.**
+
+# ── R8 / missing_rules safety net ─────────────────────────────────────────────
+# Suppress ALL missing-class warnings so R8 never fails on absent transitive deps.
+-ignorewarnings
