@@ -12,15 +12,6 @@ object FeatureCatalog {
 
         // ── Media & Entertainment ─────────────────────────────────────────────
         FeatureItem(
-            id          = FeatureId.RADIO_PLAYER,
-            name        = "Online Radio",
-            description = "Stream thousands of live radio stations worldwide",
-            icon        = Icons.Filled.Radio,
-            route       = Screen.RadioPlayer.route,
-            category    = FeatureCategory.MEDIA,
-            keywords    = listOf("radio", "stream", "live", "station", "music", "broadcast", "fm", "am"),
-        ),
-        FeatureItem(
             id          = FeatureId.AI_IMAGE_GENERATOR,
             name        = "AI Image Generator",
             description = "Generate stunning images from text prompts",
@@ -29,15 +20,6 @@ object FeatureCatalog {
             category    = FeatureCategory.MEDIA,
             keywords    = listOf("ai", "image", "generate", "art", "diffusion", "prompt", "pollinations", "creative"),
             isNew       = true,
-        ),
-        FeatureItem(
-            id          = FeatureId.IPTV_PLAYER,
-            name        = "IPTV / Live TV",
-            description = "Stream live Indian TV channels and global M3U playlists",
-            icon        = Icons.Filled.LiveTv,
-            route       = Screen.IptvPlayer.route,
-            category    = FeatureCategory.MEDIA,
-            keywords    = listOf("iptv", "tv", "live", "stream", "channel", "m3u", "playlist", "television"),
         ),
         FeatureItem(
             id          = FeatureId.MUSIC_STREAMING,
@@ -536,17 +518,6 @@ object FeatureCatalog {
             category    = FeatureCategory.UTILITIES,
             keywords    = listOf("url", "shortener", "link", "shorten", "tinyurl", "isgd", "share", "web"),
             isNew       = true,
-        ),
-
-        // ── Form X ───────────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.FORM_X,
-            name        = "Form X",
-            description = "Reactive Material 3 form with live validation and password strength",
-            icon        = Icons.AutoMirrored.Filled.Assignment,
-            route       = Screen.FormX.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("form", "validation", "password", "email", "reactive", "strength"),
         ),
 
         // ── Nexus OTT ─────────────────────────────────────────────────────────

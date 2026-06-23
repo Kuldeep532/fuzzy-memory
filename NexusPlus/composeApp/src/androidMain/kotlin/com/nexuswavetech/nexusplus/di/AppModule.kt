@@ -18,10 +18,8 @@ import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultReposit
 import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultViewModel
 import com.nexuswavetech.nexusplus.features.aira.AiraViewModel
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageViewModel
-import com.nexuswavetech.nexusplus.features.iptv.IptvViewModel
 import com.nexuswavetech.nexusplus.features.music.MusicViewModel
 import com.nexuswavetech.nexusplus.features.notifications.NotificationRepository
-import com.nexuswavetech.nexusplus.features.radio.RadioViewModel
 import com.nexuswavetech.nexusplus.features.encryptor.EncrypterDecrypterViewModel
 import com.nexuswavetech.nexusplus.features.translator.TextTranslatorViewModel
 import com.nexuswavetech.nexusplus.features.hashgen.HashGeneratorViewModel
@@ -115,9 +113,7 @@ val appModule = module {
     viewModel { AllFeaturesViewModel(sessionManager = get(), favoritesRepository = get()) }
 
     // Media
-    viewModel { RadioViewModel() }
     viewModel { AiImageViewModel() }
-    viewModel { IptvViewModel() }
     viewModel { MusicViewModel() }
     viewModel { AiraViewModel(settingsRepo = get(), geminiRepo = get()) }
 

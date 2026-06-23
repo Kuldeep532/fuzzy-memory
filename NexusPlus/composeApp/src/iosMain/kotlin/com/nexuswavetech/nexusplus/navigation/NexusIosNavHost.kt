@@ -178,7 +178,7 @@ fun NexusIosNavHost() {
 
         // ── Features not yet available on iOS (platform-specific stub) ─────────
         val androidOnlyRoutes = listOf(
-            Screen.RadioPlayer, Screen.AiImageGenerator, Screen.IptvPlayer,
+            Screen.AiImageGenerator,
             Screen.MusicStreaming, Screen.SmartImageEditor, Screen.NexusImageViewer,
             Screen.PdfSuite, Screen.DocHub, Screen.NexusDocReader,
             Screen.EncrypterDecrypter, Screen.TextEncryptor, Screen.HashGenerator,

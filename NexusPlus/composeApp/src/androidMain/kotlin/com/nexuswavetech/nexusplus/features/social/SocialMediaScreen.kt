@@ -32,6 +32,15 @@ fun SocialMediaScreen(onBack: () -> Unit) {
     val remoteConfig: RemoteConfigRepository = koinInject()
     val urlHandler: PlatformUrlHandler       = koinInject()
 
+    // ── Social links — controlled via Firebase Remote Config ─────────────────
+    // To enable/disable any link: set the corresponding URL key in Firebase Remote Config.
+    //   instagram_url  → Instagram page
+    //   facebook_url   → Facebook page
+    //   whatsapp_url   → WhatsApp channel
+    //   telegram_url   → Telegram group
+    //   discord_url    → Discord server
+    //   official_website_url → website
+    // Set value to "" (empty) to hide a link. Set a valid URL to show it.
     val socialLinks = remember {
         buildList {
             remoteConfig.officialWebsiteUrl.takeIf { it.isNotBlank() }?.let {
@@ -43,26 +52,14 @@ fun SocialMediaScreen(onBack: () -> Unit) {
             remoteConfig.facebookUrl.takeIf { it.isNotBlank() }?.let {
                 add(RemoteSocialLink("Facebook", "Nexus Wave Technologies", it, Icons.Filled.People))
             }
-            remoteConfig.twitterUrl.takeIf { it.isNotBlank() }?.let {
-                add(RemoteSocialLink("X (Twitter)", "@nexuswavetech", it, Icons.Filled.Newspaper))
-            }
-            remoteConfig.youtubeUrl.takeIf { it.isNotBlank() }?.let {
-                add(RemoteSocialLink("YouTube", "@nexuswavetech", it, Icons.Filled.PlayCircle))
+            remoteConfig.whatsappUrl.takeIf { it.isNotBlank() }?.let {
+                add(RemoteSocialLink("WhatsApp Channel", "Nexus Wave Technologies", it, Icons.Filled.Forum))
             }
             remoteConfig.telegramUrl.takeIf { it.isNotBlank() }?.let {
                 add(RemoteSocialLink("Telegram", "NexusWaveTechnologies27", it, Icons.AutoMirrored.Filled.Message))
             }
-            remoteConfig.whatsappUrl.takeIf { it.isNotBlank() }?.let {
-                add(RemoteSocialLink("WhatsApp Channel", "Nexus Wave Technologies", it, Icons.Filled.Forum))
-            }
             remoteConfig.discordUrl.takeIf { it.isNotBlank() }?.let {
                 add(RemoteSocialLink("Discord", "Nexus Wave Community", it, Icons.Filled.Group))
-            }
-            remoteConfig.githubUrl.takeIf { it.isNotBlank() }?.let {
-                add(RemoteSocialLink("GitHub", "@NexusWaveTech", it, Icons.Filled.Code))
-            }
-            remoteConfig.linkedinUrl.takeIf { it.isNotBlank() }?.let {
-                add(RemoteSocialLink("LinkedIn", "Nexus Wave Technologies", it, Icons.Filled.BusinessCenter))
             }
         }
     }

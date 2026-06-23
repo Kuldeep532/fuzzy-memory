@@ -1,0 +1,1 @@
+- [Nexus Plus rebuild decisions](nexus-plus-rebuild.md) — login toggle, deleted features, TTS redesign, social links, theme changes done in this session.
