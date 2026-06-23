@@ -27,6 +27,8 @@ enum class FeatureId {
     REGEX_TESTER,
     DOC_HUB,
     NEXUS_DOC_READER,
+    TEXT_TO_PDF,
+    DAILY_JOURNAL,
 
     // ── Utilities ─────────────────────────────────────────────────────────
     NEXUS_TTS,
@@ -44,6 +46,7 @@ enum class FeatureId {
     FORM_X,
     NEWS,
     SCIENCE,
+    COLOR_PALETTE,
 
     // ── Smart Tools ───────────────────────────────────────────────────────
     QR_GENERATOR,

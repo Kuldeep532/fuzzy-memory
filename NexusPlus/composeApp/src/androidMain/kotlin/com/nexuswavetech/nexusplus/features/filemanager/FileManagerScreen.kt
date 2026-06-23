@@ -34,6 +34,7 @@ import androidx.core.content.FileProvider
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import androidx.activity.compose.BackHandler
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -203,11 +204,13 @@ fun FileManagerScreen(
     // ── Back handler ───────────────────────────────────────────────────────
     fun handleBack() {
         when {
-            multiSelectMode   -> exitMultiSelect()
+            multiSelectMode        -> exitMultiSelect()
             pathStack.isNotEmpty() -> { currentDir = pathStack.removeLast() }
-            else -> onBack()
+            else                   -> onBack()
         }
     }
+
+    BackHandler(enabled = multiSelectMode || pathStack.isNotEmpty()) { handleBack() }
 
     Scaffold(
         floatingActionButton = {

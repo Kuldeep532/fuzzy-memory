@@ -117,9 +117,9 @@ fun NexusTtsScreen(
     val modeOptions = remember {
         listOf(
             SettingsRepository.TTS_MODE_AUTO   to "Auto — detect language automatically",
-            SettingsRepository.TTS_MODE_SINGLE to "Single Voice — one voice for all text",
-            SettingsRepository.TTS_MODE_DUAL   to "Dual Voice — primary + secondary voices",
-            SettingsRepository.TTS_MODE_MIXED  to "Mixed — intelligent multi-voice switching",
+            SettingsRepository.TTS_MODE_SINGLE to "Single — one voice for all text",
+            SettingsRepository.TTS_MODE_DUAL   to "Mix — blend primary and secondary voices",
+            SettingsRepository.TTS_MODE_MIXED  to "Advanced — pipeline with language detection",
         )
     }
 
@@ -199,7 +199,27 @@ fun NexusTtsScreen(
             }
 
             // ══════════════════════════════════════════════════════════════
-            // SECTION 1 — TTS ENGINE (which engine is active)
+            // SECTION 1 — LANGUAGE
+            // ══════════════════════════════════════════════════════════════
+            NseSection(title = "Language", icon = Icons.Filled.Language) {
+                Text(
+                    "Select the primary language for speech synthesis",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                NseDropdown(
+                    label = "Primary Language",
+                    options = languageOptions,
+                    selected = selectedLanguage,
+                    onSelect = { lang ->
+                        selectedLanguage = lang
+                        viewModel.onVoiceSelected(null)
+                    },
+                )
+            }
+
+            // ══════════════════════════════════════════════════════════════
+            // SECTION 2 — TTS ENGINE (which engine is active)
             // ══════════════════════════════════════════════════════════════
             NseSection(title = "TTS Engine", icon = Icons.Filled.Settings) {
                 Row(
@@ -285,26 +305,6 @@ fun NexusTtsScreen(
             }
 
             // ══════════════════════════════════════════════════════════════
-            // SECTION 2 — LANGUAGE
-            // ══════════════════════════════════════════════════════════════
-            NseSection(title = "Language", icon = Icons.Filled.Language) {
-                Text(
-                    "Select the primary language for speech synthesis",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                NseDropdown(
-                    label = "Primary Language",
-                    options = languageOptions,
-                    selected = selectedLanguage,
-                    onSelect = { lang ->
-                        selectedLanguage = lang
-                        viewModel.onVoiceSelected(null)
-                    },
-                )
-            }
-
-            // ══════════════════════════════════════════════════════════════
             // SECTION 3 — VOICE
             // ══════════════════════════════════════════════════════════════
             NseSection(title = "Voice", icon = Icons.Filled.RecordVoiceOver) {
@@ -342,7 +342,7 @@ fun NexusTtsScreen(
                 AnimatedVisibility(visible = screenReaderMode == SettingsRepository.TTS_MODE_DUAL) {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                        Text("Secondary Voice (Dual Mode)",
+                        Text("Secondary Voice (Mix Mode)",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary)
                         NseDropdown(

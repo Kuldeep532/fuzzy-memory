@@ -126,6 +126,11 @@ sealed class Screen(val route: String) {
     // ── Emergency Guardian ───────────────────────────────────────────────────
     object EmergencyGuardian : Screen("feature/emergency_guardian")
 
+    // ── New features (replacing Radio / IPTV / FormX) ───────────────────────
+    object TextToPdf    : Screen("feature/text_to_pdf")
+    object DailyJournal : Screen("feature/daily_journal")
+    object ColorPalette : Screen("feature/color_palette")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

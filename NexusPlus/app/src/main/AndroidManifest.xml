@@ -115,7 +115,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Media3 Playback Service for background audio (Music, Radio, IPTV) -->
+        <!-- Media3 Playback Service for background audio (Nexus Media Player — local files only) -->
         <service
             android:name=".features.music.NexusPlaybackService"
             android:exported="true"

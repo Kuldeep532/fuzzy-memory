@@ -463,9 +463,20 @@ private fun getTimeAwareGreeting(): String {
     }
 }
 
+private fun getAccessibleGreeting(): String {
+    val hour = getCurrentHour()
+    return when {
+        hour in 4..11  -> "Good Morning — Jai Shri Krishna"
+        hour in 12..16 -> "Good Afternoon — Jai Shri Krishna"
+        hour in 17..20 -> "Good Evening — Jai Shri Krishna"
+        else           -> "Good Night — Jai Shri Krishna"
+    }
+}
+
 @Composable
 private fun DevotionalMarqueeHeader() {
-    val timeGreeting = remember { getTimeAwareGreeting() }
+    val timeGreeting  = remember { getTimeAwareGreeting() }
+    val accessGreeting = remember { getAccessibleGreeting() }
     var quoteIndex by remember { mutableIntStateOf((System.currentTimeMillis() / 1000 % GITA_QUOTES.size).toInt()) }
 
     LaunchedEffect(Unit) {
@@ -481,13 +492,13 @@ private fun DevotionalMarqueeHeader() {
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        // Time-aware greeting chip
+        // Time-aware greeting chip — contentDescription uses emoji-free text
         Surface(
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.primaryContainer,
             modifier = Modifier
                 .fillMaxWidth()
-                .semantics(mergeDescendants = true) { contentDescription = timeGreeting },
+                .semantics(mergeDescendants = true) { contentDescription = accessGreeting },
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -503,7 +514,7 @@ private fun DevotionalMarqueeHeader() {
             }
         }
 
-        // Rotating Bhagavad Gita quote
+        // Rotating Bhagavad Gita quote — contentDescription is the plain-text quote
         AnimatedContent(
             targetState = currentQuote,
             transitionSpec = {
