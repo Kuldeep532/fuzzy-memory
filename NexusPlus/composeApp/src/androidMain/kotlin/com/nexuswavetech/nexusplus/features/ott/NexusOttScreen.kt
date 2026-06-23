@@ -1,7 +1,8 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.nexuswavetech.nexusplus.features.ott
 
 import android.net.Uri
-import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -264,7 +265,6 @@ fun ottCatalogueById(id: String): OttItem? = compliantOttCatalogue.firstOrNull {
 // OTT Home Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun NexusOttScreen(
     onBack: () -> Unit,
