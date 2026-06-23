@@ -78,7 +78,6 @@ jobs:
         run: |
           echo "=== CRITICAL BUILD ERRORS ===" > build_errors.txt
           if [ -f build_output.log ]; then
-            # Keval kaam ke error keywords ko nikaal rha hai (Faltu warnings ignore)
             grep -i -E "error:|failure|exception|compilation failed|failed with" build_output.log >> build_errors.txt || echo "No explicit code error keywords found, check full log." >> build_errors.txt
           fi
 
@@ -91,7 +90,7 @@ jobs:
           retention-days: 3
 
       - name: Upload APK
-        if: ${{ success() && github.event.inputs.build_type == 'apk' }}
+        if: ${{ github.event.inputs.build_type == 'apk' && steps.check_secrets.outputs.has_errors != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-APK
@@ -99,7 +98,7 @@ jobs:
           retention-days: 7
 
       - name: Upload AAB
-        if: ${{ success() && github.event.inputs.build_type == 'aab' }}
+        if: ${{ github.event.inputs.build_type == 'aab' && steps.check_secrets.outputs.has_errors != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-AAB
@@ -108,4 +107,4 @@ jobs:
 
       - name: Cleanup Signing Artifacts
         if: always()
-        run: rm -rf app/build/signing/
+        run: rm -rf  app/build/signing/
