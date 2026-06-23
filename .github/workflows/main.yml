@@ -49,7 +49,6 @@ jobs:
           [ -z "$KEY_ALIAS" ]            && MISSING="$MISSING KEY_ALIAS"
           [ -z "$KEY_PASSWORD" ]         && MISSING="$MISSING KEY_PASSWORD"
           [ -z "$ADMOB_APP_ID" ]         && MISSING="$MISSING ADMOB_APP_ID"
-          
           if [ -n "$MISSING" ]; then
             echo "Missing Secrets:$MISSING" > build_errors.txt
             echo "has_errors=true" >> $GITHUB_OUTPUT
@@ -66,7 +65,7 @@ jobs:
         id: build_apk
         run: |
           ./gradlew assembleRelease 2>&1 | tee build_output.log
-          
+
       - name: Build Release AAB (Play Store)
         if: ${{ github.event.inputs.build_type == 'aab' && steps.check_secrets.outputs.has_errors != 'true' }}
         id: build_aab
@@ -107,4 +106,4 @@ jobs:
 
       - name: Cleanup Signing Artifacts
         if: always()
-        run: rm -rf  app/build/signing/
+        run: rm -rf app/build/signing/
