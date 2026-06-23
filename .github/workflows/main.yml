@@ -26,16 +26,21 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
+
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+
       - name: Verify Required Secrets
+        id: check_secrets
         run: |
           MISSING=""
           [ -z "$GOOGLE_SERVICES_JSON" ] && MISSING="$MISSING GOOGLE_SERVICES_JSON"
@@ -44,33 +49,63 @@ jobs:
           [ -z "$KEY_ALIAS" ]            && MISSING="$MISSING KEY_ALIAS"
           [ -z "$KEY_PASSWORD" ]         && MISSING="$MISSING KEY_PASSWORD"
           [ -z "$ADMOB_APP_ID" ]         && MISSING="$MISSING ADMOB_APP_ID"
+          
           if [ -n "$MISSING" ]; then
-            echo "Error: Missing secrets:$MISSING"
-            exit 1
+            echo "Missing Secrets:$MISSING" > build_errors.txt
+            echo "has_errors=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_errors=false" >> $GITHUB_OUTPUT
           fi
-          echo "All secrets OK."
+
       - name: Grant Gradlew Permission
+        if: steps.check_secrets.outputs.has_errors != 'true'
         run: chmod +x gradlew
+
       - name: Build Release APK
-        if: ${{ github.event.inputs.build_type == 'apk' }}
-        run: ./gradlew assembleRelease
+        if: ${{ github.event.inputs.build_type == 'apk' && steps.check_secrets.outputs.has_errors != 'true' }}
+        id: build_apk
+        run: |
+          ./gradlew assembleRelease 2>&1 | tee build_output.log
+          
       - name: Build Release AAB (Play Store)
-        if: ${{ github.event.inputs.build_type == 'aab' }}
-        run: ./gradlew bundleRelease
+        if: ${{ github.event.inputs.build_type == 'aab' && steps.check_secrets.outputs.has_errors != 'true' }}
+        id: build_aab
+        run: |
+          ./gradlew bundleRelease 2>&1 | tee build_output.log
+
+      - name: Filter & Extract Real Errors
+        if: failure() || steps.check_secrets.outputs.has_errors == 'true'
+        run: |
+          echo "=== CRITICAL BUILD ERRORS ===" > build_errors.txt
+          if [ -f build_output.log ]; then
+            # Keval kaam ke error keywords ko nikaal rha hai (Faltu warnings ignore)
+            grep -i -E "error:|failure|exception|compilation failed|failed with" build_output.log >> build_errors.txt || echo "No explicit code error keywords found, check full log." >> build_errors.txt
+          fi
+
+      - name: Upload Error Log Only
+        if: failure() || steps.check_secrets.outputs.has_errors == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Clean-Build-Errors
+          path: NexusPlus/build_errors.txt
+          retention-days: 3
+
       - name: Upload APK
-        if: ${{ github.event.inputs.build_type == 'apk' }}
+        if: ${{ success() && github.event.inputs.build_type == 'apk' }}
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-APK
           path: NexusPlus/app/build/outputs/apk/release/*.apk
           retention-days: 7
+
       - name: Upload AAB
-        if: ${{ github.event.inputs.build_type == 'aab' }}
+        if: ${{ success() && github.event.inputs.build_type == 'aab' }}
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-AAB
           path: NexusPlus/app/build/outputs/bundle/release/*.aab
           retention-days: 7
+
       - name: Cleanup Signing Artifacts
         if: always()
         run: rm -rf app/build/signing/
