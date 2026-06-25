@@ -520,18 +520,6 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
-        // ── Nexus OTT ─────────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.NEXUS_OTT,
-            name        = "Nexus OTT",
-            description = "Stream public-domain movies, documentaries and classic TV — legally free",
-            icon        = Icons.Filled.VideoLibrary,
-            route       = Screen.NexusOtt.route,
-            category    = FeatureCategory.MEDIA,
-            keywords    = listOf("ott", "movie", "stream", "video", "film", "documentary", "classic", "public domain", "archive", "free", "watch"),
-            isNew       = true,
-        ),
-
         // ── Nexus Games Hub ───────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEXUS_GAMES,
@@ -577,6 +565,38 @@ object FeatureCatalog {
             route       = Screen.ExpenseTracker.route,
             category    = FeatureCategory.PRODUCTIVITY,
             keywords    = listOf("expense", "budget", "finance", "money", "income", "spend", "tracker", "wallet", "balance"),
+            isNew       = true,
+        ),
+
+        // ── New features (replacing Radio / IPTV / FormX) ─────────────────────
+        FeatureItem(
+            id          = FeatureId.TEXT_TO_PDF,
+            name        = "Text to PDF",
+            description = "Type or paste text, format it and export as a PDF document — fully offline",
+            icon        = Icons.Filled.PictureAsPdf,
+            route       = Screen.TextToPdf.route,
+            category    = FeatureCategory.PRODUCTIVITY,
+            keywords    = listOf("text", "pdf", "convert", "document", "export", "create", "format", "word", "print"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.DAILY_JOURNAL,
+            name        = "Daily Journal",
+            description = "Write private daily journal entries with mood tracking — stored locally",
+            icon        = Icons.Filled.MenuBook,
+            route       = Screen.DailyJournal.route,
+            category    = FeatureCategory.PRODUCTIVITY,
+            keywords    = listOf("journal", "diary", "daily", "notes", "private", "mood", "write", "entries", "reflection"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.COLOR_PALETTE,
+            name        = "Color Palette Generator",
+            description = "Generate complementary, analogous, triadic and monochromatic colour palettes",
+            icon        = Icons.Filled.Palette,
+            route       = Screen.ColorPalette.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("color", "colour", "palette", "design", "hex", "complementary", "analogous", "triadic", "scheme"),
             isNew       = true,
         ),
 

@@ -1,1 +1,2 @@
-- [Nexus Plus rebuild decisions](nexus-plus-rebuild.md) — login toggle, deleted features, TTS redesign, social links, theme changes done in this session.
+- [Nexus Plus rebuild decisions](nexus-plus-rebuild.md) — login toggle, deleted features, TTS redesign, social links, theme changes done in earlier session.
+- [Nexus Plus Play Store overhaul](nexusplus-playstore-overhaul.md) — Full audit of Play Store readiness changes: copyright removals, new features, accessibility, manifest.

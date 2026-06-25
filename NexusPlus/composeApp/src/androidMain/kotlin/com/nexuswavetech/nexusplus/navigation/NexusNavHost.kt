@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -89,13 +90,13 @@ import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
 import com.nexuswavetech.nexusplus.features.games.NexusGamesScreen
 import com.nexuswavetech.nexusplus.features.expense.NexusExpenseTrackerScreen
 import com.nexuswavetech.nexusplus.features.voices.DownloadVoicesScreen
-import com.nexuswavetech.nexusplus.features.ott.NexusOttScreen
-import com.nexuswavetech.nexusplus.features.ott.NexusOttPlayerScreen
-import com.nexuswavetech.nexusplus.features.ott.ottCatalogueById
 import com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesScreen
 import com.nexuswavetech.nexusplus.features.speedometer.SpeedometerScreen
 import com.nexuswavetech.nexusplus.features.taskmanager.TaskManagerScreen
 import com.nexuswavetech.nexusplus.features.emergencyguardian.EmergencyGuardianScreen
+import com.nexuswavetech.nexusplus.features.texttopdf.TextToPdfScreen
+import com.nexuswavetech.nexusplus.features.journal.DailyJournalScreen
+import com.nexuswavetech.nexusplus.features.colorpalette.ColorPaletteScreen
 
 private const val ANIM_DURATION     = 300
 private const val ANIM_DURATION_OUT = 180
@@ -309,6 +310,38 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         composable(Screen.TaskManager.route)       { NexusAdScaffold { TaskManagerScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.EmergencyGuardian.route) { NexusAdScaffold { EmergencyGuardianScreen(onBack = { navController.popBackStack() }) } }
 
+        // ── New features ──────────────────────────────────────────────────
+        composable(Screen.TextToPdf.route) {
+            val ctx = LocalContext.current
+            NexusAdScaffold {
+                TextToPdfScreen(
+                    onBack       = { navController.popBackStack() },
+                    onShareText  = { text ->
+                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(android.content.Intent.EXTRA_TEXT, text)
+                        }
+                        ctx.startActivity(android.content.Intent.createChooser(intent, "Export as PDF"))
+                    },
+                )
+            }
+        }
+        composable(Screen.DailyJournal.route) {
+            NexusAdScaffold { DailyJournalScreen(onBack = { navController.popBackStack() }) }
+        }
+        composable(Screen.ColorPalette.route) {
+            val ctx = LocalContext.current
+            NexusAdScaffold {
+                ColorPaletteScreen(
+                    onBack       = { navController.popBackStack() },
+                    onCopyToClip = { hex ->
+                        val cb = ctx.getSystemService(android.content.ClipboardManager::class.java)
+                        cb?.setPrimaryClip(android.content.ClipData.newPlainText("Colour Hex", hex))
+                    },
+                )
+            }
+        }
+
         // ── Legal ─────────────────────────────────────────────────────────
         composable(Screen.AboutUs.route) {
             AboutUsScreen(
@@ -325,28 +358,6 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
 
         // ── Entertainment ─────────────────────────────────────────────────
         composable(Screen.NexusGames.route) { NexusGamesScreen(onBack = { navController.popBackStack() }) }
-        composable(Screen.NexusOtt.route) {
-            NexusAdScaffold {
-                NexusOttScreen(
-                    onBack      = { navController.popBackStack() },
-                    onPlayVideo = { item -> navController.navigate(Screen.NexusOttPlayer.route(item.id)) },
-                )
-            }
-        }
-        composable(
-            route     = Screen.NexusOttPlayer.route,
-            arguments = listOf(androidx.navigation.navArgument("itemId") {
-                type = androidx.navigation.NavType.StringType
-            }),
-        ) { backStack ->
-            val itemId = backStack.arguments?.getString("itemId") ?: ""
-            val item   = ottCatalogueById(itemId)
-            if (item != null) {
-                NexusOttPlayerScreen(item = item, onBack = { navController.popBackStack() })
-            } else {
-                navController.popBackStack()
-            }
-        }
 
         // ── Finance ───────────────────────────────────────────────────────
         composable(Screen.ExpenseTracker.route) {

@@ -82,12 +82,14 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
 
             LegalSection(
                 title = "2. API Data Processing",
-                content = "Nexus Plus connects to third-party public APIs (Radio Browser API, " +
-                    "Pollinations AI, JioSaavn API, IPTV-org repositories) solely to deliver " +
-                    "the requested feature functionality. API requests are made directly from " +
-                    "your device to the respective third-party endpoint. Nexus Wave Technologies " +
-                    "does not intercept, proxy, log, or store any data exchanged during these " +
-                    "API interactions.\n\n" +
+                content = "Nexus Plus connects to select third-party public APIs (Pollinations AI " +
+                    "for image generation, public news RSS feeds, and internet speed-test endpoints) " +
+                    "solely to deliver the requested feature functionality. API requests are made " +
+                    "directly from your device to the respective third-party endpoint. Nexus Wave " +
+                    "Technologies does not intercept, proxy, log, or store any data exchanged " +
+                    "during these API interactions.\n\n" +
+                    "Music playback is entirely offline — only locally stored audio files are " +
+                    "accessed. No music or media streaming is performed via third-party services.\n\n" +
                     "Users should review the privacy policies of each third-party API service " +
                     "independently, as their terms govern their own data handling."
             )

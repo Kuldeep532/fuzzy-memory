@@ -92,11 +92,13 @@ enum class FeatureId {
     // ── Games Hub ─────────────────────────────────────────────────────────
     NEXUS_GAMES,
 
-    // ── OTT ───────────────────────────────────────────────────────────────
-    NEXUS_OTT,
-
     // ── Finance ───────────────────────────────────────────────────────────────
     EXPENSE_TRACKER,
+
+    // ── New (replacing Radio / IPTV / FormX) ─────────────────────────────
+    TEXT_TO_PDF,
+    DAILY_JOURNAL,
+    COLOR_PALETTE,
 
     // ── Legacy backward-compat aliases ────────────────────────────────────
     PDF_READER,      // → PDF_SUITE
