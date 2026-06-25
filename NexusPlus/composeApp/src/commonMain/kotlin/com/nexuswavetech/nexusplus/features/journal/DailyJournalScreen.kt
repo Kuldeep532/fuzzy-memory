@@ -14,55 +14,99 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.nexuswavetech.nexusplus.platform.SettingsStore
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+
+// ── Storage keys & serialisation ─────────────────────────────────────────────
+
+private const val JOURNAL_KEY = "journal_entries_v1"
+private const val ENTRY_SEP   = "\u0001"        // SOH  — between entries
+private const val FIELD_SEP   = "\u0000"        // NUL  — between fields within one entry
 
 private data class JournalEntry(
     val id        : Long,
     val dateLabel : String,
-    val content   : String,
     val mood      : String,
+    val content   : String,
 )
 
-private val MOODS = listOf("Happy" to "Joyful day", "Neutral" to "Regular day", "Reflective" to "Deep thoughts", "Grateful" to "Full of gratitude", "Tired" to "Needs rest")
+private fun List<JournalEntry>.encode(): String =
+    joinToString(ENTRY_SEP) { "${it.id}$FIELD_SEP${it.dateLabel}$FIELD_SEP${it.mood}$FIELD_SEP${it.content}" }
+
+private fun String.decodeEntries(): List<JournalEntry> {
+    if (isBlank()) return emptyList()
+    return split(ENTRY_SEP).mapNotNull { line ->
+        val p = line.split(FIELD_SEP, limit = 4)
+        if (p.size < 4) null
+        else JournalEntry(
+            id        = p[0].toLongOrNull() ?: return@mapNotNull null,
+            dateLabel = p[1],
+            mood      = p[2],
+            content   = p[3],
+        )
+    }
+}
+
+// ── Static data ───────────────────────────────────────────────────────────────
+
+private val MOODS = listOf(
+    "Happy"      to "Joyful day",
+    "Neutral"    to "Regular day",
+    "Reflective" to "Deep thoughts",
+    "Grateful"   to "Full of gratitude",
+    "Tired"      to "Needs rest",
+)
+
+private fun todayLabel(): String = try {
+    val sdf = java.text.SimpleDateFormat("EEEE, MMMM d yyyy", java.util.Locale.getDefault())
+    sdf.format(java.util.Date())
+} catch (_: Exception) { "Today" }
+
+// ── Screen ────────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DailyJournalScreen(onBack: () -> Unit) {
 
-    var entries by remember { mutableStateOf(listOf<JournalEntry>()) }
-    var showEditor     by remember { mutableStateOf(false) }
-    var editingEntry   by remember { mutableStateOf<JournalEntry?>(null) }
-    var draftText      by remember { mutableStateOf("") }
-    var selectedMoodIdx by remember { mutableStateOf(0) }
-    var deleteTarget   by remember { mutableStateOf<JournalEntry?>(null) }
-    var nextId         by remember { mutableStateOf(1L) }
+    val store: SettingsStore = koinInject()
+    val scope                = rememberCoroutineScope()
 
-    fun getTodayLabel(): String {
-        return try {
-            val now = java.util.Date()
-            val sdf = java.text.SimpleDateFormat("EEEE, MMMM d yyyy", java.util.Locale.getDefault())
-            sdf.format(now)
-        } catch (_: Exception) { "Today" }
-    }
+    // Persist via DataStore — survives app restarts
+    val rawJson  by store.stringFlow(JOURNAL_KEY, "").collectAsState(initial = "")
+    val entries   = remember(rawJson) { rawJson.decodeEntries() }
+
+    var showEditor      by remember { mutableStateOf(false) }
+    var editingEntry    by remember { mutableStateOf<JournalEntry?>(null) }
+    var draftText       by remember { mutableStateOf("") }
+    var selectedMoodIdx by remember { mutableStateOf(0) }
+    var deleteTarget    by remember { mutableStateOf<JournalEntry?>(null) }
 
     fun openNewEntry() {
-        editingEntry   = null
-        draftText      = ""
+        editingEntry    = null
+        draftText       = ""
         selectedMoodIdx = 0
-        showEditor     = true
+        showEditor      = true
     }
 
     fun saveEntry() {
         if (draftText.isBlank()) { showEditor = false; return }
-        val mood   = MOODS[selectedMoodIdx].first
-        val today  = getTodayLabel()
-        val edited = editingEntry
-        if (edited != null) {
-            entries = entries.map { if (it.id == edited.id) it.copy(content = draftText, mood = mood) else it }
+        val mood    = MOODS[selectedMoodIdx].first
+        val edited  = editingEntry
+        val updated = if (edited != null) {
+            entries.map { if (it.id == edited.id) it.copy(content = draftText, mood = mood) else it }
         } else {
-            entries = listOf(JournalEntry(nextId++, today, draftText, mood)) + entries
+            listOf(JournalEntry(System.currentTimeMillis(), todayLabel(), mood, draftText)) + entries
         }
+        scope.launch { store.setString(JOURNAL_KEY, updated.encode()) }
         showEditor = false
+    }
+
+    fun deleteEntry(target: JournalEntry) {
+        val updated = entries.filter { it.id != target.id }
+        scope.launch { store.setString(JOURNAL_KEY, updated.encode()) }
+        deleteTarget = null
     }
 
     Scaffold(
@@ -87,19 +131,25 @@ fun DailyJournalScreen(onBack: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
-                    text  = getTodayLabel(),
+                    text  = todayLabel(),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.primary,
                 )
 
-                Text("How are you feeling?", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    "How are you feeling?",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     MOODS.forEachIndexed { i, (label, _) ->
                         FilterChip(
                             selected = selectedMoodIdx == i,
                             onClick  = { selectedMoodIdx = i },
                             label    = { Text(label, style = MaterialTheme.typography.labelSmall) },
-                            modifier = Modifier.semantics { contentDescription = "$label mood${if (selectedMoodIdx == i) ". Selected." else ""}" },
+                            modifier = Modifier.semantics {
+                                contentDescription = "$label mood${if (selectedMoodIdx == i) ". Selected." else ""}"
+                            },
                         )
                     }
                 }
@@ -146,7 +196,10 @@ fun DailyJournalScreen(onBack: () -> Unit) {
                     modifier         = Modifier
                         .fillMaxSize()
                         .padding(padding)
-                        .semantics { contentDescription = "No journal entries yet. Tap the write button to add your first entry." },
+                        .semantics {
+                            contentDescription =
+                                "No journal entries yet. Tap the write button to add your first entry."
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(
@@ -156,8 +209,8 @@ fun DailyJournalScreen(onBack: () -> Unit) {
                         Icon(
                             Icons.Filled.MenuBook,
                             contentDescription = null,
-                            tint     = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                            modifier = Modifier.size(56.dp),
+                            tint               = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            modifier           = Modifier.size(56.dp),
                         )
                         Text(
                             "Your journal is empty",
@@ -210,7 +263,7 @@ fun DailyJournalScreen(onBack: () -> Unit) {
                                         color = MaterialTheme.colorScheme.primary,
                                     )
                                     Row(
-                                        verticalAlignment = Alignment.CenterVertically,
+                                        verticalAlignment     = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     ) {
                                         Surface(
@@ -230,7 +283,12 @@ fun DailyJournalScreen(onBack: () -> Unit) {
                                                 .size(28.dp)
                                                 .semantics { contentDescription = "Delete entry from ${entry.dateLabel}" },
                                         ) {
-                                            Icon(Icons.Filled.Delete, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
+                                            Icon(
+                                                Icons.Filled.Delete,
+                                                null,
+                                                tint     = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.size(16.dp),
+                                            )
                                         }
                                     }
                                 }
@@ -249,6 +307,7 @@ fun DailyJournalScreen(onBack: () -> Unit) {
         }
     }
 
+    // ── Delete confirmation dialog ─────────────────────────────────────────
     deleteTarget?.let { target ->
         AlertDialog(
             onDismissRequest = { deleteTarget = null },
@@ -256,10 +315,7 @@ fun DailyJournalScreen(onBack: () -> Unit) {
             text             = { Text("This journal entry will be permanently deleted.") },
             confirmButton    = {
                 TextButton(
-                    onClick  = {
-                        entries     = entries.filter { it.id != target.id }
-                        deleteTarget = null
-                    },
+                    onClick  = { deleteEntry(target) },
                     modifier = Modifier.semantics { contentDescription = "Confirm delete entry" },
                 ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
             },

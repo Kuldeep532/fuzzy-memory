@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Shared PDFs written to cacheDir/shared_pdfs/ by Text to PDF feature -->
+    <cache-path name="shared_pdfs" path="shared_pdfs/" />
+</paths>

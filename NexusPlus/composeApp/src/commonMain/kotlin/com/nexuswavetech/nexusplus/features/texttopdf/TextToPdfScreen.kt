@@ -21,8 +21,8 @@ import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextToPdfScreen(
-    onBack       : () -> Unit,
-    onShareText  : ((String) -> Unit)? = null,
+    onBack      : () -> Unit,
+    onExportPdf : ((title: String, body: String, fontSizePt: Float) -> Unit)? = null,
 ) {
     var inputText      by remember { mutableStateOf("") }
     var title          by remember { mutableStateOf("") }
@@ -116,8 +116,8 @@ fun TextToPdfScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape    = MaterialTheme.shapes.small,
+                    color    = MaterialTheme.colorScheme.secondaryContainer,
                     modifier = Modifier.semantics { contentDescription = "$wordCount words" },
                 ) {
                     Text(
@@ -128,8 +128,8 @@ fun TextToPdfScreen(
                     )
                 }
                 Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                    shape    = MaterialTheme.shapes.small,
+                    color    = MaterialTheme.colorScheme.tertiaryContainer,
                     modifier = Modifier.semantics { contentDescription = "$charCount characters" },
                 ) {
                     Text(
@@ -150,7 +150,7 @@ fun TextToPdfScreen(
                     modifier      = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .semantics { contentDescription = "Text content input area. ${wordCount} words entered." },
+                        .semantics { contentDescription = "Text content input area. $wordCount words entered." },
                     maxLines      = Int.MAX_VALUE,
                 )
             } else {
@@ -163,13 +163,13 @@ fun TextToPdfScreen(
                 ) {
                     SelectionContainer {
                         Text(
-                            text       = inputText.ifBlank { "Preview appears here…" },
-                            style      = MaterialTheme.typography.bodyMedium.copy(
+                            text     = inputText.ifBlank { "Preview appears here…" },
+                            style    = MaterialTheme.typography.bodyMedium.copy(
                                 fontSize   = fontSize.sp,
                                 fontFamily = fontFamilies[selectedFont].second,
                             ),
-                            color      = MaterialTheme.colorScheme.onSurface,
-                            modifier   = Modifier
+                            color    = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
                                 .fillMaxSize()
                                 .verticalScroll(rememberScrollState())
                                 .padding(16.dp),
@@ -198,19 +198,13 @@ fun TextToPdfScreen(
                     Text(if (showPreview) "Edit" else "Preview")
                 }
                 Button(
-                    onClick  = {
-                        val content = buildString {
-                            if (title.isNotBlank()) { append(title); append("\n\n") }
-                            append(inputText)
-                        }
-                        onShareText?.invoke(content)
-                    },
+                    onClick  = { onExportPdf?.invoke(title, inputText, fontSize) },
                     enabled  = inputText.isNotBlank(),
                     modifier = Modifier
                         .weight(1f)
-                        .semantics { contentDescription = "Export or share document as PDF" },
+                        .semantics { contentDescription = "Generate and share PDF document" },
                 ) {
-                    Icon(Icons.Filled.Share, null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Filled.PictureAsPdf, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text("Export PDF")
                 }

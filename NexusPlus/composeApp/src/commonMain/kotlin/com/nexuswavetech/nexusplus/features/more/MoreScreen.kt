@@ -28,7 +28,10 @@ import com.nexuswavetech.nexusplus.ui.components.HelpSection
 import org.koin.compose.koinInject
 
 @Composable
-fun MoreScreen(rootNavController: NavController) {
+fun MoreScreen(
+    rootNavController: NavController,
+    onRateApp        : () -> Unit = {},
+) {
     val sessionManager: SessionManager    = koinInject()
     val notifRepo: NotificationRepository = koinInject()
     val session       by sessionManager.session.collectAsState()
@@ -226,7 +229,7 @@ fun MoreScreen(rootNavController: NavController) {
                     icon        = Icons.Filled.RateReview,
                     title       = "Rate the App",
                     subtitle    = "Leave us a review on the Play Store",
-                    onClick     = {},
+                    onClick     = onRateApp,
                     contentDesc = "Rate Nexus Plus on the Play Store.",
                 )
             }

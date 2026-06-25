@@ -1,7 +1,12 @@
 package com.nexuswavetech.nexusplus.navigation
 
+import android.content.Context
+import android.content.Intent
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import androidx.compose.animation.core.tween
+import androidx.core.content.FileProvider
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -315,13 +320,22 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
             val ctx = LocalContext.current
             NexusAdScaffold {
                 TextToPdfScreen(
-                    onBack       = { navController.popBackStack() },
-                    onShareText  = { text ->
-                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(android.content.Intent.EXTRA_TEXT, text)
+                    onBack      = { navController.popBackStack() },
+                    onExportPdf = { docTitle, body, fontSizePt ->
+                        runCatching {
+                            val pdfFile = buildPdfFile(ctx, docTitle, body, fontSizePt)
+                            val uri     = FileProvider.getUriForFile(
+                                ctx,
+                                "${ctx.packageName}.fileprovider",
+                                pdfFile,
+                            )
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type  = "application/pdf"
+                                putExtra(Intent.EXTRA_STREAM, uri)
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            ctx.startActivity(Intent.createChooser(intent, "Share PDF"))
                         }
-                        ctx.startActivity(android.content.Intent.createChooser(intent, "Export as PDF"))
                     },
                 )
             }
@@ -380,4 +394,87 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
             )
         }
     }
+}
+
+// ── PDF generation helper ────────────────────────────────────────────────────
+
+private fun buildPdfFile(
+    context    : Context,
+    docTitle   : String,
+    body       : String,
+    fontSizePt : Float,
+): java.io.File {
+    val pageW     = 595          // A4 width  at 72 dpi
+    val pageH     = 842          // A4 height at 72 dpi
+    val margin    = 60f
+    val lineGap   = fontSizePt * 1.5f
+    val titleGap  = (fontSizePt + 8f) * 1.6f
+    val textW     = pageW - 2 * margin
+
+    val bodyPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = fontSizePt
+        color    = android.graphics.Color.BLACK
+    }
+    val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize       = fontSizePt + 8f
+        isFakeBoldText = true
+        color          = android.graphics.Color.BLACK
+    }
+
+    fun Paint.wrap(text: String): List<String> {
+        val out = mutableListOf<String>()
+        for (para in text.split('\n')) {
+            if (para.isBlank()) { out.add(""); continue }
+            var rem = para
+            while (rem.isNotEmpty()) {
+                val n = breakText(rem, true, textW, null).coerceAtLeast(1)
+                out.add(rem.substring(0, n))
+                rem = rem.substring(n)
+            }
+        }
+        return out
+    }
+
+    val titleLines = if (docTitle.isNotBlank()) titlePaint.wrap(docTitle) else emptyList()
+    val bodyLines  = bodyPaint.wrap(body)
+
+    val pdf   = PdfDocument()
+    var pageN = 1
+    var y     = margin + if (titleLines.isNotEmpty()) titleGap else lineGap
+
+    fun newPage(): Pair<PdfDocument.Page, android.graphics.Canvas> {
+        val info = PdfDocument.PageInfo.Builder(pageW, pageH, pageN++).create()
+        val p    = pdf.startPage(info)
+        return p to p.canvas
+    }
+
+    var (page, canvas) = newPage()
+
+    for (line in titleLines) {
+        if (y + titleGap > pageH - margin) {
+            pdf.finishPage(page)
+            val (p2, c2) = newPage(); page = p2; canvas = c2
+            y = margin + titleGap
+        }
+        canvas.drawText(line, margin, y, titlePaint)
+        y += titleGap
+    }
+    if (titleLines.isNotEmpty()) y += lineGap * 0.5f
+
+    for (line in bodyLines) {
+        if (y + lineGap > pageH - margin) {
+            pdf.finishPage(page)
+            val (p2, c2) = newPage(); page = p2; canvas = c2
+            y = margin + lineGap
+        }
+        canvas.drawText(line, margin, y, bodyPaint)
+        y += lineGap
+    }
+    pdf.finishPage(page)
+
+    val dir  = java.io.File(context.cacheDir, "shared_pdfs").also { it.mkdirs() }
+    val file = java.io.File(dir, "nexus_export.pdf")
+    file.outputStream().use { pdf.writeTo(it) }
+    pdf.close()
+    return file
 }

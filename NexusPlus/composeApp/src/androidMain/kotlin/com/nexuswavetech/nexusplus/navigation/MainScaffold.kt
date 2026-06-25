@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -139,7 +140,27 @@ fun MainScaffold(rootNavController: NavController) {
                 FavoritesScreen(rootNavController = rootNavController)
             }
             composable(BottomTab.More.route) {
-                MoreScreen(rootNavController = rootNavController)
+                val ctx = LocalContext.current
+                MoreScreen(
+                    rootNavController = rootNavController,
+                    onRateApp         = {
+                        runCatching {
+                            ctx.startActivity(
+                                android.content.Intent(
+                                    android.content.Intent.ACTION_VIEW,
+                                    android.net.Uri.parse("market://details?id=com.nexuswavetech.nexusplus"),
+                                ),
+                            )
+                        }.onFailure {
+                            ctx.startActivity(
+                                android.content.Intent(
+                                    android.content.Intent.ACTION_VIEW,
+                                    android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.nexuswavetech.nexusplus"),
+                                ),
+                            )
+                        }
+                    },
+                )
             }
         }
     }
