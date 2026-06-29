@@ -5,15 +5,13 @@ package com.nexuswavetech.nexusplus.core
  *
  * Rules:
  *  - One entry per feature, never duplicated.
- *  - Legacy backward-compat aliases grouped at the bottom — do NOT remove
- *    them until a DataStore migration canonicalises old saved key names.
+ *  - Legacy backward-compat aliases grouped at the bottom.
+ *    Do NOT remove them until a DataStore migration canonicalises old saved key names.
  */
 enum class FeatureId {
 
     // ── Media & Entertainment ─────────────────────────────────────────────
-    RADIO_PLAYER,
     AI_IMAGE_GENERATOR,
-    IPTV_PLAYER,
     MUSIC_STREAMING,
     SMART_IMAGE_EDITOR,
     NEXUS_IMAGE_VIEWER,
@@ -43,7 +41,6 @@ enum class FeatureId {
     NUMBER_SYSTEM,
     WEATHER,
     MY_REMINDER,
-    FORM_X,
     NEWS,
     SCIENCE,
     COLOR_PALETTE,
@@ -61,7 +58,8 @@ enum class FeatureId {
     COLOR_DETECTOR,
     BARCODE_GENERATOR,
     TASK_MANAGER,
-    SCREEN_RECORDER,
+    APP_INFO_CENTER,
+    NETWORK_INFO,
 
     // ── AI ────────────────────────────────────────────────────────────────
     AIRA_AI,
@@ -74,7 +72,6 @@ enum class FeatureId {
     PASSWORD_GENERATOR,
     BASE64_TOOL,
     ENCRYPTED_NOTES,
-    APP_LOCKER,
     CONTACT_BACKUP,
     NEXUS_HEALTH_VAULT,
     TOTP_AUTHENTICATOR,
@@ -82,27 +79,25 @@ enum class FeatureId {
     // ── Smart Tools (additional) ──────────────────────────────────────────
     NETWORK_SPEED_TEST,
 
-    // ── Stage 4 ───────────────────────────────────────────────────────────
+    // ── Utilities (additional) ────────────────────────────────────────────
     NEXUS_DIALER,
     TEXT_ANALYZER,
-
-    // ── Stage 5 ───────────────────────────────────────────────────────────
     URL_SHORTENER,
 
-    // ── Games Hub ─────────────────────────────────────────────────────────
+    // ── Entertainment ─────────────────────────────────────────────────────
     NEXUS_GAMES,
 
-    // ── Finance ───────────────────────────────────────────────────────────────
+    // ── Finance ───────────────────────────────────────────────────────────
     EXPENSE_TRACKER,
 
-    // ── New (replacing Radio / IPTV / FormX) ─────────────────────────────
-    TEXT_TO_PDF,
-    DAILY_JOURNAL,
-    COLOR_PALETTE,
-
     // ── Legacy backward-compat aliases ────────────────────────────────────
-    PDF_READER,      // → PDF_SUITE
-    TEXT_ENCRYPTOR,  // → ENCRYPTER_DECRYPTER
-    QR_SCANNER,      // → QR_GENERATOR
-    CALCULATOR,      // → CALCULATOR_CENTER
+    RADIO_PLAYER,      // removed feature — kept for DataStore migration
+    IPTV_PLAYER,       // removed feature — kept for DataStore migration
+    FORM_X,            // removed feature — kept for DataStore migration
+    SCREEN_RECORDER,   // removed feature — kept for DataStore migration
+    APP_LOCKER,        // removed feature — kept for DataStore migration
+    PDF_READER,        // → PDF_SUITE
+    TEXT_ENCRYPTOR,    // → ENCRYPTER_DECRYPTER
+    QR_SCANNER,        // → QR_GENERATOR
+    CALCULATOR,        // → CALCULATOR_CENTER
 }

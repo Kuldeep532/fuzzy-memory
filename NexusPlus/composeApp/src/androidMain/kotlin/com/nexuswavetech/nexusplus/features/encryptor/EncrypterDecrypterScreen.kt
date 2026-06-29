@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.nexuswavetech.nexusplus.features.encryptor
 
 import android.content.ClipData
@@ -17,28 +19,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.nexuswavetech.nexusplus.core.HapticHelper
-import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 import java.io.File
 import java.security.SecureRandom
 import javax.crypto.Cipher
@@ -47,505 +37,415 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
-// ── Cryptographic Constants & Core Functions ─────────────────────────────────
+// AES-256-CBC with PBKDF2-HMAC-SHA256 key derivation
 
-private const val ALGORITHM = "AES/CBC/PKCS5Padding"
-private const val IV_SIZE = 16
-private const val SALT_SIZE = 16
-private const val ITERATIONS = 10000
-private const val KEY_LENGTH = 256
-private const val INTERNAL_FALLBACK_KEY = "NexusPlus_Super_Secured_Government_Grade_Master_Key_2026_TopSecret"
+private const val ALGORITHM  = "AES/CBC/PKCS5Padding"
+private const val IV_SIZE    = 16
+private const val SALT_SIZE  = 16
+private const val ITERATIONS = 10_000
+private const val KEY_BITS   = 256
 
-private fun deriveSecureKey(passphrase: String, salt: ByteArray): SecretKeySpec {
+private fun deriveKey(password: String, salt: ByteArray): SecretKeySpec {
     val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-    val spec = PBEKeySpec(passphrase.toCharArray(), salt, ITERATIONS, KEY_LENGTH)
-    val tmp = factory.generateSecret(spec)
-    return SecretKeySpec(tmp.encoded, "AES")
+    val spec    = PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_BITS)
+    return SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
 }
 
-private fun encryptBytes(data: ByteArray, passphrase: String): ByteArray {
-    val random = SecureRandom()
-    val salt = ByteArray(SALT_SIZE).apply { random.nextBytes(this) }
-    val iv = ByteArray(IV_SIZE).apply { random.nextBytes(this) }
-    val secretKey = deriveSecureKey(passphrase, salt)
+private fun encryptBytes(data: ByteArray, password: String): ByteArray {
+    val salt   = ByteArray(SALT_SIZE).also { SecureRandom().nextBytes(it) }
+    val iv     = ByteArray(IV_SIZE).also   { SecureRandom().nextBytes(it) }
+    val key    = deriveKey(password, salt)
     val cipher = Cipher.getInstance(ALGORITHM)
-    cipher.init(Cipher.ENCRYPT_MODE, secretKey, IvParameterSpec(iv))
+    cipher.init(Cipher.ENCRYPT_MODE, key, IvParameterSpec(iv))
     return salt + iv + cipher.doFinal(data)
 }
 
-private fun decryptBytes(data: ByteArray, passphrase: String): ByteArray {
-    if (data.size < (SALT_SIZE + IV_SIZE)) throw IllegalArgumentException("Corrupt data packet structural package intercepted")
-    val salt = data.copyOfRange(0, SALT_SIZE)
-    val iv = data.copyOfRange(SALT_SIZE, SALT_SIZE + IV_SIZE)
-    val encryptedPayload = data.copyOfRange(SALT_SIZE + IV_SIZE, data.size)
-    val secretKey = deriveSecureKey(passphrase, salt)
-    val cipher = Cipher.getInstance(ALGORITHM)
-    cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
-    return cipher.doFinal(encryptedPayload)
+private fun decryptBytes(data: ByteArray, password: String): ByteArray {
+    require(data.size >= SALT_SIZE + IV_SIZE) { "Data is too short or corrupt." }
+    val salt    = data.copyOfRange(0, SALT_SIZE)
+    val iv      = data.copyOfRange(SALT_SIZE, SALT_SIZE + IV_SIZE)
+    val payload = data.copyOfRange(SALT_SIZE + IV_SIZE, data.size)
+    val key     = deriveKey(password, salt)
+    val cipher  = Cipher.getInstance(ALGORITHM)
+    cipher.init(Cipher.DECRYPT_MODE, key, IvParameterSpec(iv))
+    return cipher.doFinal(payload)
 }
 
-private fun encryptText(text: String, passphrase: String): String =
-    java.util.Base64.getEncoder().encodeToString(encryptBytes(text.toByteArray(), passphrase))
+private fun encryptText(text: String, password: String): String =
+    java.util.Base64.getEncoder().encodeToString(encryptBytes(text.toByteArray(Charsets.UTF_8), password))
 
-private fun decryptText(base64: String, passphrase: String): String =
-    String(decryptBytes(java.util.Base64.getDecoder().decode(base64), passphrase))
+private fun decryptText(base64: String, password: String): String =
+    String(decryptBytes(java.util.Base64.getDecoder().decode(base64), password), Charsets.UTF_8)
 
-// ── State & ViewModel Architecture ──────────────────────────────────────────
-
-enum class EncryptMode { TEXT, IMAGE, AUDIO, FILE }
-
-data class EncrypterUiState(
-    val mode: EncryptMode = EncryptMode.TEXT,
-    val decryptAsFile: Boolean = false,
-    val input: String = "",
-    val passphrase: String = "",
-    val confirmPassphrase: String = "",
-    val useCustomKey: Boolean = false,
-    val saveToGooglePasswords: Boolean = false,
-    val output: String = "",
-    val isEncrypting: Boolean = true,
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val selectedFileUri: Uri? = null,
-    val selectedFileName: String = "",
-    val failedAttempts: Int = 0,
-    val lockRemainingSeconds: Int = 0
-)
-
-class EncrypterDecrypterViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(EncrypterUiState())
-    val uiState: StateFlow<EncrypterUiState> = _uiState.asStateFlow()
-    private var countdownJob: Job? = null
-
-    fun setMode(mode: EncryptMode) = _uiState.update { it.copy(mode = mode, output = "", error = null, selectedFileUri = null, selectedFileName = "") }
-    fun setDecryptAsFile(isFile: Boolean) = _uiState.update { it.copy(decryptAsFile = isFile, output = "", error = null, selectedFileUri = null, selectedFileName = "") }
-    fun setInput(v: String) = _uiState.update { it.copy(input = v) }
-    fun setPassphrase(v: String) = _uiState.update { it.copy(passphrase = v, error = null) }
-    fun setConfirmPassphrase(v: String) = _uiState.update { it.copy(confirmPassphrase = v, error = null) }
-    fun setUseCustomKey(v: Boolean) = _uiState.update { it.copy(useCustomKey = v, error = null, passphrase = "", confirmPassphrase = "") }
-    fun setSaveToGooglePasswords(v: Boolean) = _uiState.update { it.copy(saveToGooglePasswords = v) }
-    fun toggleEncryptDecrypt() = _uiState.update { it.copy(isEncrypting = !it.isEncrypting, output = "", error = null, selectedFileUri = null, selectedFileName = "") }
-
-    fun setFileUri(context: Context, uri: Uri, name: String) {
-        _uiState.update { it.copy(selectedFileUri = uri, selectedFileName = name, output = "", error = null) }
-        
-        // Intelligent Passphrase Auto-Detection Logic
-        if (!_uiState.value.isEncrypting && name.endsWith(".enc")) {
-            viewModelScope.launch(Dispatchers.IO) {
-                runCatching {
-                    val bytes = context.contentResolver.openInputStream(uri)?.readBytes() ?: return@launch
-                    decryptBytes(bytes, INTERNAL_FALLBACK_KEY)
-                }.onSuccess {
-                    _uiState.update { it.copy(useCustomKey = false, error = "Auto-Detect: Default protection found. No password required.") }
-                }.onFailure {
-                    _uiState.update { it.copy(useCustomKey = true, error = "Auto-Detect: Password-protected payload. Please enter security key.") }
-                }
-            }
-        }
-    }
-
-    private fun handleDecryptionFailure() {
-        _uiState.update { current ->
-            val newAttempts = current.failedAttempts + 1
-            val delaySeconds = when {
-                newAttempts == 3 -> 30
-                newAttempts == 4 -> 60
-                newAttempts >= 5 -> 300
-                else -> 0
-            }
-            if (delaySeconds > 0) {
-                startLockoutCountdown(delaySeconds)
-            }
-            current.copy(
-                failedAttempts = newAttempts,
-                error = if (delaySeconds > 0) "Too many verification failures. Core locked for $delaySeconds seconds." else "Security Block: Invalid security passphrase key configuration.",
-                output = ""
-            )
-        }
-    }
-
-    private fun startLockoutCountdown(seconds: Int) {
-        countdownJob?.cancel()
-        countdownJob = viewModelScope.launch {
-            var currentLeft = seconds
-            while (currentLeft > 0) {
-                _uiState.update { it.copy(lockRemainingSeconds = currentLeft) }
-                delay(1000L)
-                currentLeft--
-            }
-            _uiState.update { it.copy(lockRemainingSeconds = 0) }
-        }
-    }
-
-    private fun checkValidation(state: EncrypterUiState): Boolean {
-        if (state.lockRemainingSeconds > 0) return false
-        if (state.useCustomKey) {
-            if (state.passphrase.isBlank()) {
-                _uiState.update { it.copy(error = "Secret key field configuration cannot be empty") }
-                return false
-            }
-            if (state.isEncrypting && state.passphrase != state.confirmPassphrase) {
-                _uiState.update { it.copy(error = "Passphrase Guard Violation: Confirmation key mismatch") }
-                return false
-            }
-        }
-        return true
-    }
-
-    // Dynamic Reflection-Based Wrapper for Android Credential Manager API Compliance
-    private fun triggerGooglePasswordSave(context: Context, passphrase: String) {
-        viewModelScope.launch {
-            try {
-                val credManagerClass = Class.forName("androidx.credentials.CredentialManager")
-                val createMethod = credManagerClass.getMethod("create", Context::class.java)
-                val credentialManagerInstance = createMethod.invoke(null, context)
-                
-                val reqClass = Class.forName("androidx.credentials.CreatePasswordRequest")
-                val constructor = reqClass.getConstructor(String::class.java, String::class.java)
-                val requestInstance = constructor.newInstance("NexusPlus_CryptoKey", passphrase)
-                
-                val executeMethod = credManagerClass.methods.firstOrNull { it.name == "createCredential" }
-                executeMethod?.invoke(credentialManagerInstance, context, requestInstance)
-            } catch (e: Exception) {
-                // Graceful compliance degradation if the dependency library is missing at runtime
-            }
-        }
-    }
-
-    fun processText(context: Context) {
-        val s = _uiState.value
-        if (!checkValidation(s)) return
-        val activeKey = if (s.useCustomKey) s.passphrase else INTERNAL_FALLBACK_KEY
-
-        runCatching {
-            if (s.isEncrypting) {
-                val result = encryptText(s.input, activeKey)
-                if (s.useCustomKey && s.saveToGooglePasswords) { triggerGooglePasswordSave(context, s.passphrase) }
-                _uiState.update { it.copy(output = result, error = null, failedAttempts = 0) }
-            } else {
-                val result = decryptText(s.input, activeKey)
-                _uiState.update { it.copy(output = result, error = null, failedAttempts = 0) }
-            }
-        }.onFailure {
-            if (!s.isEncrypting) handleDecryptionFailure() else _uiState.update { it.copy(error = "Encryption generation execution failure.") }
-        }
-    }
-
-    fun processFile(context: Context) {
-        val s = _uiState.value
-        if (!checkValidation(s)) return
-        val uri = s.selectedFileUri
-            ?: run {
-                _uiState.update { it.copy(error = "Select target file payload architecture block first") }
-                return
-            }
-        val activeKey = if (s.useCustomKey) s.passphrase else INTERNAL_FALLBACK_KEY
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    val bytes = context.contentResolver.openInputStream(uri)?.readBytes() ?: error("Access stream read denied")
-                    val result = if (s.isEncrypting) encryptBytes(bytes, activeKey) else decryptBytes(bytes, activeKey)
-                    
-                    val outName = if (!s.isEncrypting && s.selectedFileName.endsWith(".enc")) {
-                        s.selectedFileName.removeSuffix(".enc")
-                    } else {
-                        s.selectedFileName + (if (s.isEncrypting) ".enc" else ".dec")
-                    }
-                    
-                    val outFile = File(context.cacheDir, outName)
-                    outFile.writeBytes(result)
-                    
-                    if (s.isEncrypting && s.useCustomKey && s.saveToGooglePasswords) {
-                        withContext(Dispatchers.Main) { triggerGooglePasswordSave(context, s.passphrase) }
-                    }
-
-                    _uiState.update { it.copy(isLoading = false, output = "Saved safely inside cache path: ${outFile.absolutePath}", error = null, failedAttempts = 0) }
-                }.onFailure {
-                    _uiState.update { current -> current.copy(isLoading = false) }
-                    withContext(Dispatchers.Main) { if (!s.isEncrypting) handleDecryptionFailure() else _uiState.update { it.copy(error = "Internal File system structural error.") } }
-                }
-            }
-        }
-    }
-}
-
-// ── User Interface Screen Composables Layout ─────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EncrypterDecrypterScreen(
-    onBack: () -> Unit,
-    viewModel: EncrypterDecrypterViewModel = koinViewModel()
-) {
-    val uiState  by viewModel.uiState.collectAsState()
-    val context  = LocalContext.current
-    val view     = LocalView.current
-    val haptic   = koinInject<HapticHelper>()
-    val settings = koinInject<SettingsRepository>()
-    val touchVib by settings.touchVibration.collectAsState(initial = true)
+fun EncrypterDecrypterScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    var selectedTab by remember { mutableIntStateOf(0) }
 
-    var dropdownExpanded by remember { mutableStateOf(false) }
-    val isLockedOut = uiState.lockRemainingSeconds > 0
+    Column(Modifier.fillMaxSize()) {
+        NexusTopBar(title = "Text & File Encryptor", onBack = onBack)
+
+        TabRow(selectedTabIndex = selectedTab, modifier = Modifier.fillMaxWidth()) {
+            listOf("Text", "File").forEachIndexed { index, label ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick  = { selectedTab = index },
+                    text     = { Text(label) },
+                    modifier = Modifier.semantics { contentDescription = "$label encryption tab" }
+                )
+            }
+        }
+
+        when (selectedTab) {
+            0 -> TextTab(context = context)
+            1 -> FileTab(context = context)
+        }
+    }
+}
+
+@Composable
+private fun TextTab(context: Context) {
+    var input        by remember { mutableStateOf("") }
+    var password     by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
+    var isEncrypting by remember { mutableStateOf(true) }
+    var output       by remember { mutableStateOf("") }
+    var error        by remember { mutableStateOf<String?>(null) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ModeToggle(
+            isEncrypting = isEncrypting,
+            onToggle     = { isEncrypting = it; output = ""; error = null }
+        )
+
+        OutlinedTextField(
+            value         = input,
+            onValueChange = { input = it; error = null },
+            label         = { Text(if (isEncrypting) "Text to encrypt" else "Encrypted text") },
+            minLines      = 4,
+            maxLines      = 8,
+            modifier      = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = if (isEncrypting) "Enter text to encrypt" else "Paste encrypted text here"
+                }
+        )
+
+        PasswordField(
+            password     = password,
+            showPassword = showPassword,
+            onPasswordChange    = { password = it; error = null },
+            onToggleVisibility  = { showPassword = !showPassword }
+        )
+
+        ErrorBanner(message = error)
+
+        Button(
+            onClick = {
+                error = null
+                when {
+                    input.isBlank()    -> error = "Please enter some text."
+                    password.isBlank() -> error = "Please enter a password."
+                    else -> runCatching {
+                        output = if (isEncrypting) encryptText(input, password)
+                                 else              decryptText(input, password)
+                    }.onFailure {
+                        output = ""
+                        error  = if (isEncrypting) "Encryption failed. Please try again."
+                                 else "Decryption failed. Make sure the text and password are correct."
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = if (isEncrypting) "Encrypt text" else "Decrypt text"
+            }
+        ) {
+            Icon(
+                if (isEncrypting) Icons.Filled.Lock else Icons.Filled.LockOpen,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(if (isEncrypting) "Encrypt" else "Decrypt")
+        }
+
+        AnimatedVisibility(visible = output.isNotBlank()) {
+            ResultCard(text = output, context = context)
+        }
+    }
+}
+
+@Composable
+private fun FileTab(context: Context) {
+    val scope = rememberCoroutineScope()
+    var isEncrypting  by remember { mutableStateOf(true) }
+    var password      by remember { mutableStateOf("") }
+    var showPassword  by remember { mutableStateOf(false) }
+    var selectedUri   by remember { mutableStateOf<Uri?>(null) }
+    var selectedName  by remember { mutableStateOf("") }
+    var isProcessing  by remember { mutableStateOf(false) }
+    var statusMessage by remember { mutableStateOf<String?>(null) }
+    var isError       by remember { mutableStateOf(false) }
 
     val fileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
             val name = context.contentResolver.query(it, null, null, null, null)?.use { cursor ->
                 cursor.moveToFirst()
                 val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                if (idx >= 0) cursor.getString(idx) else "unnamed_payload"
-            } ?: "unnamed_payload"
-            viewModel.setFileUri(context, it, name)
+                if (idx >= 0) cursor.getString(idx) else "file"
+            } ?: "file"
+            selectedUri   = uri
+            selectedName  = name
+            statusMessage = null
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        NexusTopBar(title = "Security Crypt Engine", onBack = onBack)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        ModeToggle(
+            isEncrypting = isEncrypting,
+            onToggle     = { isEncrypting = it; statusMessage = null },
+            encryptLabel = "Encrypt file",
+            decryptLabel = "Decrypt file"
+        )
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        OutlinedCard(
+            onClick  = { fileLauncher.launch("*/*") },
+            modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Tap to select a file" }
         ) {
-            AnimatedVisibility(visible = isLockedOut) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(Icons.Filled.Timer, null, tint = MaterialTheme.colorScheme.error)
-                        Text(
-                            text = "SECURITY LOCKOUT ACTIVE: Retry available in ${uiState.lockRemainingSeconds}s",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
+            Row(
+                modifier              = Modifier.padding(16.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(Icons.Filled.AttachFile, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Column(Modifier.weight(1f)) {
+                    if (selectedUri == null) {
+                        Text("Select a file", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Text(selectedName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), maxLines = 1)
                     }
                 }
+                if (selectedUri != null) {
+                    Icon(Icons.Filled.CheckCircle, contentDescription = "File selected", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
+                }
             }
+        }
 
-            TabRow(
-                selectedTabIndex = if (uiState.isEncrypting) 0 else 1,
+        PasswordField(
+            password            = password,
+            showPassword        = showPassword,
+            onPasswordChange    = { password = it },
+            onToggleVisibility  = { showPassword = !showPassword }
+        )
+
+        statusMessage?.let { msg ->
+            Surface(
+                shape    = MaterialTheme.shapes.small,
+                color    = if (isError) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Tab(
-                    selected = uiState.isEncrypting,
-                    onClick = { if(!uiState.isEncrypting) viewModel.toggleEncryptDecrypt() },
-                    text = { Text("Encrypt Mode", fontWeight = FontWeight.Bold) },
-                    icon = { Icon(Icons.Filled.Lock, null) }
-                )
-                Tab(
-                    selected = !uiState.isEncrypting,
-                    onClick = { if(uiState.isEncrypting) viewModel.toggleEncryptDecrypt() },
-                    text = { Text("Decrypt Mode", fontWeight = FontWeight.Bold) },
-                    icon = { Icon(Icons.Filled.LockOpen, null) }
-                )
-            }
-
-            if (uiState.isEncrypting) {
-                ExposedDropdownMenuBox(
-                    expanded = dropdownExpanded,
-                    onExpandedChange = { dropdownExpanded = !dropdownExpanded },
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier              = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    OutlinedTextField(
-                        value = uiState.mode.name.lowercase().replaceFirstChar { it.uppercase() },
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Target Component Selection Type") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    Icon(
+                        if (isError) Icons.Filled.Error else Icons.Filled.CheckCircle,
+                        contentDescription = if (isError) "Error" else "Success",
+                        tint     = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(18.dp)
                     )
-                    ExposedDropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
-                        EncryptMode.entries.forEach { selectionMode ->
-                            DropdownMenuItem(
-                                text = { Text(selectionMode.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                                onClick = { viewModel.setMode(selectionMode); dropdownExpanded = false }
-                            )
-                        }
-                    }
-                }
-            } else {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        selected = !uiState.decryptAsFile,
-                        onClick = { viewModel.setDecryptAsFile(false) },
-                        label = { Text("Decrypt Text Message") },
-                        modifier = Modifier.weight(1f)
-                    )
-                    FilterChip(
-                        selected = uiState.decryptAsFile,
-                        onClick = { viewModel.setDecryptAsFile(true) },
-                        label = { Text("Decrypt File / Media") },
-                        modifier = Modifier.weight(1f)
+                    Text(
+                        msg,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (isError) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
             }
+        }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Checkbox(
-                            checked = uiState.useCustomKey,
-                            onCheckedChange = { viewModel.setUseCustomKey(it) },
-                            modifier = Modifier.semantics { contentDescription = "Enable custom key validation configuration" }
-                        )
-                        Text("Secure with custom passphrase key lock", style = MaterialTheme.typography.bodyMedium)
-                    }
-
-                    AnimatedVisibility(visible = uiState.useCustomKey && uiState.isEncrypting) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(start = 12.dp, top = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Checkbox(
-                                checked = uiState.saveToGooglePasswords,
-                                onCheckedChange = { viewModel.setSaveToGooglePasswords(it) }
-                            )
-                            Icon(Icons.Filled.CloudUpload, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-                            Text("Save to Google Password Manager", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-            }
-
-            AnimatedVisibility(visible = uiState.useCustomKey) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = uiState.passphrase,
-                        onValueChange = viewModel::setPassphrase,
-                        label = { Text("Secret Key Passphrase") },
-                        leadingIcon = { Icon(Icons.Filled.VpnKey, null) },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    
-                    if (uiState.isEncrypting) {
-                        OutlinedTextField(
-                            value = uiState.confirmPassphrase,
-                            onValueChange = viewModel::setConfirmPassphrase,
-                            label = { Text("Confirm Secret Key Passphrase") },
-                            leadingIcon = { Icon(Icons.Filled.EnhancedEncryption, null) },
-                            singleLine = true,
-                            visualTransformation = PasswordVisualTransformation(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            }
-
-            val isHandlingFileFlow = if (uiState.isEncrypting) uiState.mode != EncryptMode.TEXT else uiState.decryptAsFile
-
-            if (!isHandlingFileFlow) {
-                OutlinedTextField(
-                    value = uiState.input,
-                    onValueChange = viewModel::setInput,
-                    label = { Text(if (uiState.isEncrypting) "Plain text payload string" else "Encrypted encoded base payload") },
-                    minLines = 4,
-                    maxLines = 8,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Button(
-                    onClick = {
-                        haptic.confirm(view, touchVib)
-                        viewModel.processText(context)
-                    },
-                    enabled = !isLockedOut,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(if (uiState.isEncrypting) Icons.Filled.Lock else Icons.Filled.LockOpen, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(if (uiState.isEncrypting) "Encrypt Text Payload" else "Decrypt Text Payload")
-                }
-            } else {
-                val filterType = if (uiState.isEncrypting) {
-                    when (uiState.mode) {
-                        EncryptMode.IMAGE -> "image/*"
-                        EncryptMode.AUDIO -> "audio/*"
-                        else -> "*/*"
-                    }
-                } else "*/*"
-
-                val currentCardIcon = if (uiState.isEncrypting) {
-                    when (uiState.mode) {
-                        EncryptMode.IMAGE -> Icons.Filled.Image
-                        EncryptMode.AUDIO -> Icons.Filled.MusicNote
-                        else -> Icons.Filled.AttachFile
-                    }
-                } else Icons.Filled.Lock
-
-                OutlinedCard(
-                    onClick = { if (!isLockedOut) fileLauncher.launch(filterType) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Icon(currentCardIcon, null, tint = MaterialTheme.colorScheme.primary)
-                        Text(
-                            text = if (uiState.selectedFileName.isNotBlank()) uiState.selectedFileName else if (uiState.isEncrypting) "Select target ${uiState.mode.name.lowercase()} file" else "Select encrypted .enc block file",
-                            color = if (uiState.selectedFileName.isNotBlank()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Button(
-                    onClick = {
-                        haptic.confirm(view, touchVib)
-                        viewModel.processFile(context)
-                    },
-                    enabled = uiState.selectedFileUri != null && !uiState.isLoading && !isLockedOut,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    } else {
-                        Icon(if (uiState.isEncrypting) Icons.Filled.Lock else Icons.Filled.LockOpen, null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(if (uiState.isEncrypting) "Encrypt Selected File" else "Decrypt Selected File")
-                    }
-                }
-            }
-
-            if (uiState.output.isNotBlank()) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text("Computed Execution Output Result", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.onSecondaryContainer)
-                            if (!isHandlingFileFlow) {
-                                IconButton(onClick = {
-                                    haptic.click(view, touchVib)
-                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                                    clipboard.setPrimaryClip(ClipData.newPlainText("nexus_security_payload", uiState.output))
-                                }) { Icon(Icons.Filled.ContentCopy, "Copy Payload Content") }
+        Button(
+            onClick = {
+                when {
+                    selectedUri == null -> { statusMessage = "Please select a file first."; isError = true }
+                    password.isBlank() -> { statusMessage = "Please enter a password.";    isError = true }
+                    else -> scope.launch {
+                        isProcessing  = true
+                        statusMessage = null
+                        withContext(Dispatchers.IO) {
+                            runCatching {
+                                val bytes = context.contentResolver.openInputStream(selectedUri!!)
+                                    ?.readBytes() ?: error("Cannot read the selected file.")
+                                val result = if (isEncrypting) encryptBytes(bytes, password)
+                                             else              decryptBytes(bytes, password)
+                                val outName = if (!isEncrypting && selectedName.endsWith(".enc")) {
+                                    selectedName.removeSuffix(".enc")
+                                } else {
+                                    "$selectedName.enc"
+                                }
+                                val outFile = File(context.cacheDir, outName)
+                                outFile.writeBytes(result)
+                                withContext(Dispatchers.Main) {
+                                    isError       = false
+                                    statusMessage = if (isEncrypting)
+                                        "File encrypted. Saved as: ${outFile.name}"
+                                    else
+                                        "File decrypted. Saved as: ${outFile.name}"
+                                }
+                            }.onFailure {
+                                withContext(Dispatchers.Main) {
+                                    isError       = true
+                                    statusMessage = if (isEncrypting)
+                                        "Encryption failed. Please try again."
+                                    else
+                                        "Decryption failed. Make sure the file and password are correct."
+                                }
                             }
                         }
-                        Text(text = uiState.output, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        isProcessing = false
                     }
                 }
+            },
+            enabled  = !isProcessing,
+            modifier = Modifier.fillMaxWidth().semantics {
+                contentDescription = if (isEncrypting) "Encrypt selected file" else "Decrypt selected file"
             }
+        ) {
+            if (isProcessing) {
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
+                Spacer(Modifier.width(8.dp))
+                Text("Processing...")
+            } else {
+                Icon(
+                    if (isEncrypting) Icons.Filled.Lock else Icons.Filled.LockOpen,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(if (isEncrypting) "Encrypt File" else "Decrypt File")
+            }
+        }
+    }
+}
 
-            uiState.error?.let { err ->
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer), modifier = Modifier.fillMaxWidth()) {
-                    Text(text = err, color = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.padding(12.dp))
+@Composable
+private fun ModeToggle(
+    isEncrypting  : Boolean,
+    onToggle      : (Boolean) -> Unit,
+    encryptLabel  : String = "Encrypt",
+    decryptLabel  : String = "Decrypt",
+) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(
+            selected    = isEncrypting,
+            onClick     = { onToggle(true) },
+            label       = { Text(encryptLabel) },
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null, Modifier.size(18.dp)) },
+            modifier    = Modifier.weight(1f).semantics { contentDescription = "Switch to $encryptLabel mode" }
+        )
+        FilterChip(
+            selected    = !isEncrypting,
+            onClick     = { onToggle(false) },
+            label       = { Text(decryptLabel) },
+            leadingIcon = { Icon(Icons.Filled.LockOpen, contentDescription = null, Modifier.size(18.dp)) },
+            modifier    = Modifier.weight(1f).semantics { contentDescription = "Switch to $decryptLabel mode" }
+        )
+    }
+}
+
+@Composable
+private fun PasswordField(
+    password           : String,
+    showPassword       : Boolean,
+    onPasswordChange   : (String) -> Unit,
+    onToggleVisibility : () -> Unit,
+) {
+    OutlinedTextField(
+        value                = password,
+        onValueChange        = onPasswordChange,
+        label                = { Text("Password") },
+        leadingIcon          = { Icon(Icons.Filled.Key, contentDescription = null) },
+        trailingIcon         = {
+            IconButton(
+                onClick  = onToggleVisibility,
+                modifier = Modifier.semantics { contentDescription = if (showPassword) "Hide password" else "Show password" }
+            ) {
+                Icon(
+                    if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                    contentDescription = null
+                )
+            }
+        },
+        singleLine           = true,
+        visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+        modifier             = Modifier.fillMaxWidth().semantics { contentDescription = "Encryption password field" }
+    )
+}
+
+@Composable
+private fun ErrorBanner(message: String?) {
+    AnimatedVisibility(visible = message != null) {
+        if (message != null) {
+            Surface(
+                shape    = MaterialTheme.shapes.small,
+                color    = MaterialTheme.colorScheme.errorContainer,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier              = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment     = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.Error, contentDescription = "Error", tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(18.dp))
+                    Text(message, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ResultCard(text: String, context: Context) {
+    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier              = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Result",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(
+                    onClick  = {
+                        val cb = context.getSystemService(ClipboardManager::class.java)
+                        cb?.setPrimaryClip(ClipData.newPlainText("Encrypted text", text))
+                    },
+                    modifier = Modifier.semantics { contentDescription = "Copy result to clipboard" }
+                ) {
+                    Icon(Icons.Filled.ContentCopy, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                }
+            }
+            Text(
+                text     = text,
+                style    = MaterialTheme.typography.bodySmall,
+                color    = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.semantics { contentDescription = "Encryption result text" }
+            )
         }
     }
 }

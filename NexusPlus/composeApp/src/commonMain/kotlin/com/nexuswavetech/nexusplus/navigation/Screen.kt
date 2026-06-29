@@ -19,10 +19,8 @@ sealed class Screen(val route: String) {
     object NotificationCenter : Screen("notifications")
 
     // ── Media feature screens ───────────────────────────────────────────────
-    object RadioPlayer       : Screen("feature/radio")
     object AiImageGenerator  : Screen("feature/ai_image")
     object NexusTts          : Screen("feature/tts")
-    object IptvPlayer        : Screen("feature/iptv")
     object MusicStreaming     : Screen("feature/music")
     object SmartImageEditor  : Screen("feature/smart_image_editor")
     object NexusImageViewer  : Screen("feature/image_viewer")
@@ -51,27 +49,31 @@ sealed class Screen(val route: String) {
     object MyReminder       : Screen("feature/my_reminder")
     object QrCode           : Screen("feature/qr_code")
 
-    // ── Utility stub → real implementations ─────────────────────────────────
-    object Flashlight       : Screen("feature/flashlight")
-    object Stopwatch        : Screen("feature/stopwatch")
-    object WorldClock       : Screen("feature/world_clock")
-    object UnitConverter    : Screen("feature/unit_converter")
-    object CurrencyConverter: Screen("feature/currency_converter")
-    object BatteryMonitor   : Screen("feature/battery_monitor")
-    object StorageAnalyzer  : Screen("feature/storage_analyzer")
-    object Compass          : Screen("feature/compass")
-    object WifiAnalyzer     : Screen("feature/wifi_analyzer")
-    object VoiceRecorder    : Screen("feature/voice_recorder")
-    object ClipboardManager : Screen("feature/clipboard_manager")
-    object FileManager      : Screen("feature/file_manager")
-    object AlarmClock       : Screen("feature/alarm_clock")
-    object BarcodeGenerator : Screen("feature/barcode_generator")
-    object Weather          : Screen("feature/weather")
+    // ── Utility feature screens ──────────────────────────────────────────────
+    object Flashlight        : Screen("feature/flashlight")
+    object Stopwatch         : Screen("feature/stopwatch")
+    object WorldClock        : Screen("feature/world_clock")
+    object UnitConverter     : Screen("feature/unit_converter")
+    object CurrencyConverter : Screen("feature/currency_converter")
+    object BatteryMonitor    : Screen("feature/battery_monitor")
+    object StorageAnalyzer   : Screen("feature/storage_analyzer")
+    object Compass           : Screen("feature/compass")
+    object WifiAnalyzer      : Screen("feature/wifi_analyzer")
+    object VoiceRecorder     : Screen("feature/voice_recorder")
+    object ClipboardManager  : Screen("feature/clipboard_manager")
+    object FileManager       : Screen("feature/file_manager")
+    object AlarmClock        : Screen("feature/alarm_clock")
+    object BarcodeGenerator  : Screen("feature/barcode_generator")
+    object Weather           : Screen("feature/weather")
 
     // ── AI / Smart Tools feature screens ────────────────────────────────────
     object ObjectDetector : Screen("feature/object_detector")
     object ColorDetector  : Screen("feature/color_detector")
     object AiraAi         : Screen("feature/aira_ai")
+
+    // ── Smart Tools (new) ────────────────────────────────────────────────────
+    object AppInfoCenter : Screen("feature/app_info_center")
+    object NetworkInfo   : Screen("feature/network_info")
 
     // ── Health & Wellbeing ───────────────────────────────────────────────────
     object NexusHealthVault : Screen("feature/health_vault")
@@ -96,17 +98,8 @@ sealed class Screen(val route: String) {
     object News    : Screen("feature/news")
     object Science : Screen("feature/science")
 
-    // ── Form X (reactive demo form) ─────────────────────────────────────────
-    object FormX : Screen("feature/form_x")
-
     // ── Nexus Games Hub ─────────────────────────────────────────────────────
     object NexusGames : Screen("feature/nexus_games")
-
-    // ── Nexus OTT ───────────────────────────────────────────────────────────
-    object NexusOtt : Screen("feature/nexus_ott")
-    object NexusOttPlayer : Screen("feature/nexus_ott/player/{itemId}") {
-        fun route(itemId: String) = "feature/nexus_ott/player/$itemId"
-    }
 
     // ── Finance Tracker ──────────────────────────────────────────────────────
     object ExpenseTracker : Screen("feature/expense_tracker")
@@ -117,16 +110,14 @@ sealed class Screen(val route: String) {
     // ── Social Media & Community ─────────────────────────────────────────────
     object SocialMedia : Screen("community/social_media")
 
-    // ── New fully implemented features ──────────────────────────────────────
-    object EncryptedNotes : Screen("feature/encrypted_notes")
-    object Speedometer    : Screen("feature/speedometer")
-    object TaskManager    : Screen("feature/task_manager")
-    object ContactBackup  : Screen("feature/contact_backup")
-
-    // ── Emergency Guardian ───────────────────────────────────────────────────
+    // ── Security features ────────────────────────────────────────────────────
+    object EncryptedNotes  : Screen("feature/encrypted_notes")
+    object Speedometer     : Screen("feature/speedometer")
+    object TaskManager     : Screen("feature/task_manager")
+    object ContactBackup   : Screen("feature/contact_backup")
     object EmergencyGuardian : Screen("feature/emergency_guardian")
 
-    // ── New features (replacing Radio / IPTV / FormX) ───────────────────────
+    // ── New features (v1.3+) ─────────────────────────────────────────────────
     object TextToPdf    : Screen("feature/text_to_pdf")
     object DailyJournal : Screen("feature/daily_journal")
     object ColorPalette : Screen("feature/color_palette")

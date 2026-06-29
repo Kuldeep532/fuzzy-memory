@@ -46,13 +46,56 @@ fun missingSigningConfiguration(): List<String> = buildList {
 val googleServicesJson = environmentVariable("GOOGLE_SERVICES_JSON")
 
 val prepareGoogleServicesJson by tasks.registering {
-    group = "build setup"
-    description = "Writes app/google-services.json from GOOGLE_SERVICES_JSON when supplied by CI."
-
-    onlyIf { googleServicesJson != null }
+    group       = "build setup"
+    description = "Writes app/google-services.json from GOOGLE_SERVICES_JSON env var when available, or a local-debug placeholder when absent."
 
     doLast {
-        file("google-services.json").writeText(googleServicesJson ?: return@doLast)
+        val target = file("google-services.json")
+        when {
+            googleServicesJson != null -> {
+                target.writeText(googleServicesJson!!)
+                logger.lifecycle("google-services.json written from GOOGLE_SERVICES_JSON environment variable.")
+            }
+            target.exists() -> {
+                logger.lifecycle("google-services.json already present locally — skipping generation.")
+            }
+            else -> {
+                target.writeText(
+                    """
+                    {
+                      "project_info": {
+                        "project_number": "000000000000",
+                        "project_id": "nexusplus-local-debug",
+                        "storage_bucket": "nexusplus-local-debug.appspot.com"
+                      },
+                      "client": [
+                        {
+                          "client_info": {
+                            "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                            "android_client_info": {
+                              "package_name": "com.nexuswavetech.nexusplus"
+                            }
+                          },
+                          "oauth_client": [],
+                          "api_key": [
+                            {
+                              "current_key": "local-debug-placeholder-not-for-production"
+                            }
+                          ],
+                          "services": {
+                            "appinvite_service": {
+                              "other_platform_oauth_client": []
+                            }
+                          }
+                        }
+                      ],
+                      "configuration_version": "1"
+                    }
+                    """.trimIndent()
+                )
+                logger.lifecycle("google-services.json debug placeholder generated. Set GOOGLE_SERVICES_JSON env var for production builds.")
+            }
+        }
     }
 }
 

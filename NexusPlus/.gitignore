@@ -64,8 +64,10 @@ desktop.ini
 *.swo
 ~$*
 
-# ── Google Services (Firebase) — add your own, do not commit shared keys ──
-# google-services.json    ← uncomment if you want to exclude; safe to include if it's not sensitive
+# ── Google Services (Firebase) — generated from GOOGLE_SERVICES_JSON secret ──
+# CI/CD: set GOOGLE_SERVICES_JSON env var → gradle auto-writes the file
+# Local: gradle auto-generates a debug placeholder if the file is absent
+app/google-services.json
 
 # ── ProGuard mappings ─────────────────────────────────────────
 /app/release/

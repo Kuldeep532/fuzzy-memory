@@ -27,7 +27,7 @@ val NexusSurfaceVariant      = Color(0xFF171728)   // Elevated card surface
 val NexusOnSurfaceVariant    = Color(0xFFA8AACC)
 val NexusSurfaceContainer    = Color(0xFF121222)
 val NexusOutline             = Color(0xFF3D3D6B)
-val NexusOutlineVariant      = Color(0xFF2A2A4D)
+val NexusOutlineVariant      = Color(0xFF2A2A4D)   // used by HorizontalDivider, subtle borders
 
 val NexusError               = Color(0xFFFF6B6B)
 val NexusOnError             = Color(0xFF410000)
@@ -58,6 +58,7 @@ val NexusSurfaceVariantLight       = Color(0xFFE6E5FF)
 val NexusOnSurfaceVariantLight     = Color(0xFF3E3D72)
 val NexusSurfaceContainerLight     = Color(0xFFEEEEFF)
 val NexusOutlineLight              = Color(0xFF8080BB)
+val NexusOutlineVariantLight       = Color(0xFFCCCCEE)
 
 val NexusErrorContainerLight       = Color(0xFFFFE0E0)
 val NexusOnErrorContainerLight     = Color(0xFF410000)

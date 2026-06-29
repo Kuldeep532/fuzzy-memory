@@ -102,6 +102,9 @@ import com.nexuswavetech.nexusplus.features.emergencyguardian.EmergencyGuardianS
 import com.nexuswavetech.nexusplus.features.texttopdf.TextToPdfScreen
 import com.nexuswavetech.nexusplus.features.journal.DailyJournalScreen
 import com.nexuswavetech.nexusplus.features.colorpalette.ColorPaletteScreen
+import com.nexuswavetech.nexusplus.features.contactbackup.ContactBackupScreen
+import com.nexuswavetech.nexusplus.features.appinfo.AppInfoCenterScreen
+import com.nexuswavetech.nexusplus.features.networkinfo.NetworkInfoScreen
 
 private const val ANIM_DURATION     = 300
 private const val ANIM_DURATION_OUT = 180
@@ -384,6 +387,19 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         // ── Community ─────────────────────────────────────────────────────
         composable(Screen.SocialMedia.route) {
             NexusAdScaffold { SocialMediaScreen(onBack = { navController.popBackStack() }) }
+        }
+
+        // ── Contact Backup ────────────────────────────────────────────────
+        composable(Screen.ContactBackup.route) {
+            NexusAdScaffold { ContactBackupScreen(onBack = { navController.popBackStack() }) }
+        }
+
+        // ── Installed Apps & Network Info ─────────────────────────────────
+        composable(Screen.AppInfoCenter.route) {
+            NexusAdScaffold { AppInfoCenterScreen(onBack = { navController.popBackStack() }) }
+        }
+        composable(Screen.NetworkInfo.route) {
+            NexusAdScaffold { NetworkInfoScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Stub catch-all ────────────────────────────────────────────────

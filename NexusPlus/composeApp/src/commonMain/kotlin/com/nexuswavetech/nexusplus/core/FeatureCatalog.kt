@@ -1,8 +1,6 @@
 package com.nexuswavetech.nexusplus.core
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.automirrored.filled.ScreenShare
 import androidx.compose.material.icons.filled.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 
@@ -358,13 +356,14 @@ object FeatureCatalog {
             keywords    = listOf("task", "process", "manage", "monitor", "cpu", "ram"),
         ),
         FeatureItem(
-            id          = FeatureId.SCREEN_RECORDER,
-            name        = "Screen Recorder",
-            description = "Record your screen with audio overlay",
-            icon        = Icons.AutoMirrored.Filled.ScreenShare,
-            route       = Screen.Stub.route + "/screenrecorder",
+            id          = FeatureId.APP_INFO_CENTER,
+            name        = "Installed Apps",
+            description = "Browse all installed apps with version, size and install date — tap to open app settings",
+            icon        = Icons.Filled.Apps,
+            route       = Screen.AppInfoCenter.route,
             category    = FeatureCategory.TOOLS,
-            keywords    = listOf("screen", "record", "capture", "video", "overlay"),
+            keywords    = listOf("apps", "installed", "packages", "version", "apk", "info", "settings", "browser"),
+            isNew       = true,
         ),
 
         // ── Security & Privacy ────────────────────────────────────────────────
@@ -434,20 +433,21 @@ object FeatureCatalog {
             keywords    = listOf("notes", "encrypted", "private", "secure", "aes", "diary"),
         ),
         FeatureItem(
-            id          = FeatureId.APP_LOCKER,
-            name        = "App Locker",
-            description = "Protect apps with biometric authentication",
-            icon        = Icons.Filled.Security,
-            route       = Screen.Stub.route + "/applocker",
-            category    = FeatureCategory.SECURITY,
-            keywords    = listOf("locker", "app", "biometric", "protect", "lock", "fingerprint"),
+            id          = FeatureId.NETWORK_INFO,
+            name        = "Network Info",
+            description = "View IP address, Wi-Fi signal, DNS, public IP, link speed and connection details",
+            icon        = Icons.Filled.NetworkCheck,
+            route       = Screen.NetworkInfo.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("network", "ip", "wifi", "dns", "signal", "connection", "info", "public ip", "ping"),
+            isNew       = true,
         ),
         FeatureItem(
             id          = FeatureId.CONTACT_BACKUP,
             name        = "Contact Backup",
-            description = "Backup and restore your contacts securely",
+            description = "Backup and restore your contacts securely as a VCF file",
             icon        = Icons.Filled.Contacts,
-            route       = Screen.Stub.route + "/contacts",
+            route       = Screen.ContactBackup.route,
             category    = FeatureCategory.SECURITY,
             keywords    = listOf("contact", "backup", "restore", "sync", "vcf", "secure"),
         ),
