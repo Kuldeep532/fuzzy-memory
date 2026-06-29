@@ -54,7 +54,7 @@ val prepareGoogleServicesJson by tasks.registering {
         if (googleServicesJson != null) {
             // Always overwrite — ensures CI/CD secret is the authoritative source.
             // This intentionally replaces any stale or placeholder file.
-            target.writeText(googleServicesJson!!)
+            target.writeText(googleServicesJson)
             logger.lifecycle("✓ google-services.json written from GOOGLE_SERVICES_JSON secret.")
         } else if (target.exists()) {
             // Developer placed a real file locally — leave it untouched.

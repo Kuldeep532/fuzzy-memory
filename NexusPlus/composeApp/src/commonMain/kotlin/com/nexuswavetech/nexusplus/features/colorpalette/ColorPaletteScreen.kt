@@ -3,7 +3,9 @@ package com.nexuswavetech.nexusplus.features.colorpalette
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -197,7 +199,7 @@ fun ColorPaletteScreen(
                         Text("Presets", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier              = Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState()),
+                            modifier              = Modifier.horizontalScroll(rememberScrollState()),
                         ) {
                             PRESETS.forEach { (name, color) ->
                                 Box(

@@ -20,7 +20,6 @@ import com.nexuswavetech.nexusplus.features.aira.AiraViewModel
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageViewModel
 import com.nexuswavetech.nexusplus.features.music.MusicViewModel
 import com.nexuswavetech.nexusplus.features.notifications.NotificationRepository
-import com.nexuswavetech.nexusplus.features.encryptor.EncrypterDecrypterViewModel
 import com.nexuswavetech.nexusplus.features.translator.TextTranslatorViewModel
 import com.nexuswavetech.nexusplus.features.hashgen.HashGeneratorViewModel
 import com.nexuswavetech.nexusplus.features.passwordgen.PasswordGeneratorViewModel
@@ -118,7 +117,6 @@ val appModule = module {
     viewModel { AiraViewModel(settingsRepo = get(), geminiRepo = get()) }
 
     // Security
-    viewModel { EncrypterDecrypterViewModel() }
     viewModel { HashGeneratorViewModel() }
     viewModel { PasswordGeneratorViewModel() }
     viewModel {

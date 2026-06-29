@@ -40,15 +40,14 @@ private suspend fun loadApps(pm: PackageManager, showSystem: Boolean): List<AppI
     withContext(Dispatchers.Default) {
         val fmt  = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         pm.getInstalledPackages(PackageManager.GET_META_DATA)
-            .filter { pkg ->
-                val isSystem = (pkg.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                showSystem || !isSystem
-            }
-            .map { pkg ->
-                val name    = pm.getApplicationLabel(pkg.applicationInfo).toString()
+            .mapNotNull { pkg ->
+                val appInfo = pkg.applicationInfo ?: return@mapNotNull null
+                val isSystem = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                if (!showSystem && isSystem) return@mapNotNull null
+                val name    = pm.getApplicationLabel(appInfo).toString()
                 val version = pkg.versionName ?: "N/A"
                 val sizeMb  = runCatching {
-                    File(pkg.applicationInfo.sourceDir).length() / (1024f * 1024f)
+                    File(appInfo.sourceDir).length() / (1024f * 1024f)
                 }.getOrDefault(0f)
                 val install = fmt.format(Date(pkg.firstInstallTime))
                 AppInfo(
