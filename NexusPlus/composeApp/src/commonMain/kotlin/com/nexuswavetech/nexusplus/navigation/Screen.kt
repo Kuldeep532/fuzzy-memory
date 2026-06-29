@@ -17,6 +17,7 @@ sealed class Screen(val route: String) {
     object Settings           : Screen("settings")
     object Profile            : Screen("profile")
     object NotificationCenter : Screen("notifications")
+    object Subscription       : Screen("subscription")
 
     // ── Media feature screens ───────────────────────────────────────────────
     object AiImageGenerator  : Screen("feature/ai_image")

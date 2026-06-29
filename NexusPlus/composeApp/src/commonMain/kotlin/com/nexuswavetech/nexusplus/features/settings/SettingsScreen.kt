@@ -23,7 +23,7 @@ import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}) {
+fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}, onSubscription: () -> Unit = {}) {
     val settings = koinInject<SettingsRepository>()
     val scope    = rememberCoroutineScope()
 
@@ -65,6 +65,48 @@ fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}) {
             contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+
+            // ── Premium ────────────────────────────────────────────────────
+            item {
+                Card(
+                    onClick  = onSubscription,
+                    shape    = MaterialTheme.shapes.extraLarge,
+                    colors   = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = "Go Premium — unlock all features" },
+                ) {
+                    Row(
+                        modifier              = Modifier.padding(16.dp),
+                        verticalAlignment     = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        Icon(
+                            Icons.Filled.Star,
+                            contentDescription = null,
+                            tint     = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(30.dp),
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Nexus Plus Premium",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            )
+                            Text(
+                                "₹35/month or ₹300/year — unlock everything",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                            )
+                        }
+                        Icon(
+                            Icons.Filled.ChevronRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    }
+                }
+            }
 
             // ── Appearance ────────────────────────────────────────────────
             item {

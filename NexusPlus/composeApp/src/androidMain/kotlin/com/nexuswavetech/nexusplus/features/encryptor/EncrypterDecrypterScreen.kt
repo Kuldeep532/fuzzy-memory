@@ -85,15 +85,24 @@ fun EncrypterDecrypterScreen(onBack: () -> Unit) {
     Column(Modifier.fillMaxSize()) {
         NexusTopBar(title = "Text & File Encryptor", onBack = onBack)
 
-        TabRow(selectedTabIndex = selectedTab, modifier = Modifier.fillMaxWidth()) {
-            listOf("Text", "File").forEachIndexed { index, label ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick  = { selectedTab = index },
-                    text     = { Text(label) },
-                    modifier = Modifier.semantics { contentDescription = "$label encryption tab" }
-                )
-            }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf("Text" to Icons.Filled.TextFields, "File" to Icons.Filled.InsertDriveFile)
+                .forEachIndexed { index, (label, icon) ->
+                    FilterChip(
+                        selected = selectedTab == index,
+                        onClick  = { selectedTab = index },
+                        label    = { Text(label, fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal) },
+                        leadingIcon = { Icon(icon, null, Modifier.size(16.dp)) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .semantics { contentDescription = "$label mode. ${if (selectedTab == index) "Selected." else "Tap to switch."}" },
+                    )
+                }
         }
 
         when (selectedTab) {

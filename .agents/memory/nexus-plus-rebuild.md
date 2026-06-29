@@ -1,6 +1,6 @@
 ---
 name: Nexus Plus rebuild decisions
-description: Durable constraints and decisions from the Nexus Plus Android app rebuild — login gate, deleted features, TTS redesign, social links, theme, new features, compile fixes.
+description: Durable constraints and decisions from the Nexus Plus Android app rebuild — login gate, deleted features, TTS redesign, social links, theme, new features, compile fixes, billing.
 ---
 
 ## Login Gate — AppConfig.LOGIN_REQUIRED
@@ -37,10 +37,11 @@ description: Durable constraints and decisions from the Nexus Plus Android app r
 - Fixed: FeatureCatalog now uses `Screen.ContactBackup.route` (`"feature/contact_backup"`).
 - NavHost composable added for `Screen.ContactBackup`.
 
-## EncrypterDecrypterScreen — Complete Rewrite (current session)
-- Old version had: hardcoded fallback key, reflection-based Google Password Manager hack, jargon-heavy error messages, no contentDescriptions.
-- New version: AES-256-CBC + PBKDF2-HMAC-SHA256, user always provides password, two tabs (Text / File), full contentDescriptions, all MaterialTheme colors, no emoji.
-- File-level `@file:OptIn(ExperimentalMaterial3Api::class)` for OutlinedCard.
+## EncrypterDecrypterScreen — UI Improvements
+- Old version (first session): hardcoded fallback key, reflection-based Google Password Manager hack, jargon-heavy error messages, no contentDescriptions.
+- Rewritten: AES-256-CBC + PBKDF2-HMAC-SHA256, user always provides password, two tabs (Text / File), full contentDescriptions.
+- Latest change: TabRow replaced with full-width FilterChips row (Text + File) with leading icons — cleaner than TabRow which felt like browser tabs.
+- **Why:** User found TabRow confusing — FilterChips in a Row are wider, tappable, and clearly labeled.
 
 ## FeatureId Compile Error Fixed (current session)
 - `FeatureId.kt` had TEXT_TO_PDF, DAILY_JOURNAL, COLOR_PALETTE defined twice — Kotlin enum compile error.
@@ -70,21 +71,34 @@ description: Durable constraints and decisions from the Nexus Plus Android app r
 - Kept: Official Website, Instagram, Facebook, WhatsApp, Telegram, Discord, Support Email
 
 ## Screen Redesigns Completed
-- **NexusTtsScreen.kt** — 7-step wizard (Engine → Language → Voice → Speed/Pitch → Test → Reading Mode → Accessibility). Large touch targets for blind users. FilterChips for language, radio buttons for voices, quick-phrase chips for testing.
+- **NexusTtsScreen.kt** — Latest: simplified from 1027-line 7-step wizard to a clean focused screen: large BasicTextField input, Speak/Stop button (red when speaking), Speed slider, Pitch slider, Voice dropdown (ExposedDropdownMenuBox), quick-phrase LazyRow chips, engine status banner, animated error card. Uses NseViewModel.speak(), stop(), onTextChange(), etc.
 - **NexusDialerScreen.kt** — Tab strip (Keypad/Contacts), animated content switching, dialer keys with letter subtext, avatar circles for contacts, call FAB.
 - **TextTranslatorScreen.kt** — Offline badge bar, card-based layout, BasicTextField (dark/light safe), animated output card, language picker buttons (not dropdowns), proper Material3 throughout.
+- **QrCodeScreen.kt** — Latest: replaced horizontal scrollable FilterChips with ExposedDropdownMenuBox for QR type selection; plain-language labels (no jargon); keep ViewModel intact; show result in separate view with "Save to Gallery" and "Make Another QR Code" buttons.
 - All screens: no hardcoded colors, all use MaterialTheme.colorScheme.* for full Light/Dark mode support.
 
-## Firebase / Google Sign-In Fix
-- `WelcomeScreen.kt` — added placeholder detection before calling GoogleSignIn. If `default_web_client_id` == "YOUR_WEB_CLIENT_ID" or starts with "YOUR_", shows a clear error instead of cryptic "API not valid" from Play Services.
-- **Why:** The placeholder in `strings.xml` is never replaced without a real `google-services.json`. Must check before calling the API.
-- For real Firebase setup: add `GOOGLE_SERVICES_JSON` environment variable (CI/CD) or place `google-services.json` in `NexusPlus/app/`.
+## Firebase / Google Sign-In Fix — ROOT CAUSE
+- **Root cause was**: `composeApp/src/androidMain/res/values/strings.xml` had hardcoded `default_web_client_id = "YOUR_WEB_CLIENT_ID"` which OVERRIDES the Google Services Plugin's auto-generated value from `google-services.json`.
+- **Fix**: `composeApp/src/androidMain/res/values/strings.xml` now has only a comment — no manual string entries.
+- **Rule**: NEVER manually add `default_web_client_id` to any strings.xml. The Google Services Plugin generates it automatically from google-services.json.
+- `WelcomeScreen.kt` also has a placeholder-detection guard as a second layer.
 
 ## Gemini API Key Integration
 - **3-level key priority**: (1) user-entered key in DataStore (Settings screen), (2) `BuildConfig.GEMINI_API_KEY` baked in at build time from `GEMINI_API_KEY` env var / GitHub Secret, (3) empty → Gemini disabled, Aira falls back to free endpoints.
 - `app/build.gradle.kts`: `buildConfigField("String", "GEMINI_API_KEY", "\"${environmentVariable("GEMINI_API_KEY") ?: "\"}")`
-- `GeminiRepository.kt`: `effectiveApiKey()` method implements the 3-level priority lookup. Both `chat()` and `vision()` use `effectiveApiKey()`.
-- `SettingsScreen.kt`: New "AI & Aira" section with API key field (masked), model selector (Flash/Pro), and "Use Gemini as Primary" toggle. Added `PasswordVisualTransformation` + `VisualTransformation` imports.
+- `GeminiRepository.kt`: `effectiveApiKey()` method implements the 3-level priority lookup.
+- `SettingsScreen.kt`: New "AI & Aira" section with API key field (masked), model selector (Flash/Pro).
+
+## Google Play Billing — ₹35/month + ₹300/year
+- `libs.versions.toml`: `playBilling = "7.1.1"` + `play-billing` library entry.
+- `app/build.gradle.kts`: `implementation(libs.play.billing)`.
+- `BillingManager.kt` — `billing/BillingManager.kt` in androidMain. SKU: `nexusplus_monthly` (plan: `monthly_35`), `nexusplus_yearly` (plan: `yearly_300`). Handles connect-with-retry, purchase flow, acknowledgement, queryCurrentPremiumStatus.
+- `PremiumRepository.kt` — thin wrapper over BillingManager; exposes `isPremium`, `purchaseMonthly()`, `purchaseYearly()`.
+- `SubscriptionScreen.kt` — Beautiful paywall UI with plan cards (Monthly ₹35 / Yearly ₹300 with "Save 29%" badge). Route: `Screen.Subscription` → `"subscription"`.
+- `PremiumState` sealed class: `Unknown`, `Free`, `Pending`, `Premium(productId, token)`.
+- Both registered in `AppModule.kt`, initialized in `NexusPlusApplication.onCreate()`.
+- `SettingsScreen.kt`: "Nexus Plus Premium" banner card at top → navigates to SubscriptionScreen.
+- **Anti-tamper**: Google Play's BillingClient only reports PURCHASED state after server-side validation. Purchases acknowledged via `acknowledgePurchase()` (required by Google policy within 3 days).
 
 ## Web Showcase
 - Radio and IPTV feature cards removed from index.html (earlier session)

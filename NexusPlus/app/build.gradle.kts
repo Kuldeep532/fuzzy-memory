@@ -278,6 +278,7 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.config)
     implementation(libs.google.play.auth)
+    implementation(libs.play.billing)
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

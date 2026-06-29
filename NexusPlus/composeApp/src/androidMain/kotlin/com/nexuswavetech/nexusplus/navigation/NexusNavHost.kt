@@ -105,6 +105,7 @@ import com.nexuswavetech.nexusplus.features.colorpalette.ColorPaletteScreen
 import com.nexuswavetech.nexusplus.features.contactbackup.ContactBackupScreen
 import com.nexuswavetech.nexusplus.features.appinfo.AppInfoCenterScreen
 import com.nexuswavetech.nexusplus.features.networkinfo.NetworkInfoScreen
+import com.nexuswavetech.nexusplus.billing.SubscriptionScreen
 
 private const val ANIM_DURATION     = 300
 private const val ANIM_DURATION_OUT = 180
@@ -199,6 +200,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
             SettingsScreen(
                 onBack           = { navController.popBackStack() },
                 onDownloadVoices = { navController.navigate(Screen.DownloadVoices.route) },
+                onSubscription   = { navController.navigate(Screen.Subscription.route) },
             )
         }
         composable(Screen.Profile.route) {
@@ -219,6 +221,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
             )
         }
         composable(Screen.NotificationCenter.route) { NotificationCenterScreen(onBack = { navController.popBackStack() }) }
+        composable(Screen.Subscription.route) { SubscriptionScreen(onBack = { navController.popBackStack() }) }
 
         // ── Media ─────────────────────────────────────────────────────────
         composable(Screen.AiImageGenerator.route) { NexusAdScaffold { AiImageGeneratorScreen(onBack = { navController.popBackStack() }) } }

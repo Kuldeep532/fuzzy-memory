@@ -29,6 +29,9 @@ import com.nexuswavetech.nexusplus.features.jsontools.JsonFormatterViewModel
 import com.nexuswavetech.nexusplus.features.regextester.RegexTesterViewModel
 import com.nexuswavetech.nexusplus.features.reminder.MyReminderViewModel
 import com.nexuswavetech.nexusplus.features.qrcode.QrCodeViewModel
+import com.nexuswavetech.nexusplus.billing.BillingManager
+import com.nexuswavetech.nexusplus.billing.PremiumRepository
+import com.nexuswavetech.nexusplus.billing.SubscriptionViewModel
 import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterViewModel
 import com.nexuswavetech.nexusplus.features.tts.NseEngine
 import com.nexuswavetech.nexusplus.features.tts.NseAudioFocusManager
@@ -151,4 +154,9 @@ val appModule = module {
 
     // Camera / sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
     // DocHub, VoiceTyper — state managed locally in composables.
+
+    // ── Google Play Billing ───────────────────────────────────────────────
+    single  { BillingManager(androidContext()) }
+    single  { PremiumRepository(get()) }
+    viewModel { SubscriptionViewModel(get()) }
 }

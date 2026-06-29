@@ -9,8 +9,8 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -49,16 +49,18 @@ import java.io.FileOutputStream
 import java.io.OutputStream
 import java.net.URLEncoder
 
-// ── ViewModel & State Management ──────────────────────────────────────────────
+// ── QR Types ──────────────────────────────────────────────────────────────────
 
-enum class QrType(val label: String) { 
-    TEXT("Text / URL"), 
+enum class QrType(val label: String) {
+    TEXT("Text / URL"),
     UPI("UPI Payment"),
     WIFI("Wi-Fi"),
     WHATSAPP("WhatsApp"),
     EMAIL("Email"),
-    CONTACT("Contact (vCard)")
+    CONTACT("Contact Card")
 }
+
+// ── State & ViewModel ─────────────────────────────────────────────────────────
 
 data class QrUiState(
     val qrType: QrType = QrType.TEXT,
@@ -81,7 +83,7 @@ data class QrUiState(
     val contactOrg: String = "",
     val qrBitmap: Bitmap? = null,
     val error: String? = null,
-    val isSaving: Boolean = false
+    val isSaving: Boolean = false,
 )
 
 class QrCodeViewModel : ViewModel() {
@@ -106,57 +108,62 @@ class QrCodeViewModel : ViewModel() {
     fun setContactPhone(v: String) = _uiState.update { it.copy(contactPhone = v) }
     fun setContactEmail(v: String) = _uiState.update { it.copy(contactEmail = v) }
     fun setContactOrg(v: String) = _uiState.update { it.copy(contactOrg = v) }
-
     fun clearQr() = _uiState.update { it.copy(qrBitmap = null, error = null) }
 
     fun generate() {
         val s = _uiState.value
         val content = when (s.qrType) {
-            QrType.TEXT -> s.textInput.trim().also {
-                if (it.isBlank()) { _uiState.update { st -> st.copy(error = "Enter text or URL") }; return }
+            QrType.TEXT -> {
+                if (s.textInput.isBlank()) { _uiState.update { it.copy(error = "Please enter text or a URL") }; return }
+                s.textInput.trim()
             }
-            QrType.UPI -> buildString {
-                if (s.upiId.isBlank()) { _uiState.update { st -> st.copy(error = "Enter UPI ID") }; return }
-                append("upi://pay?pa=${s.upiId}")
-                if (s.upiName.isNotBlank()) append("&pn=${s.upiName}")
-                if (s.upiAmount.isNotBlank()) append("&am=${s.upiAmount}")
-                append("&cu=INR")
-                if (s.upiNote.isNotBlank()) append("&tn=${s.upiNote}")
-            }
-            QrType.WIFI -> buildString {
-                if (s.wifiSsid.isBlank()) { _uiState.update { st -> st.copy(error = "Enter Wi-Fi SSID") }; return }
-                append("WIFI:S:${s.wifiSsid};T:${s.wifiSecurity};P:${s.wifiPassword};;")
-            }
-            QrType.WHATSAPP -> buildString {
-                if (s.whatsappNumber.isBlank()) { _uiState.update { st -> st.copy(error = "Enter WhatsApp number") }; return }
-                val cleanNumber = s.whatsappNumber.replace("[^0-9]".toRegex(), "")
-                append("https://wa.me/$cleanNumber")
-                if (s.whatsappMessage.isNotBlank()) {
-                    append("?text=${URLEncoder.encode(s.whatsappMessage, "UTF-8")}")
+            QrType.UPI -> {
+                if (s.upiId.isBlank()) { _uiState.update { it.copy(error = "Please enter your UPI ID") }; return }
+                buildString {
+                    append("upi://pay?pa=${s.upiId}")
+                    if (s.upiName.isNotBlank()) append("&pn=${s.upiName}")
+                    if (s.upiAmount.isNotBlank()) append("&am=${s.upiAmount}")
+                    append("&cu=INR")
+                    if (s.upiNote.isNotBlank()) append("&tn=${s.upiNote}")
                 }
             }
-            QrType.EMAIL -> buildString {
-                if (s.emailAddress.isBlank()) { _uiState.update { st -> st.copy(error = "Enter Email Address") }; return }
-                append("mailto:${s.emailAddress}")
-                val params = mutableListOf<String>()
-                if (s.emailSubject.isNotBlank()) params.add("subject=${URLEncoder.encode(s.emailSubject, "UTF-8")}")
-                if (s.emailBody.isNotBlank()) params.add("body=${URLEncoder.encode(s.emailBody, "UTF-8")}")
-                if (params.isNotEmpty()) append("?${params.joinToString("&")}")
+            QrType.WIFI -> {
+                if (s.wifiSsid.isBlank()) { _uiState.update { it.copy(error = "Please enter the Wi-Fi name") }; return }
+                "WIFI:S:${s.wifiSsid};T:${s.wifiSecurity};P:${s.wifiPassword};;"
             }
-            QrType.CONTACT -> buildString {
-                if (s.contactName.isBlank() || s.contactPhone.isBlank()) { 
-                    _uiState.update { st -> st.copy(error = "Name and Phone Number are required") }
-                    return 
+            QrType.WHATSAPP -> {
+                if (s.whatsappNumber.isBlank()) { _uiState.update { it.copy(error = "Please enter the phone number with country code") }; return }
+                val num = s.whatsappNumber.replace("[^0-9]".toRegex(), "")
+                buildString {
+                    append("https://wa.me/$num")
+                    if (s.whatsappMessage.isNotBlank()) append("?text=${URLEncoder.encode(s.whatsappMessage, "UTF-8")}")
                 }
-                append("BEGIN:VCARD\nVERSION:3.0\n")
-                append("FN:${s.contactName}\n")
-                append("TEL:${s.contactPhone}\n")
-                if (s.contactEmail.isNotBlank()) append("EMAIL:${s.contactEmail}\n")
-                if (s.contactOrg.isNotBlank()) append("ORG:${s.contactOrg}\n")
-                append("END:VCARD")
+            }
+            QrType.EMAIL -> {
+                if (s.emailAddress.isBlank()) { _uiState.update { it.copy(error = "Please enter an email address") }; return }
+                buildString {
+                    append("mailto:${s.emailAddress}")
+                    val params = mutableListOf<String>()
+                    if (s.emailSubject.isNotBlank()) params.add("subject=${URLEncoder.encode(s.emailSubject, "UTF-8")}")
+                    if (s.emailBody.isNotBlank()) params.add("body=${URLEncoder.encode(s.emailBody, "UTF-8")}")
+                    if (params.isNotEmpty()) append("?${params.joinToString("&")}")
+                }
+            }
+            QrType.CONTACT -> {
+                if (s.contactName.isBlank() || s.contactPhone.isBlank()) {
+                    _uiState.update { it.copy(error = "Name and phone number are required") }; return
+                }
+                buildString {
+                    append("BEGIN:VCARD\nVERSION:3.0\n")
+                    append("FN:${s.contactName}\n")
+                    append("TEL:${s.contactPhone}\n")
+                    if (s.contactEmail.isNotBlank()) append("EMAIL:${s.contactEmail}\n")
+                    if (s.contactOrg.isNotBlank()) append("ORG:${s.contactOrg}\n")
+                    append("END:VCARD")
+                }
             }
         }
-        
+
         viewModelScope.launch {
             val bmp = withContext(Dispatchers.Default) {
                 runCatching {
@@ -171,7 +178,7 @@ class QrCodeViewModel : ViewModel() {
                 }.getOrNull()
             }
             if (bmp != null) _uiState.update { it.copy(qrBitmap = bmp, error = null) }
-            else _uiState.update { it.copy(error = "Failed to generate QR code") }
+            else _uiState.update { it.copy(error = "Could not generate QR code. Please try again.") }
         }
     }
 
@@ -181,51 +188,34 @@ class QrCodeViewModel : ViewModel() {
             val filename = "QR_${System.currentTimeMillis()}.png"
             var outputStream: OutputStream? = null
             var success = false
-
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    val contentValues = ContentValues().apply {
+                    val cv = ContentValues().apply {
                         put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
                         put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
                         put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/QR_Generator")
                     }
-                    val imageUri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-                    if (imageUri != null) {
-                        outputStream = context.contentResolver.openOutputStream(imageUri)
-                    }
+                    val uri: Uri? = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv)
+                    if (uri != null) outputStream = context.contentResolver.openOutputStream(uri)
                 } else {
-                    val imagesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + "/QR_Generator"
-                    val dir = File(imagesDir)
+                    val dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "QR_Generator")
                     if (!dir.exists()) dir.mkdirs()
-                    val image = File(dir, filename)
-                    outputStream = FileOutputStream(image)
+                    outputStream = FileOutputStream(File(dir, filename))
                 }
-
-                if (outputStream != null) {
-                    success = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-                    outputStream.flush()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                success = false
-            } finally {
-                outputStream?.close()
-            }
-
-            withContext(Dispatchers.Main) {
-                _uiState.update { it.copy(isSaving = false) }
-                onResult(success)
-            }
+                if (outputStream != null) { success = bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream); outputStream.flush() }
+            } catch (_: Exception) { success = false } finally { outputStream?.close() }
+            withContext(Dispatchers.Main) { _uiState.update { it.copy(isSaving = false) }; onResult(success) }
         }
     }
 }
 
-// ── UI View Composables ───────────────────────────────────────────────────────
+// ── Screen ────────────────────────────────────────────────────────────────────
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QrCodeScreen(
     onBack: () -> Unit,
-    viewModel: QrCodeViewModel = koinViewModel()
+    viewModel: QrCodeViewModel = koinViewModel(),
 ) {
     val uiState  by viewModel.uiState.collectAsState()
     val view     = LocalView.current
@@ -243,211 +233,318 @@ fun QrCodeScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            
-            // Dynamic UI Flow: Show Form Layout only when no QR Code has been generated
-            if (uiState.qrBitmap == null) {
-                
-                // Categorized Horizontal Chips List
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(vertical = 4.dp)
-                        .semantics { contentDescription = "Horizontal navigation menu for scanning categories" },
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    QrType.entries.forEach { type ->
-                        FilterChip(
-                            selected = uiState.qrType == type,
-                            onClick = { viewModel.setQrType(type) },
-                            label = { Text(type.label) }
-                        )
-                    }
-                }
 
-                // Render Input Cards conditionally based on category selection
-                when (uiState.qrType) {
-                    QrType.TEXT -> {
-                        OutlinedTextField(
-                            value = uiState.textInput,
-                            onValueChange = viewModel::setTextInput,
-                            label = { Text("Text or URL Link") },
-                            leadingIcon = { Icon(Icons.Filled.QrCode, null) },
-                            minLines = 2,
-                            modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Input box for direct text or uniform resource locator" }
-                        )
-                    }
-                    QrType.UPI -> {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("UPI Payment Setup", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                                OutlinedTextField(value = uiState.upiId, onValueChange = viewModel::setUpiId,
-                                    label = { Text("UPI Address ID *") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text("example@bank") })
-                                OutlinedTextField(value = uiState.upiName, onValueChange = viewModel::setUpiName,
-                                    label = { Text("Merchant or Payee Name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.upiAmount, onValueChange = viewModel::setUpiAmount,
-                                    label = { Text("Requested Amount (Optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.upiNote, onValueChange = viewModel::setUpiNote,
-                                    label = { Text("Reference Note (Optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            // ── When QR is generated — show result ─────────────────────────
+            if (uiState.qrBitmap != null) {
+                QrResultView(
+                    uiState   = uiState,
+                    context   = context,
+                    view      = view,
+                    haptic    = haptic,
+                    touchVib  = touchVib,
+                    onSave    = { bmp ->
+                        viewModel.saveQrToGallery(context, bmp) { ok ->
+                            if (ok) {
+                                Toast.makeText(context, "Saved to Photos / QR_Generator", Toast.LENGTH_SHORT).show()
+                                view.announceForAccessibility("QR code saved to gallery")
+                            } else {
+                                Toast.makeText(context, "Could not save. Check storage permission.", Toast.LENGTH_SHORT).show()
                             }
                         }
-                    }
-                    QrType.WIFI -> {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("Wireless Network Configuration", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                                OutlinedTextField(value = uiState.wifiSsid, onValueChange = viewModel::setWifiSsid,
-                                    label = { Text("Network Name (SSID) *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.wifiPassword, onValueChange = viewModel::setWifiPassword,
-                                    label = { Text("Access Password") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                Text("Network Protocol Security Type", style = MaterialTheme.typography.bodyMedium)
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    listOf("WPA", "WEP", "nopass").forEach { sec ->
-                                        FilterChip(selected = uiState.wifiSecurity == sec, onClick = { viewModel.setWifiSecurity(sec) },
-                                            label = { Text(if(sec == "nopass") "Open Network" else sec) })
-                                    }
+                    },
+                    onMakeAnother = {
+                        haptic.confirm(view, touchVib)
+                        viewModel.clearQr()
+                        view.announceForAccessibility("Form cleared. Ready for a new QR code.")
+                    },
+                )
+                return@Column
+            }
+
+            // ── QR type selector (dropdown) ────────────────────────────────
+            QrTypeDropdown(
+                selected = uiState.qrType,
+                onSelect = { viewModel.setQrType(it) },
+            )
+
+            // ── Input fields for selected type ─────────────────────────────
+            Card(
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(1.dp),
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text(
+                        when (uiState.qrType) {
+                            QrType.TEXT     -> "Text or Website URL"
+                            QrType.UPI      -> "UPI Payment Details"
+                            QrType.WIFI     -> "Wi-Fi Network Details"
+                            QrType.WHATSAPP -> "WhatsApp Chat Link"
+                            QrType.EMAIL    -> "Email Details"
+                            QrType.CONTACT  -> "Contact Card Details"
+                        },
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+
+                    when (uiState.qrType) {
+                        QrType.TEXT -> OutlinedTextField(
+                            value = uiState.textInput,
+                            onValueChange = viewModel::setTextInput,
+                            label = { Text("Text or URL *") },
+                            leadingIcon = { Icon(Icons.Filled.Link, null) },
+                            placeholder = { Text("e.g. https://example.com or any text") },
+                            minLines = 2,
+                            modifier = Modifier.fillMaxWidth().semantics {
+                                contentDescription = "Enter the text or URL for your QR code"
+                            },
+                        )
+
+                        QrType.UPI -> {
+                            OutlinedTextField(uiState.upiId, viewModel::setUpiId, label = { Text("UPI ID *") }, placeholder = { Text("example@bank") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.upiName, viewModel::setUpiName, label = { Text("Payee Name (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.upiAmount, viewModel::setUpiAmount, label = { Text("Amount in ₹ (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.upiNote, viewModel::setUpiNote, label = { Text("Note (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                        }
+
+                        QrType.WIFI -> {
+                            OutlinedTextField(uiState.wifiSsid, viewModel::setWifiSsid, label = { Text("Wi-Fi Name (SSID) *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.wifiPassword, viewModel::setWifiPassword, label = { Text("Password") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            Text("Security Type", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf("WPA" to "WPA/WPA2", "WEP" to "WEP", "nopass" to "No Password").forEach { (sec, lbl) ->
+                                    FilterChip(
+                                        selected = uiState.wifiSecurity == sec,
+                                        onClick = { viewModel.setWifiSecurity(sec) },
+                                        label = { Text(lbl) },
+                                        modifier = Modifier.semantics { contentDescription = "Security type: $lbl" },
+                                    )
                                 }
                             }
                         }
-                    }
-                    QrType.WHATSAPP -> {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("WhatsApp Immediate Chat Connection", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                                OutlinedTextField(value = uiState.whatsappNumber, onValueChange = viewModel::setWhatsappNumber,
-                                    label = { Text("Mobile Number with Country Code *") }, placeholder = { Text("e.g., 919876543210") },
-                                    singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Enter target communication telephone number with code prefix" })
-                                OutlinedTextField(value = uiState.whatsappMessage, onValueChange = viewModel::setWhatsappMessage,
-                                    label = { Text("Pre-defined Message Dispatch (Optional)") }, minLines = 2, modifier = Modifier.fillMaxWidth())
-                            }
+
+                        QrType.WHATSAPP -> {
+                            OutlinedTextField(uiState.whatsappNumber, viewModel::setWhatsappNumber, label = { Text("Phone Number with Country Code *") }, placeholder = { Text("919876543210") }, singleLine = true, modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Enter phone number including country code, for example 919876543210 for India" })
+                            OutlinedTextField(uiState.whatsappMessage, viewModel::setWhatsappMessage, label = { Text("Pre-filled Message (optional)") }, minLines = 2, modifier = Modifier.fillMaxWidth())
                         }
-                    }
-                    QrType.EMAIL -> {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("Automated Electronic Mail Structure", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                                OutlinedTextField(value = uiState.emailAddress, onValueChange = viewModel::setEmailAddress,
-                                    label = { Text("Recipient Destination Email *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.emailSubject, onValueChange = viewModel::setEmailSubject,
-                                    label = { Text("Subject Parameter Line") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.emailBody, onValueChange = viewModel::setEmailBody,
-                                    label = { Text("Body Text Content Details") }, minLines = 2, modifier = Modifier.fillMaxWidth())
-                            }
+
+                        QrType.EMAIL -> {
+                            OutlinedTextField(uiState.emailAddress, viewModel::setEmailAddress, label = { Text("Email Address *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.emailSubject, viewModel::setEmailSubject, label = { Text("Subject (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.emailBody, viewModel::setEmailBody, label = { Text("Message Body (optional)") }, minLines = 2, modifier = Modifier.fillMaxWidth())
                         }
-                    }
-                    QrType.CONTACT -> {
-                        Card(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Text("vCard Address Book Integration", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-                                OutlinedTextField(value = uiState.contactName, onValueChange = viewModel::setContactName,
-                                    label = { Text("Full Profile Name *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.contactPhone, onValueChange = viewModel::setContactPhone,
-                                    label = { Text("Primary Telephone Contact *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.contactEmail, onValueChange = viewModel::setContactEmail,
-                                    label = { Text("Mailing Address Local Contact") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = uiState.contactOrg, onValueChange = viewModel::setContactOrg,
-                                    label = { Text("Company or Associated Organization") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                            }
+
+                        QrType.CONTACT -> {
+                            OutlinedTextField(uiState.contactName, viewModel::setContactName, label = { Text("Full Name *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.contactPhone, viewModel::setContactPhone, label = { Text("Phone Number *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.contactEmail, viewModel::setContactEmail, label = { Text("Email (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(uiState.contactOrg, viewModel::setContactOrg, label = { Text("Company / Organisation (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                         }
                     }
                 }
+            }
 
-                // Process Request Action Trigger Button
-                Button(
-                    onClick = {
-                        haptic.confirm(view, touchVib)
-                        viewModel.generate()
-                        view.announceForAccessibility("QR Code computation complete. Configuration menus collapsed.")
+            // ── Error ──────────────────────────────────────────────────────
+            AnimatedVisibility(visible = uiState.error != null) {
+                uiState.error?.let { err ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        shape = MaterialTheme.shapes.large,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Filled.ErrorOutline, null, tint = MaterialTheme.colorScheme.onErrorContainer, modifier = Modifier.size(18.dp))
+                            Text(err, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                        }
+                    }
+                }
+            }
+
+            // ── Generate button ────────────────────────────────────────────
+            Button(
+                onClick = {
+                    haptic.confirm(view, touchVib)
+                    viewModel.generate()
+                    view.announceForAccessibility("Generating QR code")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .semantics { contentDescription = "Generate QR code" },
+                shape = MaterialTheme.shapes.large,
+            ) {
+                Icon(Icons.Filled.QrCode, null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Generate QR Code", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+// ── QR Type Dropdown ──────────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QrTypeDropdown(
+    selected: QrType,
+    onSelect: (QrType) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+    ) {
+        OutlinedTextField(
+            value = selected.label,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("What do you want to make a QR for?") },
+            leadingIcon = {
+                Icon(
+                    when (selected) {
+                        QrType.TEXT     -> Icons.Filled.TextFields
+                        QrType.UPI      -> Icons.Filled.CurrencyRupee
+                        QrType.WIFI     -> Icons.Filled.Wifi
+                        QrType.WHATSAPP -> Icons.Filled.Chat
+                        QrType.EMAIL    -> Icons.Filled.Email
+                        QrType.CONTACT  -> Icons.Filled.ContactPage
                     },
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Execute matrix transformation to generate QR graphic" }
-                ) {
-                    Icon(Icons.Filled.QrCode, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Generate QR Code")
-                }
-            }
-
-            // Centralized Reactive Error Feedback Handler
-            uiState.error?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.semantics { contentDescription = "Error notification trace: $it" })
-            }
-
-            // Success State Section: Display Only the Action Hub and Bitmap Preview
-            uiState.qrBitmap?.let { bmp ->
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Card(
-                    modifier = Modifier.size(280.dp).semantics { contentDescription = "Rendered layout representation image of active matrix data code" }
-                ) {
-                    Image(
-                        bitmap = bmp.asImageBitmap(),
-                        contentDescription = "Active matrix array barcode graphics",
-                        modifier = Modifier.fillMaxSize().padding(16.dp)
-                    )
-                }
-
-                // Construct Context-Aware Accessibility Text Summary
-                val accessibleSummary = when (uiState.qrType) {
-                    QrType.TEXT -> "Text base data structure format payload code"
-                    QrType.UPI -> "Financial transactional direct settlement code to ${uiState.upiId}"
-                    QrType.WIFI -> "Access point sharing credential token for network connection target ${uiState.wifiSsid}"
-                    QrType.WHATSAPP -> "Direct instant communication link target shortcut profile number ${uiState.whatsappNumber}"
-                    QrType.EMAIL -> "Electronic correspondence template addressing direct target user ${uiState.emailAddress}"
-                    QrType.CONTACT -> "Business card indexing automation properties metadata card for ${uiState.contactName}"
-                }
-                
-                Text(
-                    text = accessibleSummary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Storage Media Access Serialization Control Engine
-                Button(
-                    onClick = {
-                        haptic.confirm(view, touchVib)
-                        viewModel.saveQrToGallery(context, bmp) { success ->
-                            if (success) {
-                                Toast.makeText(context, "Saved successfully to Pictures/QR_Generator", Toast.LENGTH_SHORT).show()
-                                view.announceForAccessibility("Download complete. Asset committed inside your localized gallery structure storage.")
-                            } else {
-                                Toast.makeText(context, "Error processing download serialization", Toast.LENGTH_SHORT).show()
-                                view.announceForAccessibility("Failed system IO execution routine pipeline.")
-                            }
-                        }
+            },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+            modifier = Modifier
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                .fillMaxWidth()
+                .semantics { contentDescription = "QR type selector. Currently: ${selected.label}." },
+            singleLine = true,
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            QrType.entries.forEach { type ->
+                DropdownMenuItem(
+                    text = { Text(type.label, style = MaterialTheme.typography.bodyMedium) },
+                    onClick = { onSelect(type); expanded = false },
+                    leadingIcon = {
+                        Icon(
+                            when (type) {
+                                QrType.TEXT     -> Icons.Filled.TextFields
+                                QrType.UPI      -> Icons.Filled.CurrencyRupee
+                                QrType.WIFI     -> Icons.Filled.Wifi
+                                QrType.WHATSAPP -> Icons.Filled.Chat
+                                QrType.EMAIL    -> Icons.Filled.Email
+                                QrType.CONTACT  -> Icons.Filled.ContactPage
+                            },
+                            contentDescription = null,
+                            tint = if (type == selected) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     },
-                    enabled = !uiState.isSaving,
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Commit active graphics asset directly into persistent local multimedia storage arrays" }
-                ) {
-                    if (uiState.isSaving) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
-                    } else {
-                        Icon(Icons.Filled.Download, null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Download QR Code")
-                    }
-                }
-
-                // Reset Controller Layout Stack Engine State
-                OutlinedButton(
-                    onClick = {
-                        haptic.confirm(view, touchVib)
-                        viewModel.clearQr()
-                        view.announceForAccessibility("Dynamic clearing cache triggered. Form variables restored onto execution main stack view.")
-                    },
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Purge generated graphics from system memory state and recall input collection templates" }
-                ) {
-                    Icon(Icons.Filled.Delete, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Delete & Create Another")
-                }
+                    trailingIcon = if (type == selected) {
+                        { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                    } else null,
+                    modifier = Modifier.semantics { contentDescription = type.label },
+                )
             }
+        }
+    }
+}
+
+// ── QR Result View ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun QrResultView(
+    uiState: QrUiState,
+    context: Context,
+    view: android.view.View,
+    haptic: HapticHelper,
+    touchVib: Boolean,
+    onSave: (Bitmap) -> Unit,
+    onMakeAnother: () -> Unit,
+) {
+    val bmp = uiState.qrBitmap ?: return
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            "Your QR Code is ready!",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.primary,
+        )
+
+        Card(
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp),
+            modifier = Modifier
+                .size(280.dp)
+                .semantics {
+                    contentDescription = "Generated QR code for ${uiState.qrType.label}. Use the Save button below to save it."
+                },
+        ) {
+            Image(
+                bitmap = bmp.asImageBitmap(),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+            )
+        }
+
+        Text(
+            when (uiState.qrType) {
+                QrType.TEXT     -> "Scan to open: ${uiState.textInput.take(40)}${if (uiState.textInput.length > 40) "…" else ""}"
+                QrType.UPI      -> "Scan to pay: ${uiState.upiId}"
+                QrType.WIFI     -> "Scan to connect to: ${uiState.wifiSsid}"
+                QrType.WHATSAPP -> "Scan to chat with: ${uiState.whatsappNumber}"
+                QrType.EMAIL    -> "Scan to email: ${uiState.emailAddress}"
+                QrType.CONTACT  -> "Scan to save contact: ${uiState.contactName}"
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Button(
+            onClick = { haptic.confirm(view, touchVib); onSave(bmp) },
+            enabled = !uiState.isSaving,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .semantics { contentDescription = "Save QR code to your phone gallery" },
+            shape = MaterialTheme.shapes.large,
+        ) {
+            if (uiState.isSaving) {
+                CircularProgressIndicator(Modifier.size(20.dp), color = MaterialTheme.colorScheme.onPrimary, strokeWidth = 2.dp)
+                Spacer(Modifier.width(8.dp))
+                Text("Saving…")
+            } else {
+                Icon(Icons.Filled.SaveAlt, null, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Save to Gallery", fontWeight = FontWeight.Bold)
+            }
+        }
+
+        OutlinedButton(
+            onClick = onMakeAnother,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = "Go back and create a new QR code" },
+            shape = MaterialTheme.shapes.large,
+        ) {
+            Icon(Icons.Filled.Add, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("Make Another QR Code")
         }
     }
 }
