@@ -1,8 +1,10 @@
 package com.nexuswavetech.nexusplus.features.translator
 
 import androidx.compose.animation.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -10,12 +12,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.mlkit.common.model.DownloadConditions
@@ -27,31 +32,31 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import org.koin.androidx.compose.koinViewModel
 
-// ── Supported language pairs (on-device MLKit) ────────────────────────────────
+// ── Supported languages ───────────────────────────────────────────────────────
 
 data class NexusLanguage(val code: String, val displayName: String)
 
 val SUPPORTED_LANGUAGES = listOf(
     NexusLanguage(TranslateLanguage.ENGLISH,    "English"),
-    NexusLanguage(TranslateLanguage.HINDI,      "Hindi"),
-    NexusLanguage(TranslateLanguage.ARABIC,     "Arabic"),
-    NexusLanguage(TranslateLanguage.SPANISH,    "Spanish"),
-    NexusLanguage(TranslateLanguage.FRENCH,     "French"),
-    NexusLanguage(TranslateLanguage.GERMAN,     "German"),
-    NexusLanguage(TranslateLanguage.PORTUGUESE, "Portuguese"),
-    NexusLanguage(TranslateLanguage.RUSSIAN,    "Russian"),
-    NexusLanguage(TranslateLanguage.JAPANESE,   "Japanese"),
-    NexusLanguage(TranslateLanguage.CHINESE,    "Chinese"),
-    NexusLanguage(TranslateLanguage.KOREAN,     "Korean"),
-    NexusLanguage(TranslateLanguage.ITALIAN,    "Italian"),
-    NexusLanguage(TranslateLanguage.DUTCH,      "Dutch"),
-    NexusLanguage(TranslateLanguage.TURKISH,    "Turkish"),
-    NexusLanguage(TranslateLanguage.POLISH,     "Polish"),
-    NexusLanguage(TranslateLanguage.SWEDISH,    "Swedish"),
-    NexusLanguage(TranslateLanguage.INDONESIAN, "Indonesian"),
-    NexusLanguage(TranslateLanguage.THAI,       "Thai"),
-    NexusLanguage(TranslateLanguage.VIETNAMESE, "Vietnamese"),
-    NexusLanguage(TranslateLanguage.BENGALI,    "Bengali")
+    NexusLanguage(TranslateLanguage.HINDI,      "हिंदी"),
+    NexusLanguage(TranslateLanguage.ARABIC,     "العربية"),
+    NexusLanguage(TranslateLanguage.SPANISH,    "Español"),
+    NexusLanguage(TranslateLanguage.FRENCH,     "Français"),
+    NexusLanguage(TranslateLanguage.GERMAN,     "Deutsch"),
+    NexusLanguage(TranslateLanguage.PORTUGUESE, "Português"),
+    NexusLanguage(TranslateLanguage.RUSSIAN,    "Русский"),
+    NexusLanguage(TranslateLanguage.JAPANESE,   "日本語"),
+    NexusLanguage(TranslateLanguage.CHINESE,    "中文"),
+    NexusLanguage(TranslateLanguage.KOREAN,     "한국어"),
+    NexusLanguage(TranslateLanguage.ITALIAN,    "Italiano"),
+    NexusLanguage(TranslateLanguage.DUTCH,      "Nederlands"),
+    NexusLanguage(TranslateLanguage.TURKISH,    "Türkçe"),
+    NexusLanguage(TranslateLanguage.POLISH,     "Polski"),
+    NexusLanguage(TranslateLanguage.SWEDISH,    "Svenska"),
+    NexusLanguage(TranslateLanguage.INDONESIAN, "Indonesia"),
+    NexusLanguage(TranslateLanguage.THAI,       "ภาษาไทย"),
+    NexusLanguage(TranslateLanguage.VIETNAMESE, "Tiếng Việt"),
+    NexusLanguage(TranslateLanguage.BENGALI,    "বাংলা"),
 )
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
@@ -63,7 +68,7 @@ data class TranslatorUiState(
     val targetLanguage: NexusLanguage = SUPPORTED_LANGUAGES[1],
     val isTranslating: Boolean = false,
     val isDownloading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
 )
 
 class TextTranslatorViewModel : ViewModel() {
@@ -71,7 +76,7 @@ class TextTranslatorViewModel : ViewModel() {
     var uiState by mutableStateOf(TranslatorUiState())
         private set
 
-    fun onInputChanged(v: String)              { uiState = uiState.copy(inputText = v, outputText = "", error = null) }
+    fun onInputChanged(v: String)                 { uiState = uiState.copy(inputText = v, outputText = "", error = null) }
     fun onSourceLanguageChanged(l: NexusLanguage) { uiState = uiState.copy(sourceLanguage = l, outputText = "", error = null) }
     fun onTargetLanguageChanged(l: NexusLanguage) { uiState = uiState.copy(targetLanguage = l, outputText = "", error = null) }
 
@@ -80,36 +85,30 @@ class TextTranslatorViewModel : ViewModel() {
             sourceLanguage = uiState.targetLanguage,
             targetLanguage = uiState.sourceLanguage,
             inputText      = uiState.outputText,
-            outputText     = ""
+            outputText     = "",
         )
     }
 
     fun translate() {
         val text = uiState.inputText.trim()
-        if (text.isBlank()) { uiState = uiState.copy(error = "Enter text to translate"); return }
-
+        if (text.isBlank()) { uiState = uiState.copy(error = "Please enter text to translate"); return }
         viewModelScope.launch {
-            uiState = uiState.copy(isTranslating = true, error = null, isDownloading = false)
+            uiState = uiState.copy(isTranslating = true, error = null, isDownloading = true)
             val options = TranslatorOptions.Builder()
                 .setSourceLanguage(uiState.sourceLanguage.code)
                 .setTargetLanguage(uiState.targetLanguage.code)
                 .build()
             val translator = Translation.getClient(options)
             try {
-                // Download model if not cached
-                uiState = uiState.copy(isDownloading = true)
-                translator.downloadModelIfNeeded(
-                    DownloadConditions.Builder().build()
-                ).await()
+                translator.downloadModelIfNeeded(DownloadConditions.Builder().build()).await()
                 uiState = uiState.copy(isDownloading = false)
-
                 val result = translator.translate(text).await()
                 uiState = uiState.copy(outputText = result, isTranslating = false)
             } catch (e: Exception) {
                 uiState = uiState.copy(
                     isTranslating = false,
                     isDownloading = false,
-                    error = "Translation failed: ${e.localizedMessage}"
+                    error = "Translation failed: ${e.localizedMessage}",
                 )
             } finally {
                 translator.close()
@@ -124,193 +123,448 @@ class TextTranslatorViewModel : ViewModel() {
 @Composable
 fun TextTranslatorScreen(
     onBack: () -> Unit,
-    viewModel: TextTranslatorViewModel = koinViewModel()
+    viewModel: TextTranslatorViewModel = koinViewModel(),
 ) {
     val s         = viewModel.uiState
     val clipboard = LocalClipboardManager.current
     val view      = LocalView.current
 
     LaunchedEffect(s.isDownloading) {
-        if (s.isDownloading) view.announceForAccessibility("Downloading language model. This only happens once per language pair.")
+        if (s.isDownloading) view.announceForAccessibility("Downloading language model. This only happens once.")
     }
     LaunchedEffect(s.outputText) {
         if (s.outputText.isNotBlank()) view.announceForAccessibility("Translation complete.")
     }
 
-    Column(Modifier.fillMaxSize()) {
-        NexusTopBar(title = "Text Translator", onBack = onBack)
-
+    Scaffold(
+        topBar = { NexusTopBar(title = "Translator", onBack = onBack) },
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { padding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
         ) {
-            // Info card
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-            ) {
-                Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Icon(Icons.Filled.OfflineBolt, null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(20.dp))
-                    Text(
-                        "Offline translation",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
 
-            // Language selectors + swap
+            // ── Offline badge ──────────────────────────────────────────────
             Row(
-                Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                LanguageDropdown(
-                    selected  = s.sourceLanguage,
-                    label     = "From",
-                    onSelect  = viewModel::onSourceLanguageChanged,
-                    modifier  = Modifier.weight(1f)
+                Icon(
+                    Icons.Filled.OfflineBolt,
+                    null,
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                    modifier = Modifier.size(16.dp),
                 )
-                IconButton(
-                    onClick  = { viewModel.swapLanguages(); view.announceForAccessibility("Languages swapped") },
-                    modifier = Modifier.semantics { contentDescription = "Swap source and target languages" }
-                ) {
-                    Icon(Icons.Filled.SwapHoriz, null)
-                }
-                LanguageDropdown(
-                    selected  = s.targetLanguage,
-                    label     = "To",
-                    onSelect  = viewModel::onTargetLanguageChanged,
-                    modifier  = Modifier.weight(1f)
+                Text(
+                    "Offline translation — no internet required",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             }
 
-            // Input
-            OutlinedTextField(
-                value         = s.inputText,
-                onValueChange = viewModel::onInputChanged,
-                label         = { Text("Enter text (${s.sourceLanguage.displayName})") },
-                modifier      = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 120.dp)
-                    .semantics { contentDescription = "Text to translate from ${s.sourceLanguage.displayName}." },
-                maxLines      = 8,
-                trailingIcon  = {
-                    if (s.inputText.isNotBlank()) {
-                        IconButton(onClick = { viewModel.onInputChanged("") }) {
-                            Icon(Icons.Filled.Clear, "Clear input")
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+
+                // ── Language selector panel ────────────────────────────────
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // Source language
+                        LanguagePickerButton(
+                            language = s.sourceLanguage,
+                            label = "From",
+                            onSelect = viewModel::onSourceLanguageChanged,
+                            modifier = Modifier.weight(1f),
+                        )
+
+                        // Swap button
+                        FilledIconButton(
+                            onClick = {
+                                viewModel.swapLanguages()
+                                view.announceForAccessibility("Languages swapped")
+                            },
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .size(40.dp)
+                                .semantics { contentDescription = "Swap source and target languages" },
+                            colors = IconButtonDefaults.filledIconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            ),
+                        ) {
+                            Icon(Icons.Filled.SwapHoriz, contentDescription = null)
+                        }
+
+                        // Target language
+                        LanguagePickerButton(
+                            language = s.targetLanguage,
+                            label = "To",
+                            onSelect = viewModel::onTargetLanguageChanged,
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+
+                // ── Input field ────────────────────────────────────────────
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                s.sourceLanguage.displayName,
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                            if (s.inputText.isNotBlank()) {
+                                IconButton(
+                                    onClick = { viewModel.onInputChanged("") },
+                                    modifier = Modifier.size(28.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Clear,
+                                        "Clear input",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        BasicTranslatorTextField(
+                            value = s.inputText,
+                            onValueChange = viewModel::onInputChanged,
+                            placeholder = "Type or paste text here…",
+                            contentDesc = "Text to translate from ${s.sourceLanguage.displayName}.",
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = {
+                                view.announceForAccessibility(
+                                    "Translating from ${s.sourceLanguage.displayName} to ${s.targetLanguage.displayName}"
+                                )
+                                viewModel.translate()
+                            },
+                            enabled = !s.isTranslating && s.inputText.isNotBlank(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp)
+                                .semantics {
+                                    contentDescription = "Translate from ${s.sourceLanguage.displayName} to ${s.targetLanguage.displayName}."
+                                },
+                            shape = MaterialTheme.shapes.large,
+                        ) {
+                            AnimatedContent(targetState = s.isTranslating, label = "btn") { loading ->
+                                if (loading) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        CircularProgressIndicator(
+                                            Modifier.size(18.dp),
+                                            strokeWidth = 2.dp,
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                        Text(if (s.isDownloading) "Downloading model…" else "Translating…")
+                                    }
+                                } else {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        Icon(Icons.Filled.Translate, null, modifier = Modifier.size(18.dp))
+                                        Text(
+                                            "Translate",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            )
 
-            // Translate button
-            Button(
-                onClick  = {
-                    view.announceForAccessibility("Translating from ${s.sourceLanguage.displayName} to ${s.targetLanguage.displayName}")
-                    viewModel.translate()
-                },
-                enabled  = !s.isTranslating && s.inputText.isNotBlank(),
-                modifier = Modifier.fillMaxWidth().height(52.dp).semantics {
-                    contentDescription = "Translate text from ${s.sourceLanguage.displayName} to ${s.targetLanguage.displayName}."
+                // ── Error ──────────────────────────────────────────────────
+                AnimatedVisibility(visible = s.error != null) {
+                    if (s.error != null) {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                            ),
+                            shape = MaterialTheme.shapes.large,
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Icon(
+                                    Icons.Filled.ErrorOutline,
+                                    null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                                Text(
+                                    s.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                )
+                            }
+                        }
+                    }
                 }
-            ) {
-                if (s.isTranslating) {
-                    CircularProgressIndicator(
-                        Modifier.size(20.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(if (s.isDownloading) "Downloading model…" else "Translating…")
-                } else {
-                    Icon(Icons.Filled.Translate, null)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Translate")
+
+                // ── Output ─────────────────────────────────────────────────
+                AnimatedVisibility(
+                    visible = s.outputText.isNotBlank(),
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically(),
+                ) {
+                    if (s.outputText.isNotBlank()) {
+                        Card(
+                            shape = MaterialTheme.shapes.extraLarge,
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            ),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        s.targetLanguage.displayName,
+                                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.semantics { heading() },
+                                    )
+                                    IconButton(
+                                        onClick = {
+                                            clipboard.setText(AnnotatedString(s.outputText))
+                                            view.announceForAccessibility("Translation copied to clipboard")
+                                        },
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .semantics { contentDescription = "Copy translation to clipboard" },
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.ContentCopy,
+                                            null,
+                                            modifier = Modifier.size(18.dp),
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        )
+                                    }
+                                }
+
+                                Spacer(Modifier.height(8.dp))
+
+                                Text(
+                                    s.outputText,
+                                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .semantics { contentDescription = "Translation: ${s.outputText}" },
+                                )
+
+                                Spacer(Modifier.height(12.dp))
+
+                                OutlinedButton(
+                                    onClick = {
+                                        clipboard.setText(AnnotatedString(s.outputText))
+                                        view.announceForAccessibility("Translation copied to clipboard")
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    ),
+                                    border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
+                                        brush = androidx.compose.ui.graphics.SolidColor(
+                                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.4f)
+                                        )
+                                    ),
+                                ) {
+                                    Icon(Icons.Filled.ContentCopy, null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text("Copy Translation")
+                                }
+                            }
+                        }
+                    }
                 }
-            }
 
-            // Error
-            if (s.error != null) {
-                Text(s.error, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-
-            // Output
-            AnimatedVisibility(s.outputText.isNotBlank()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HorizontalDivider()
-                    Text(
-                        "${s.targetLanguage.displayName} translation",
-                        style    = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                        color    = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.semantics { heading() }
-                    )
+                // ── Tip card ───────────────────────────────────────────────
+                if (s.outputText.isBlank() && s.inputText.isBlank() && !s.isTranslating) {
                     Card(
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                        modifier = Modifier.fillMaxWidth()
+                        shape = MaterialTheme.shapes.extraLarge,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        ),
                     ) {
-                        Text(
-                            s.outputText,
-                            Modifier
+                        Column(
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
-                                .semantics { contentDescription = "Translation: ${s.outputText}" },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                    OutlinedButton(
-                        onClick  = {
-                            clipboard.setText(AnnotatedString(s.outputText))
-                            view.announceForAccessibility("Translation copied to clipboard")
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.ContentCopy, null)
-                        Spacer(Modifier.width(4.dp))
-                        Text("Copy Translation")
+                                .padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Icon(
+                                Icons.Filled.Translate,
+                                contentDescription = null,
+                                modifier = Modifier.size(40.dp),
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            )
+                            Text(
+                                "20 Languages, 100% Offline",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                            Text(
+                                "First translation downloads the language model (≈ 30 MB). After that, everything works offline.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     }
                 }
+
+                Spacer(Modifier.height(16.dp))
             }
         }
     }
 }
 
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun BasicTranslatorTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    contentDesc: String,
+) {
+    androidx.compose.foundation.text.BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 120.dp)
+            .semantics { contentDescription = contentDesc },
+        textStyle = MaterialTheme.typography.bodyLarge.copy(
+            color = MaterialTheme.colorScheme.onSurface,
+            lineHeight = 26.sp,
+        ),
+        maxLines = 10,
+        decorationBox = { inner ->
+            if (value.isEmpty()) {
+                Text(
+                    placeholder,
+                    style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 26.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                )
+            }
+            inner()
+        },
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LanguageDropdown(
-    selected: NexusLanguage,
+private fun LanguagePickerButton(
+    language: NexusLanguage,
     label: String,
     onSelect: (NexusLanguage) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
-        expanded        = expanded,
+        expanded = expanded,
         onExpandedChange = { expanded = it },
-        modifier        = modifier
+        modifier = modifier,
     ) {
-        OutlinedTextField(
-            value             = selected.displayName,
-            onValueChange     = {},
-            readOnly          = true,
-            label             = { Text(label) },
-            trailingIcon      = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier          = Modifier
+        Column(
+            modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                 .fillMaxWidth()
-                .semantics { contentDescription = "$label language: ${selected.displayName}" },
-            singleLine        = true
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                .clip(MaterialTheme.shapes.large)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                .padding(horizontal = 12.dp, vertical = 10.dp)
+                .semantics { contentDescription = "$label language: ${language.displayName}" },
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(2.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    language.displayName,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                )
+                Icon(
+                    Icons.Filled.ArrowDropDown,
+                    null,
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
             SUPPORTED_LANGUAGES.forEach { lang ->
                 DropdownMenuItem(
-                    text     = { Text(lang.displayName) },
-                    onClick  = { onSelect(lang); expanded = false },
-                    modifier = Modifier.semantics { contentDescription = lang.displayName }
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Text(lang.displayName, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    },
+                    onClick = { onSelect(lang); expanded = false },
+                    trailingIcon = if (lang == language) {
+                        { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                    } else null,
+                    modifier = Modifier.semantics { contentDescription = lang.displayName },
                 )
             }
         }

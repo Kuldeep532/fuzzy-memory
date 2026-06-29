@@ -39,9 +39,25 @@ class GeminiRepository(private val settings: SettingsRepository) {
     // ── Public API ───────────────────────────────────────────────────────────
 
     /**
-     * Returns true only when the user has stored a non-empty Gemini API key.
+     * Returns the effective Gemini API key:
+     *  1. User-entered key stored in DataStore (highest priority)
+     *  2. Key baked into BuildConfig at build time via GEMINI_API_KEY env var (GitHub Secrets)
+     *  3. Empty string → Gemini unavailable, fallback to free endpoints
      */
-    suspend fun isAvailable(): Boolean = settings.geminiApiKey.first().isNotBlank()
+    private suspend fun effectiveApiKey(): String {
+        val userKey = settings.geminiApiKey.first().trim()
+        if (userKey.isNotBlank()) return userKey
+        return try {
+            val clazz = Class.forName("com.nexuswavetech.nexusplus.BuildConfig")
+            val field = clazz.getField("GEMINI_API_KEY")
+            (field.get(null) as? String)?.trim()?.takeIf { it.isNotBlank() } ?: ""
+        } catch (_: Exception) { "" }
+    }
+
+    /**
+     * Returns true when a Gemini API key is available (user-entered or from build-time secret).
+     */
+    suspend fun isAvailable(): Boolean = effectiveApiKey().isNotBlank()
 
     /**
      * Sends a multi-turn conversation to Gemini and returns the text reply.
@@ -53,7 +69,7 @@ class GeminiRepository(private val settings: SettingsRepository) {
         history: List<GeminiMessage>,
         systemPrompt: String = AIRA_SYSTEM_PROMPT,
     ): String? = withContext(Dispatchers.IO) {
-        val key   = settings.geminiApiKey.first().trim()
+        val key   = effectiveApiKey()
         val model = settings.geminiModel.first().trim()
         if (key.isBlank()) return@withContext null
 
@@ -67,7 +83,7 @@ class GeminiRepository(private val settings: SettingsRepository) {
      * Returns null when no API key is set.
      */
     suspend fun vision(prompt: String, image: Bitmap): String? = withContext(Dispatchers.IO) {
-        val key   = settings.geminiApiKey.first().trim()
+        val key   = effectiveApiKey()
         val model = settings.geminiModel.first().trim()
         if (key.isBlank()) return@withContext null
 

@@ -149,6 +149,11 @@ android {
         val admobAppId = environmentVariable("ADMOB_APP_ID")
             ?: "ca-app-pub-3940256099942544~3347511713"
         manifestPlaceholders["ADMOB_APP_ID"] = admobAppId
+
+        // Gemini API key — set GEMINI_API_KEY in GitHub Secrets / local env.
+        // When set, the app uses it as the default key for Aira AI (Gemini) on first launch.
+        val geminiApiKey = environmentVariable("GEMINI_API_KEY") ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     signingConfigs {

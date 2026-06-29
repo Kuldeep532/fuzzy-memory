@@ -63,13 +63,28 @@ description: Durable constraints and decisions from the Nexus Plus Android app r
   - `NexusPlusTheme.kt` — wraps MaterialTheme; reads SettingsRepository.theme (DARK/LIGHT/SYSTEM)
 - Platform actuals: androidMain uses Material You on API 31+; iOS/Desktop are no-op.
 - All screens must use `MaterialTheme.colorScheme.*` — no hardcoded Color() in composables.
+- **Why:** Screens using hardcoded Color() break in dark mode. Always use MaterialTheme tokens.
 
 ## Social Media Screen (earlier session)
 - Removed: Twitter/X, YouTube, GitHub, LinkedIn
 - Kept: Official Website, Instagram, Facebook, WhatsApp, Telegram, Discord, Support Email
 
-## NSE TTS Screen (earlier session)
-- Complete redesign — see original notes for section breakdown.
+## Screen Redesigns Completed
+- **NexusTtsScreen.kt** — 7-step wizard (Engine → Language → Voice → Speed/Pitch → Test → Reading Mode → Accessibility). Large touch targets for blind users. FilterChips for language, radio buttons for voices, quick-phrase chips for testing.
+- **NexusDialerScreen.kt** — Tab strip (Keypad/Contacts), animated content switching, dialer keys with letter subtext, avatar circles for contacts, call FAB.
+- **TextTranslatorScreen.kt** — Offline badge bar, card-based layout, BasicTextField (dark/light safe), animated output card, language picker buttons (not dropdowns), proper Material3 throughout.
+- All screens: no hardcoded colors, all use MaterialTheme.colorScheme.* for full Light/Dark mode support.
+
+## Firebase / Google Sign-In Fix
+- `WelcomeScreen.kt` — added placeholder detection before calling GoogleSignIn. If `default_web_client_id` == "YOUR_WEB_CLIENT_ID" or starts with "YOUR_", shows a clear error instead of cryptic "API not valid" from Play Services.
+- **Why:** The placeholder in `strings.xml` is never replaced without a real `google-services.json`. Must check before calling the API.
+- For real Firebase setup: add `GOOGLE_SERVICES_JSON` environment variable (CI/CD) or place `google-services.json` in `NexusPlus/app/`.
+
+## Gemini API Key Integration
+- **3-level key priority**: (1) user-entered key in DataStore (Settings screen), (2) `BuildConfig.GEMINI_API_KEY` baked in at build time from `GEMINI_API_KEY` env var / GitHub Secret, (3) empty → Gemini disabled, Aira falls back to free endpoints.
+- `app/build.gradle.kts`: `buildConfigField("String", "GEMINI_API_KEY", "\"${environmentVariable("GEMINI_API_KEY") ?: "\"}")`
+- `GeminiRepository.kt`: `effectiveApiKey()` method implements the 3-level priority lookup. Both `chat()` and `vision()` use `effectiveApiKey()`.
+- `SettingsScreen.kt`: New "AI & Aira" section with API key field (masked), model selector (Flash/Pro), and "Use Gemini as Primary" toggle. Added `PasswordVisualTransformation` + `VisualTransformation` imports.
 
 ## Web Showcase
 - Radio and IPTV feature cards removed from index.html (earlier session)

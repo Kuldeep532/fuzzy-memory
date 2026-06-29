@@ -144,13 +144,16 @@ fun WelcomeScreen(
                 isLoading = uiState.isLoading,
                 enabled   = consentGranted,
                 onClick   = {
-                    runCatching {
-                        defaultWebClientId
-                    }.onFailure {
+                    val webClientId = defaultWebClientId
+                    if (webClientId.isBlank() ||
+                        webClientId == "YOUR_WEB_CLIENT_ID" ||
+                        webClientId.startsWith("YOUR_")) {
                         viewModel.onGoogleSignInError(
-                            "Google Sign-In not configured — add a valid google-services.json with OAuth web client ID"
+                            "Firebase not set up yet. Please add google-services.json to enable Google Sign-In, or continue as Guest."
                         )
-                    }.onSuccess { webClientId ->
+                        return@GoogleSignInButton
+                    }
+                    runCatching {
                         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                             .requestIdToken(webClientId)
                             .requestEmail()
@@ -159,6 +162,10 @@ fun WelcomeScreen(
                         client.signOut().addOnCompleteListener {
                             googleLauncher.launch(client.signInIntent)
                         }
+                    }.onFailure { e ->
+                        viewModel.onGoogleSignInError(
+                            "Sign-in setup failed: ${e.localizedMessage ?: "Unknown error"}. Please continue as Guest."
+                        )
                     }
                 },
             )

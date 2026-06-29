@@ -13,6 +13,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
@@ -31,6 +33,11 @@ fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}) {
     val highContrast by settings.highContrast.collectAsState(initial = false)
     val reduceMotion by settings.reduceMotion.collectAsState(initial = false)
     val fontScale    by settings.fontScale.collectAsState(initial = SettingsRepository.FONT_NORMAL)
+
+    // ── AI / Gemini ──────────────────────────────────────────────────────────
+    val geminiApiKey      by settings.geminiApiKey.collectAsState(initial = "")
+    val geminiModel       by settings.geminiModel.collectAsState(initial = SettingsRepository.GEMINI_MODEL_FLASH)
+    val airaGeminiPrimary by settings.airaGeminiPrimary.collectAsState(initial = false)
 
     // ── Security ────────────────────────────────────────────────────────────
     val vaultLockMins by settings.vaultAutoLockMinutes.collectAsState(initial = SettingsRepository.VAULT_LOCK_DEFAULT)
@@ -376,6 +383,81 @@ fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}) {
                             ),
                             selected = calcAngleUnit,
                             onSelect = { scope.launch { settings.setCalculatorAngleUnit(it) } },
+                        )
+                    }
+                }
+            }
+
+            // ── AI & Aira ─────────────────────────────────────────────────
+            item {
+                SettingsSectionHeader(
+                    title = "AI & Aira",
+                    icon  = Icons.Filled.AutoAwesome,
+                )
+            }
+
+            item {
+                SettingsCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            verticalAlignment    = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Icon(
+                                Icons.Filled.Key,
+                                contentDescription = null,
+                                tint     = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Text(
+                                "Gemini API Key",
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        Text(
+                            "Enables Aira AI to use Google Gemini as primary engine. Get a free key at aistudio.google.com.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedTextField(
+                            value           = geminiApiKey,
+                            onValueChange   = { scope.launch { settings.setGeminiApiKey(it.trim()) } },
+                            label           = { Text("Gemini API Key") },
+                            placeholder     = { Text("AIza…") },
+                            singleLine      = true,
+                            modifier        = Modifier
+                                .fillMaxWidth()
+                                .semantics { contentDescription = "Gemini API key input. ${if (geminiApiKey.isNotBlank()) "Key is set." else "No key set."}" },
+                            trailingIcon    = if (geminiApiKey.isNotBlank()) {
+                                { Icon(Icons.Filled.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp)) }
+                            } else null,
+                            visualTransformation = if (geminiApiKey.isNotBlank())
+                                PasswordVisualTransformation()
+                            else
+                                VisualTransformation.None,
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        Text("Gemini model", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        SettingsDropdown(
+                            options = listOf(
+                                SettingsRepository.GEMINI_MODEL_FLASH to "Gemini 1.5 Flash (faster, free tier)",
+                                SettingsRepository.GEMINI_MODEL_PRO   to "Gemini 1.5 Pro (smarter, paid)",
+                            ),
+                            selected = geminiModel,
+                            onSelect = { scope.launch { settings.setGeminiModel(it) } },
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        SettingsToggleRow(
+                            icon     = Icons.Filled.AutoAwesome,
+                            title    = "Use Gemini as Primary",
+                            subtitle = "When enabled, Aira uses Gemini first. Falls back to free AI endpoints if Gemini fails.",
+                            checked  = airaGeminiPrimary,
+                            onToggle = { scope.launch { settings.setAiraGeminiPrimary(it) } },
                         )
                     }
                 }
