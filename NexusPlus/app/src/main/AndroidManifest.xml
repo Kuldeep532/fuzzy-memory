@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ── Network ─────────────────────────────────────────────────────────
          Used by: AI Image Generator (Pollinations API), News & ePapers (RSS),
@@ -102,6 +103,15 @@
     -->
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <!-- ── Package Visibility (API 30+) ──────────────────────────────────────
+         Used by: Installed Apps screen (AppInfoCenterScreen) — enumerates all
+         user-installed packages to show name, version, size, and install date.
+         QUERY_ALL_PACKAGES is required on Android 11+ for complete package list.
+         No package data is transmitted or stored beyond the device.
+    -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <!-- ── Exact Alarms ──────────────────────────────────────────────────────
          Used by: My Reminder, Alarm Clock (fire alerts at precise user-set times).

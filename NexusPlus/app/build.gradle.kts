@@ -51,50 +51,48 @@ val prepareGoogleServicesJson by tasks.registering {
 
     doLast {
         val target = file("google-services.json")
-        when {
-            googleServicesJson != null -> {
-                target.writeText(googleServicesJson!!)
-                logger.lifecycle("google-services.json written from GOOGLE_SERVICES_JSON environment variable.")
-            }
-            target.exists() -> {
-                logger.lifecycle("google-services.json already present locally — skipping generation.")
-            }
-            else -> {
-                target.writeText(
-                    """
-                    {
-                      "project_info": {
-                        "project_number": "000000000000",
-                        "project_id": "nexusplus-local-debug",
-                        "storage_bucket": "nexusplus-local-debug.appspot.com"
-                      },
-                      "client": [
-                        {
-                          "client_info": {
-                            "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
-                            "android_client_info": {
-                              "package_name": "com.nexuswavetech.nexusplus"
-                            }
-                          },
-                          "oauth_client": [],
-                          "api_key": [
-                            {
-                              "current_key": "local-debug-placeholder-not-for-production"
-                            }
-                          ],
-                          "services": {
-                            "appinvite_service": {
-                              "other_platform_oauth_client": []
-                            }
-                          }
-                        }
-                      ],
-                      "configuration_version": "1"
-                    }
-                    """.trimIndent()
-                )
-                logger.lifecycle("google-services.json debug placeholder generated. Set GOOGLE_SERVICES_JSON env var for production builds.")
-            }
+        if (googleServicesJson != null) {
+            // Always overwrite — ensures CI/CD secret is the authoritative source.
+            // This intentionally replaces any stale or placeholder file.
+            target.writeText(googleServicesJson!!)
+            logger.lifecycle("✓ google-services.json written from GOOGLE_SERVICES_JSON secret.")
+        } else if (target.exists()) {
+            // Developer placed a real file locally — leave it untouched.
+            logger.lifecycle("✓ google-services.json found locally — skipping generation.")
+        } else {
+            // No secret and no local file → write a debug placeholder so the build does not fail.
+            target.writeText(
+                """{
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "nexusplus-local-debug",
+    "storage_bucket": "nexusplus-local-debug.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "android_client_info": {
+          "package_name": "com.nexuswavetech.nexusplus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "local-debug-placeholder-not-for-production"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}"""
+            )
+            logger.lifecycle("⚠ google-services.json placeholder generated — set GOOGLE_SERVICES_JSON secret for real builds.")
         }
     }
 }
