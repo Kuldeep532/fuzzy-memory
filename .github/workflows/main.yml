@@ -37,7 +37,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode Google Services JSON
+      - name: Decode Google Services JSON (Global & App Level)
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
@@ -45,8 +45,12 @@ jobs:
             echo "GOOGLE_SERVICES_JSON secret is not set" >&2
             exit 1
           fi
+          # Save globally in the working directory (NexusPlus/)
+          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > google-services.json
+          
+          # Also save inside the app module explicitly to prevent any plugin issues
           mkdir -p app
-          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
+          cp google-services.json app/google-services.json
 
       - name: Inject Configuration Files
         run: |
