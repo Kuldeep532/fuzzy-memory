@@ -37,11 +37,19 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Decode Google Services JSON
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
+            echo "GOOGLE_SERVICES_JSON secret is not set" >&2
+            exit 1
+          fi
+          mkdir -p app
+          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > app/google-services.json
+
       - name: Inject Configuration Files
         run: |
-          mkdir -p app
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > app/google-services.json
-
           touch local.properties
           echo "admob.app.id=$ADMOB_APP_ID" >> local.properties
           echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
