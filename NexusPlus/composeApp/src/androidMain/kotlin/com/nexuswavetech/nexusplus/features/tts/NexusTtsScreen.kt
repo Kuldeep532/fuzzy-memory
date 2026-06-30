@@ -23,7 +23,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nexuswavetech.nexusplus.features.tts.NseTtsEngineInfo
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 
@@ -34,6 +36,8 @@ fun NexusTtsScreen(
     viewModel: NseViewModel = koinViewModel(),
 ) {
     val view          = LocalView.current
+    val scope         = rememberCoroutineScope()
+    val snack         = remember { SnackbarHostState() }
 
     val engineState   by viewModel.engineState.collectAsState()
     val voices        by viewModel.availableVoices.collectAsState()
@@ -44,6 +48,8 @@ fun NexusTtsScreen(
     val currentMode   by viewModel.mode.collectAsState()
     val selectedVoice by viewModel.selectedVoice.collectAsState()
     val secondaryVoice by viewModel.secondaryVoice.collectAsState()
+    val hasUnsaved    by viewModel.hasUnsavedChanges.collectAsState()
+
     val isReady = engineState == NseState.Ready || engineState == NseState.Speaking
 
     // Infer current mode label
@@ -54,13 +60,34 @@ fun NexusTtsScreen(
         is NseSpeechMode.SingleVoice -> "Single"
     }
 
-    // Auto-save whenever settings change (TalkBack-style — no manual Save button)
-    LaunchedEffect(speechRate, pitch, currentMode, selectedVoice, secondaryVoice) {
-        viewModel.saveSettings()
-    }
-
     Scaffold(
-        topBar = { NexusTopBar(title = "Text to Speech", onBack = onBack) },
+        topBar = { NexusTopBar(title = "Nexus Speech Engine", onBack = onBack) },
+        snackbarHost = { SnackbarHost(snack) },
+        bottomBar = {
+            if (hasUnsaved) Surface(tonalElevation = 4.dp, shadowElevation = 8.dp) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    OutlinedButton(
+                        onClick = { viewModel.resetSettings(); scope.launch { snack.showSnackbar("Reset to defaults") } },
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(Icons.Filled.Refresh, null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Reset")
+                    }
+                    Button(
+                        onClick = { viewModel.saveSettings(); scope.launch { snack.showSnackbar("Settings saved") } },
+                        modifier = Modifier.weight(2f),
+                    ) {
+                        Icon(Icons.Filled.Save, null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Save", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
         Column(
@@ -69,6 +96,26 @@ fun NexusTtsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
+
+            // ── Engine selector ──────────────────────────────────────────────
+            val engines        by viewModel.engines.collectAsState()
+            val selectedEngine   by viewModel.selectedEngine.collectAsState()
+
+            if (engines.isNotEmpty()) {
+                EngineDropdown(
+                    engines      = engines,
+                    selected     = selectedEngine,
+                    onSelect     = viewModel::onEngineSelected,
+                )
+            }
+
+            // ── Predictive Pre-Buffer toggle ───────────────────────────────
+            val predictiveBuffer by viewModel.predictivePreBuffer.collectAsState()
+
+            PredictiveBufferToggle(
+                enabled  = predictiveBuffer,
+                onToggle = viewModel::onPredictivePreBufferChange,
+            )
 
             // ── Engine status banner ─────────────────────────────────────────
             val bannerColor by animateColorAsState(
@@ -86,9 +133,9 @@ fun NexusTtsScreen(
             }
             val bannerText = when (engineState) {
                 NseState.Initialising -> "Setting up voice engine…"
-                NseState.Ready        -> "Ready · $currentModeLabel mode"
+                NseState.Ready        -> "Ready · Mode: $currentModeLabel"
                 NseState.Speaking     -> "Speaking…"
-                else                  -> "Install a TTS engine from Play Store and download voices for offline use"
+                else                  -> "Voice engine error — install a TTS engine from Play Store"
             }
             Row(
                 modifier = Modifier
@@ -143,12 +190,6 @@ fun NexusTtsScreen(
                     },
                 )
 
-                // ── Language selector (visible in ALL modes) ─────────────────
-                LanguageSelectorCard(
-                    selectedLanguage = selectedVoice?.locale?.toLanguageTag() ?: "",
-                    onLanguageSelected = viewModel::onLanguageSelected,
-                )
-
                 // ── Primary voice dropdown ────────────────────────────────────
                 val primaryOptions: List<Pair<NseVoiceProfile?, String>> =
                     listOf(null to "Auto (detect language)") +
@@ -176,13 +217,51 @@ fun NexusTtsScreen(
                     )
                 }
 
+                // ── Language selector (visible in ALL modes) ─────────────────
+                MixLanguageSelector(
+                    label = "Preferred Language",
+                    selectedLanguage = selectedVoice?.locale?.toLanguageTag() ?: "",
+                    onLanguageSelected = viewModel::onLanguageSelected,
+                )
 
                 // ── Mix mode extra hint ──────────────────────────────────────
                 AnimatedVisibility(visible = currentModeLabel == "Mix") {
                     Text("Mix mode auto-detects multiple languages from input text", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                AnimatedVisibility(visible = currentModeLabel == "Auto") {
-                    Text("Auto mode detects language automatically from your text", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                // ── Force TalkBack default rate toggle (NEW) ─────────────────
+                val forceTalkBackRate by viewModel.forceTalkBackRate.collectAsState()
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(1.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = "Force TalkBack default speech rate. ${if (forceTalkBackRate) "Enabled" else "Disabled"}. When on, pitch and speed sliders use Android TalkBack default values instead of custom ones."
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Use TalkBack Defaults",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            )
+                            Text(
+                                "Match Android accessibility speech rate & pitch",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = forceTalkBackRate,
+                            onCheckedChange = viewModel::onForceTalkBackRateChange,
+                        )
+                    }
                 }
 
                 // ── Text input ────────────────────────────────────────────────
@@ -337,10 +416,10 @@ fun NexusTtsScreen(
 // ── Mode dropdown ─────────────────────────────────────────────────────────────
 
 private val MODE_LABELS = listOf(
-    "Auto"   to "Detects language automatically",
-    "Mix"    to "Switches voice per language segment",
-    "Dual"   to "Primary + secondary voice",
-    "Single" to "One voice for everything",
+    "Auto"   to "Engine detects language automatically",
+    "Mix"    to "Multi-language, voiced per segment",
+    "Dual"   to "Two voices: primary & secondary language",
+    "Single" to "One chosen voice for all text",
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -492,6 +571,121 @@ private fun SliderCard(
                 Text(mid, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(hi,  style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+    }
+}
+
+// ── Engine Dropdown ────────────────────────────────────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EngineDropdown(
+    engines: List<NseTtsEngineInfo>,
+    selected: NseTtsEngineInfo?,
+    onSelect: (NseTtsEngineInfo?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = selected?.label ?: "System default"
+
+    Card(
+        shape  = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                "Voice Engine",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            Text(
+                "Select the speech synthesis engine installed on this device.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+                OutlinedTextField(
+                    value         = selectedLabel,
+                    onValueChange = {},
+                    readOnly      = true,
+                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors        = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier      = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                        .fillMaxWidth()
+                        .semantics { contentDescription = "Voice engine selector. Currently: $selectedLabel." },
+                    singleLine    = true,
+                    leadingIcon   = { Icon(Icons.Filled.SettingsVoice, null, modifier = Modifier.size(18.dp)) },
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(
+                        text = { Text("System default", style = MaterialTheme.typography.bodyMedium) },
+                        onClick = { onSelect(null); expanded = false },
+                        leadingIcon = if (selected == null) {
+                            { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                        } else null,
+                    )
+                    engines.forEach { engine ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(engine.label, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                                    Text(engine.packageName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            },
+                            onClick = { onSelect(engine); expanded = false },
+                            leadingIcon = if (engine.packageName == selected?.packageName) {
+                                { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                            } else null,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Predictive Pre-Buffer Toggle ────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun PredictiveBufferToggle(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    Card(
+        shape  = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "Predictive Pre-Buffer. ${if (enabled) "On" else "Off"}. Pre-synthesizes upcoming sentences so even slow engines feel instant."
+                },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Predictive Pre-Buffer",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    "Pre-synthesizes upcoming sentences. Makes slow engines feel instant.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle,
+                modifier = Modifier.semantics { contentDescription = "Toggle predictive pre-buffer" },
+            )
         }
     }
 }
