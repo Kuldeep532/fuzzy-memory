@@ -318,7 +318,7 @@ class NseViewModel(
                 repository.switchEngine(engine.packageName)
                     .onSuccess {
                         // Re-initialise voice list after engine switch
-                        _availableVoices.value = repository.availableVoices()
+                        repository.refreshVoices()
                         _engines.value = repository.availableEngines()
                     }
             }

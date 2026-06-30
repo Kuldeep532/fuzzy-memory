@@ -103,6 +103,10 @@ class NseRepository(private val engine: NseEngine) {
     suspend fun switchEngine(packageName: String): Result<Unit> =
         engine.switchEngine(packageName)
 
+    fun refreshVoices() {
+        _availableVoices.value = engine.availableVoices()
+    }
+
     fun shutdown() {
         engine.shutdown()
         _state.value = NseState.Initialising

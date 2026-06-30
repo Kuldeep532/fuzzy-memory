@@ -1,0 +1,6 @@
+=== BUILD ERRORS ===
+> Task :composeApp:compileReleaseKotlinAndroid FAILED
+FAILURE: Build failed with an exception.
+Execution failed for task ':composeApp:compileReleaseKotlinAndroid'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+BUILD FAILED in 1m 15s
