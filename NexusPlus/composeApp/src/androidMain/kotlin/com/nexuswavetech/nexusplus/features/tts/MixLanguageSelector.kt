@@ -16,15 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /**
- * Language selector shown only in Mix mode.
- * Lets the user pin a primary language for multi-language TTS segments.
+ * Language selector shown in all TTS modes.
+ * Lets the user pick a preferred voice language; auto-detects when unset.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MixLanguageSelector(
+fun LanguageSelectorCard(
     selectedLanguage: String,
     onLanguageSelected: (String) -> Unit,
-    label: String = "Mix Mode Language",
+    label: String = "Language",
 ) {
     var expanded by remember { mutableStateOf(false) }
 

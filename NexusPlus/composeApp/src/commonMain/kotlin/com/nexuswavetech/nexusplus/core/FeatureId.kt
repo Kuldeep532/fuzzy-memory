@@ -95,6 +95,10 @@ enum class FeatureId {
     VIDEO_DESCRIPTION,
     QR_CODE_SCANNER,
 
+    // v1.5.0
+    VIDEO_GENERATION,
+    API_MANAGER,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     RADIO_PLAYER,      // removed feature — kept for DataStore migration
     IPTV_PLAYER,       // removed feature — kept for DataStore migration

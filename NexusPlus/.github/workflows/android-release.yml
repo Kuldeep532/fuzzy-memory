@@ -1,0 +1,69 @@
+name: Android Release Build
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x NexusPlus/gradlew
+
+      # ── Secrets injection ───────────────────────────────────────────────────────
+      # Add the following secrets in GitHub → Settings → Secrets and variables → Actions:
+      #   GEMINI_API_KEY      — Google Gemini API key (get from Google AI Studio)
+      #   WEB_CLIENT_ID       — OAuth 2.0 Web Client ID from Google Cloud Console
+      #   ADMOB_APP_ID        — Google AdMob App ID (ca-app-pub-...)
+      #   BANNER_AD_UNIT_ID   — AdMob Banner ad unit ID
+      #   INTERSTITIAL_AD_UNIT_ID — AdMob Interstitial ad unit ID
+      #   NASA_API_KEY        — NASA API key (optional; falls back to DEMO_KEY)
+      #   KEYSTORE_BASE64     — Base64-encoded release signing keystore
+      #   KEYSTORE_PASSWORD   — Keystore password
+      #   KEY_ALIAS           — Signing key alias
+      #   KEY_PASSWORD        — Signing key password
+      # ──────────────────────────────────────────────────────────
+
+      - name: Build release APK
+        working-directory: NexusPlus
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          BANNER_AD_UNIT_ID: ${{ secrets.BANNER_AD_UNIT_ID }}
+          INTERSTITIAL_AD_UNIT_ID: ${{ secrets.INTERSTITIAL_AD_UNIT_ID }}
+          NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew :app:assembleRelease
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexus-plus-release-apk
+          path: NexusPlus/app/build/outputs/apk/release/*.apk
+
+      - name: Run unit tests
+        working-directory: NexusPlus
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
+        run: ./gradlew test

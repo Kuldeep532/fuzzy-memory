@@ -35,6 +35,8 @@ zxing = "3.5.3"
 firebaseBom = "33.10.0"
 googleServices = "4.4.2"
 googlePlayAuth = "21.3.0"
+credentials = "1.5.0"
+googleid = "1.1.1"
 junit = "4.13.2"
 androidxTestExtJunit = "1.2.1"
 espressoCore = "3.6.1"
@@ -111,6 +113,9 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 google-play-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googlePlayAuth" }
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

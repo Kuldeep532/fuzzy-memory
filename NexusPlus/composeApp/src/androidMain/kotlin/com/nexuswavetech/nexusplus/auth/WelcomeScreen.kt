@@ -1,8 +1,6 @@
 package com.nexuswavetech.nexusplus.auth
 
 import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,14 +29,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
+import androidx.credentials.*
+import androidx.credentials.exceptions.*
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusWaveLogo
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.androidx.compose.koinViewModel
+import java.security.MessageDigest
+import java.util.UUID
 
 @Composable
 fun WelcomeScreen(
@@ -55,41 +57,15 @@ fun WelcomeScreen(
     val googleSignInEnabled = remember { remoteConfig.googleSignInEnabled }
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
-    // Read the OAuth web client ID from google-services.json automatically.
-    // If the file exists, extract default_web_client_id; otherwise fall back
-    // to a debug placeholder that shows a helpful error instead of crashing.
-    val defaultWebClientId = remember {
+    // Read WEB_CLIENT_ID from BuildConfig (injected from WEB_CLIENT_ID env var / GitHub Secret)
+    val webClientId = remember {
         try {
-            val jsonFile = context.resources.assets.open("google-services.json")
-                ?: context.resources.assets.open("google-services_placeholder.json")
-            val jsonText = jsonFile.bufferedReader().use { it.readText() }
-            // Simple extraction: find the first "client_id" inside "oauth_client" list
-            val oauthRegex = Regex("""\"client_id\"\s*:\s*\"([^\"]+)\"""")
-            val match = oauthRegex.find(jsonText)
-            match?.groupValues?.get(1)?.trim() ?: ""
-        } catch (_: Exception) {
-            // No google-services.json asset → empty string triggers the fallback message below
-            ""
-        }
-    }
-
-    // ── Real Google Sign-In launcher ────────────────────────────────────────
-    val googleLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            runCatching {
-                val task    = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                val account = task.getResult(ApiException::class.java)
-                account.idToken?.let { viewModel.onGoogleSignInTokenReceived(it) }
-                    ?: viewModel.onGoogleSignInError("No ID token — check Firebase SHA-1 fingerprint")
-            }.onFailure { e ->
-                viewModel.onGoogleSignInError("Sign-in failed (code ${(e as? ApiException)?.statusCode ?: "?"})")
-            }
-        } else {
-            viewModel.onGoogleSignInError("Sign-in cancelled")
-        }
+            val clazz = Class.forName("com.nexuswavetech.nexusplus.BuildConfig")
+            val field = clazz.getField("WEB_CLIENT_ID")
+            (field.get(null) as? String)?.trim()?.takeIf { it.isNotBlank() } ?: ""
+        } catch (_: Exception) { "" }
     }
 
     LaunchedEffect(uiState.navigateToMain) {
@@ -155,33 +131,28 @@ fun WelcomeScreen(
                 onOpenTerms      = { navController?.navigate(Screen.TermsConditions.route) },
             )
 
-            // ── Google Sign-In button — visibility controlled by Firebase Remote Config ──
+            // ── Google Sign-In button — uses Credential Manager (Android 14+) ──
             if (googleSignInEnabled) GoogleSignInButton(
                 isLoading = uiState.isLoading,
                 enabled   = consentGranted,
                 onClick   = {
-                    val webClientId = defaultWebClientId
                     if (webClientId.isBlank() ||
                         webClientId == "YOUR_WEB_CLIENT_ID" ||
                         webClientId.startsWith("YOUR_")) {
                         viewModel.onGoogleSignInError(
-                            "Firebase not set up yet. Please add google-services.json to enable Google Sign-In, or continue as Guest."
+                            "Google Sign-In not configured. Set WEB_CLIENT_ID in GitHub Secrets / env vars, or continue as Guest."
                         )
                         return@GoogleSignInButton
                     }
-                    runCatching {
-                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken(webClientId)
-                            .requestEmail()
-                            .build()
-                        val client = GoogleSignIn.getClient(context, gso)
-                        client.signOut().addOnCompleteListener {
-                            googleLauncher.launch(client.signInIntent)
+                    scope.launch {
+                        viewModel.onGoogleSignInStarted()
+                        signInWithCredentialManager(context as Activity, webClientId) { idToken, error ->
+                            if (idToken != null) {
+                                viewModel.onGoogleSignInTokenReceived(idToken)
+                            } else {
+                                viewModel.onGoogleSignInError(error ?: "Google Sign-In failed")
+                            }
                         }
-                    }.onFailure { e ->
-                        viewModel.onGoogleSignInError(
-                            "Sign-in setup failed: ${e.localizedMessage ?: "Unknown error"}. Please continue as Guest."
-                        )
                     }
                 },
             )
@@ -233,6 +204,66 @@ fun WelcomeScreen(
                 onDismiss     = viewModel::onGuestDialogDismissed,
             )
         }
+    }
+}
+
+// ── Credential Manager Sign-In ──────────────────────────────────────────────
+
+private suspend fun signInWithCredentialManager(
+    activity: Activity,
+    webClientId: String,
+    onResult: (idToken: String?, error: String?) -> Unit
+) {
+    try {
+        val credentialManager = CredentialManager.create(activity)
+
+        // Generate a nonce for security
+        val rawNonce = UUID.randomUUID().toString()
+        val bytes = rawNonce.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        val hashedNonce = digest.fold("") { str, it -> str + "%02x".format(it) }
+
+        val googleIdOption = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(webClientId)
+            .setNonce(hashedNonce)
+            .build()
+
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build()
+
+        val result = credentialManager.getCredential(request = request, context = activity)
+        val credential = result.credential
+
+        when (credential) {
+            is CustomCredential -> {
+                if (credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                    val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                    val idToken = googleIdTokenCredential.idToken
+                    if (!idToken.isNullOrBlank()) {
+                        onResult(idToken, null)
+                    } else {
+                        onResult(null, "No ID token received from Google")
+                    }
+                } else {
+                    onResult(null, "Unexpected credential type")
+                }
+            }
+            else -> {
+                onResult(null, "Unsupported credential type")
+            }
+        }
+    } catch (e: GetCredentialException) {
+        when (e) {
+            is GetCredentialCancellationException -> onResult(null, "Sign-in cancelled")
+            is NoCredentialException -> onResult(null, "No Google accounts found on device")
+            is GetCredentialProviderConfigurationException -> onResult(null, "Google Sign-In not configured correctly")
+            else -> onResult(null, "Sign-in failed: ${e.localizedMessage ?: "Unknown error"}")
+        }
+    } catch (e: Exception) {
+        onResult(null, "Sign-in error: ${e.localizedMessage ?: "Unknown error"}")
     }
 }
 

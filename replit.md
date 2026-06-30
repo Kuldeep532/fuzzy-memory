@@ -1,7 +1,7 @@
 # Nexus Plus — Android App Showcase
 
 ## Overview
-This is the source code repository for **Nexus Plus**, a multi-utility Android super-app by Nexus Wave Technologies. It contains 40 features across Media, Productivity, Utilities, Smart Tools, and Security categories.
+This is the source code repository for **Nexus Plus**, a multi-utility Android super-app by Nexus Wave Technologies. It contains 40+ features across Media, Productivity, Utilities, Smart Tools, Security, and Health categories.
 
 Since Replit cannot run Android apps natively, this project includes a **web landing page** that showcases the app's features and provides a code browser.
 
@@ -21,3 +21,5 @@ To build and run the actual Android app:
 
 ## User Preferences
 - Keep the web showcase in sync with app features
+- Prefer simple, accessible UI patterns (TalkBack-style auto-save)
+- All API keys must be injected at build time, never hardcoded

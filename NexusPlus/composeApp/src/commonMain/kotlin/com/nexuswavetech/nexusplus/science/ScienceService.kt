@@ -58,11 +58,17 @@ class ScienceService {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    /** NASA APOD — free, no API key required for demo (DEMO_KEY). */
+    /** Retrieve NASA API key from BuildConfig (app module) or fall back to DEMO_KEY. */
+    private fun getNasaApiKey(): String = runCatching {
+        Class.forName("com.nexuswavetech.nexusplus.BuildConfig").getField("NASA_API_KEY").get(null) as? String
+    }.getOrNull()?.takeIf { it.isNotBlank() } ?: "DEMO_KEY"
+
+    /** NASA APOD — uses NASA_API_KEY from BuildConfig (DEMO_KEY fallback for dev). */
     suspend fun fetchApod(): Result<ApodResult> =
         withContext(Dispatchers.IO) {
             try {
-                val url = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+                val apiKey = getNasaApiKey()
+                val url = "https://api.nasa.gov/planetary/apod?api_key=$apiKey"
                 val response = fetchHttp(url)
                 val result = json.decodeFromString<ApodResponse>(response)
                 Result.success(
@@ -84,7 +90,8 @@ class ScienceService {
     suspend fun fetchNeo(): Result<List<NeoObject>> =
         withContext(Dispatchers.IO) {
             try {
-                val url = "https://api.nasa.gov/neo/rest/v1/feed?api_key=DEMO_KEY"
+                val apiKey = getNasaApiKey()
+                val url = "https://api.nasa.gov/neo/rest/v1/feed?api_key=$apiKey"
                 val response = fetchHttp(url)
                 val root = json.decodeFromString<NeoFeedResponse>(response)
                 val objects = mutableListOf<NeoObject>()

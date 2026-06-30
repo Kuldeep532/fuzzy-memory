@@ -72,8 +72,8 @@ android {
         applicationId = "com.nexuswavetech.nexusplus"
         minSdk = 26
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.4.0"
+        versionCode = 5
+        versionName = "1.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // AdMob App ID must be supplied by GitHub Secrets / environment variables for production builds.
@@ -81,9 +81,24 @@ android {
         manifestPlaceholders["ADMOB_APP_ID"] = admobAppId
 
         // Gemini API key — set GEMINI_API_KEY in GitHub Secrets / local env.
-        // When set, the app uses it as the default key for Aira AI (Gemini) on first launch.
         val geminiApiKey = environmentVariable("GEMINI_API_KEY") ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+
+        // Google OAuth Web Client ID — set WEB_CLIENT_ID in GitHub Secrets / local env.
+        // Used by Credential Manager for Google Sign-In (replaces google-services.json OAuth extraction).
+        val webClientId = environmentVariable("WEB_CLIENT_ID") ?: ""
+        buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
+
+        // AdMob Ad Unit IDs — injected from env vars / GitHub Secrets.
+        val bannerAdUnitId = environmentVariable("BANNER_AD_UNIT_ID") ?: ""
+        buildConfigField("String", "BANNER_AD_UNIT_ID", "\"$bannerAdUnitId\"")
+
+        val interstitialAdUnitId = environmentVariable("INTERSTITIAL_AD_UNIT_ID") ?: ""
+        buildConfigField("String", "INTERSTITIAL_AD_UNIT_ID", "\"$interstitialAdUnitId\"")
+
+        // NASA API key — injected from env vars. Falls back to DEMO_KEY for development.
+        val nasaApiKey = environmentVariable("NASA_API_KEY") ?: "DEMO_KEY"
+        buildConfigField("String", "NASA_API_KEY", "\"$nasaApiKey\"")
     }
 
     signingConfigs {
@@ -235,6 +250,9 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.config)
     implementation(libs.google.play.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

@@ -127,6 +127,10 @@ sealed class Screen(val route: String) {
     object VideoDescription     : Screen("feature/video_description")
     object QrCodeScanner        : Screen("feature/qr_scanner")
 
+    // v1.5.0
+    object VideoGeneration      : Screen("feature/video_generation")
+    object ApiManager           : Screen("feature/api_manager")
+
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")
 }

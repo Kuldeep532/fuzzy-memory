@@ -82,6 +82,10 @@ class WelcomeViewModel(
         }
     }
 
+    fun onGoogleSignInStarted() {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+    }
+
     fun onGoogleSignInError(message: String) {
         _uiState.value = _uiState.value.copy(isLoading = false, error = message)
     }

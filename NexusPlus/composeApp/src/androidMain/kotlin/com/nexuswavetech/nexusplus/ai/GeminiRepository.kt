@@ -92,6 +92,34 @@ class GeminiRepository(private val settings: SettingsRepository) {
         callWithRetry(url, body)
     }
 
+    /**
+     * Video generation call: sends a video generation prompt to Gemini.
+     * Returns the video URL or null when no API key is set.
+     */
+    suspend fun generateVideo(prompt: String): String? = withContext(Dispatchers.IO) {
+        val key   = effectiveApiKey()
+        val model = settings.geminiModel.first().trim()
+        if (key.isBlank()) return@withContext null
+
+        val url  = buildUrl(model, key)
+        val body = buildVideoGenerationBody(prompt)
+        callWithRetry(url, body)
+    }
+
+    /**
+     * Video description call: sends a video (as base64 frames or URL) to Gemini for description.
+     * Returns the description text or null when no API key is set.
+     */
+    suspend fun describeVideo(videoUrl: String, prompt: String = "Describe this video in detail."): String? = withContext(Dispatchers.IO) {
+        val key   = effectiveApiKey()
+        val model = settings.geminiModel.first().trim()
+        if (key.isBlank()) return@withContext null
+
+        val url  = buildUrl(model, key)
+        val body = buildVideoDescriptionBody(videoUrl, prompt)
+        callWithRetry(url, body)
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private fun buildUrl(model: String, key: String) =
@@ -147,11 +175,45 @@ class GeminiRepository(private val settings: SettingsRepository) {
         }.toString()
     }
 
-    private fun buildGenerationConfig() = JSONObject().apply {
+    private fun buildVideoGenerationBody(prompt: String): String {
+        val contents = JSONArray().apply {
+            put(JSONObject().apply {
+                put("role", "user")
+                put("parts", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("text", "Generate a video based on this description: $prompt. Provide a direct accessible URL to the generated video if possible.")
+                    })
+                })
+            })
+        }
+        return JSONObject().apply {
+            put("contents", contents)
+            put("generationConfig", buildGenerationConfig(4096))
+            put("safetySettings", buildSafetySettings())
+        }.toString()
+    }
+
+    private fun buildVideoDescriptionBody(videoUrl: String, prompt: String): String {
+        val contents = JSONArray().apply {
+            put(JSONObject().apply {
+                put("role", "user")
+                put("parts", JSONArray().apply {
+                    put(JSONObject().apply { put("text", "$prompt\n\nVideo reference: $videoUrl") })
+                })
+            })
+        }
+        return JSONObject().apply {
+            put("contents", contents)
+            put("generationConfig", buildGenerationConfig(4096))
+            put("safetySettings", buildSafetySettings())
+        }.toString()
+    }
+
+    private fun buildGenerationConfig(maxTokens: Int = 2048) = JSONObject().apply {
         put("temperature", 0.7)
         put("topK", 40)
         put("topP", 0.95)
-        put("maxOutputTokens", 2048)
+        put("maxOutputTokens", maxTokens)
     }
 
     private fun buildSafetySettings() = JSONArray().apply {

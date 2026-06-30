@@ -96,6 +96,9 @@ kotlin {
             implementation(libs.firebase.messaging)
             implementation(libs.firebase.config)
             implementation(libs.google.play.auth)
+            implementation(libs.androidx.credentials)
+            implementation(libs.androidx.credentials.play.services)
+            implementation(libs.googleid)
         }
 
         val desktopMain by getting {

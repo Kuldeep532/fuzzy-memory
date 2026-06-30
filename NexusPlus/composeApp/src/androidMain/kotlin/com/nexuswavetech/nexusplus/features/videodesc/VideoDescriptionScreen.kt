@@ -1,84 +1,86 @@
 package com.nexuswavetech.nexusplus.features.videodesc
 
+import android.content.ContentValues
 import android.content.Context
-import android.media.MediaMetadataRetriever
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.speech.tts.TextToSpeech
+import android.os.Environment
+import android.provider.MediaStore
+import android.media.MediaScannerConnection
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import kotlinx.coroutines.delay
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.documentfile.provider.DocumentFile
+import com.nexuswavetech.nexusplus.ai.GeminiRepository
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
-import java.util.*
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
-// ── State ──────────────────────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────
 
 data class VideoDescState(
     val videoUri: Uri? = null,
     val videoName: String = "",
     val durationMs: Long = 0L,
     val description: String = "",
-    val isSpeaking: Boolean = false,
     val isAnalyzing: Boolean = false,
-    val isPaused: Boolean = false,
-    val progressMs: Long = 0L,
     val error: String? = null,
 )
 
-// ── Screen ───────────────────────────────────────────────────────────────────
+// ── Screen ────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun VideoDescriptionScreen(onBack: () -> Unit) {
+fun VideoDescriptionScreen(
+    onBack: () -> Unit,
+    geminiRepo: GeminiRepository = koinInject(),
+) {
     val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snack = remember { SnackbarHostState() }
+
     var state by remember { mutableStateOf(VideoDescState()) }
-    var tts by remember { mutableStateOf<TextToSpeech?>(null) }
+    var hasApiKey by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        hasApiKey = runCatching { geminiRepo.isAvailable() }.getOrDefault(false)
+    }
 
     val pickVideo = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { analyzeVideo(ctx, it) { state = it } }
-    }
-
-    // Init TTS
-    LaunchedEffect(Unit) {
-        tts = TextToSpeech(ctx) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                tts?.language = Locale.getDefault()
+        uri?.let {
+            val doc = DocumentFile.fromSingleUri(ctx, it)
+            val name = doc?.name ?: it.lastPathSegment ?: "Unknown video"
+            state = VideoDescState(videoUri = it, videoName = name, isAnalyzing = true)
+            scope.launch {
+                try {
+                    val videoPath = it.toString()
+                    val desc = geminiRepo.describeVideo(videoPath, "Describe this video in detail including scenes, objects, people, actions, and mood.")
+                    if (desc != null) {
+                        state = state.copy(description = desc, isAnalyzing = false)
+                        snack.showSnackbar("Video analyzed successfully!")
+                    } else {
+                        state = state.copy(error = "Analysis failed. Check your Gemini API key.", isAnalyzing = false)
+                    }
+                } catch (e: Exception) {
+                    state = state.copy(error = "Error: ${e.localizedMessage ?: "Unknown error"}", isAnalyzing = false)
+                }
             }
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            tts?.stop()
-            tts?.shutdown()
-        }
-    }
-
-    // Progress tracking
-    LaunchedEffect(state.isSpeaking, state.isPaused) {
-        while (state.isSpeaking && !state.isPaused) {
-            delay(500)
-            state = state.copy(progressMs = state.progressMs + 500)
         }
     }
 
@@ -94,195 +96,209 @@ fun VideoDescriptionScreen(onBack: () -> Unit) {
                 },
             )
         },
+        snackbarHost = { SnackbarHost(snack) },
     ) { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // ── Pick video button (if none selected) ──────────────────────
-            if (state.videoUri == null) {
-                item {
-                    Card(
-                        onClick = { pickVideo.launch("video/*") },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            // API Key notice
+            if (!hasApiKey) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                            .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Icon(Icons.Filled.VideoLibrary, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
-                            Text("Select a Video", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                            Text("TAP to pick any video file from your device. The app will generate a spoken description using on-device TTS — no internet required.",
-                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                        Icon(Icons.Filled.Warning, null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(28.dp))
+                        Column {
+                            Text("API Key Required", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onErrorContainer)
+                            Text(
+                                "Add your Gemini API key in Settings → API Manager to use Video Description.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
                         }
+                    }
+                }
+            }
+
+            // Pick video card (if none selected)
+            if (state.videoUri == null) {
+                Card(
+                    onClick = { pickVideo.launch("video/*") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Icon(Icons.Filled.VideoLibrary, null, modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
+                        Text("Select a Video", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Text(
+                            "TAP to pick a video. Gemini AI will analyze it and generate a detailed description.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        )
                     }
                 }
             } else {
-                // ── Video info card ───────────────────────────────────────
-                item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Icon(Icons.Filled.VideoFile, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                                Text(state.videoName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                            }
-                            Text("Duration: ${formatDuration(state.durationMs)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-
-                            // Progress bar while speaking
-                            AnimatedVisibility(visible = state.isSpeaking) {
-                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    LinearProgressIndicator(
-                                        progress = { if (state.durationMs > 0) (state.progressMs.toFloat() / state.durationMs).coerceIn(0f, 1f) else 0f },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                    Text("${formatDuration(state.progressMs)} / ${formatDuration(state.durationMs)}",
-                                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // ── Description text ────────────────────────────────────────
-                if (state.description.isNotBlank()) {
-                    item {
-                        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Icon(Icons.Filled.Description, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
-                                    Text("Generated Description", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-                                }
-                                Text(state.description, style = MaterialTheme.typography.bodyMedium)
-                            }
-                        }
-                    }
-                }
-
-                // ── Speak / Stop controls ─────────────────────────────────
-                item {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Button(
-                            onClick = {
-                                if (state.isSpeaking) {
-                                    tts?.stop()
-                                    state = state.copy(isSpeaking = false, isPaused = false, progressMs = 0)
-                                } else {
-                                    speakDescription(ctx, tts, state.description) { id, done ->
-                                        if (done) state = state.copy(isSpeaking = false, progressMs = 0)
-                                    }
-                                    state = state.copy(isSpeaking = true, isPaused = false, progressMs = 0)
-                                }
-                            },
-                            modifier = Modifier.weight(1f),
-                            enabled = state.description.isNotBlank(),
-                        ) {
-                            Icon(if (state.isSpeaking) Icons.Filled.Stop else Icons.Filled.PlayArrow, null, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(if (state.isSpeaking) "Stop" else "Speak Description")
-                        }
-
-                        OutlinedButton(
-                            onClick = { pickVideo.launch("video/*") },
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Icon(Icons.Filled.VideoLibrary, null, modifier = Modifier.size(20.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text("New Video")
-                        }
-                    }
-                }
-            }
-
-            // ── How it works ────────────────────────────────────────────
-            item {
-                Spacer(Modifier.height(8.dp))
-                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                // Video info card
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("How Video Description works", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-                        BulletItem(Icons.Filled.VideoLibrary, "Pick any video from your device")
-                        BulletItem(Icons.Filled.Analytics, "App reads video metadata (duration, resolution, format)")
-                        BulletItem(Icons.Filled.RecordVoiceOver, "Generates a natural-language description")
-                        BulletItem(Icons.Filled.OfflineBolt, "Speaks it aloud using device TTS — 100% offline, completely free")
-                        Text("No API key needed. No internet needed. Fully accessible for visually impaired users.",
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Filled.VideoFile, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                            Text(state.videoName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        }
+                        if (state.isAnalyzing) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Text("Analyzing with Gemini AI…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+                }
+
+                // Error
+                AnimatedVisibility(visible = state.error != null) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(Icons.Filled.ErrorOutline, null, tint = MaterialTheme.colorScheme.error)
+                            Text(state.error ?: "", color = MaterialTheme.colorScheme.onErrorContainer)
+                        }
+                    }
+                }
+
+                // Description
+                if (state.description.isNotBlank()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Icon(Icons.Filled.Description, null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
+                                Text("AI Description", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                            }
+                            Text(state.description, style = MaterialTheme.typography.bodyMedium)
+
+                            // Action buttons
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                                OutlinedButton(
+                                    onClick = {
+                                        val cb = ctx.getSystemService(android.content.ClipboardManager::class.java)
+                                        cb?.setPrimaryClip(android.content.ClipData.newPlainText("Video Description", state.description))
+                                        scope.launch { snack.showSnackbar("Description copied to clipboard") }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Icon(Icons.Filled.ContentCopy, null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Copy")
+                                }
+                                Button(
+                                    onClick = {
+                                        scope.launch {
+                                            val saved = saveDescriptionToDownloads(ctx, state.videoName, state.description)
+                                            snack.showSnackbar(if (saved) "Saved to Downloads" else "Save failed")
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                ) {
+                                    Icon(Icons.Filled.Save, null, modifier = Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Save")
+                                }
+                            }
+
+                            OutlinedButton(
+                                onClick = {
+                                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, "Video: ${state.videoName}\n\nDescription:\n${state.description}")
+                                    }
+                                    ctx.startActivity(Intent.createChooser(shareIntent, "Share Description"))
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Icon(Icons.Filled.Share, null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Share Description")
+                            }
+
+                            OutlinedButton(
+                                onClick = { pickVideo.launch("video/*") },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Icon(Icons.Filled.VideoLibrary, null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(4.dp))
+                                Text("Analyze New Video")
+                            }
+                        }
                     }
                 }
             }
 
-            item { Spacer(Modifier.height(16.dp)) }
+            // How it works
+            Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("How Video Description works", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+                    BulletItem(Icons.Filled.VideoLibrary, "Pick any video from your device")
+                    BulletItem(Icons.Filled.AutoAwesome, "Gemini AI analyzes the video content")
+                    BulletItem(Icons.Filled.Description, "Generates a detailed description")
+                    BulletItem(Icons.Filled.Save, "Save, copy, or share the description")
+                    Text("Requires a valid Gemini API key.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
         }
     }
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-private fun analyzeVideo(ctx: Context, uri: Uri, onResult: (VideoDescState) -> Unit) {
-    onResult(VideoDescState(videoUri = uri, isAnalyzing = true))
-    val retriever = MediaMetadataRetriever()
-    try {
-        retriever.setDataSource(ctx, uri)
-        val durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-        val durationMs = durationStr?.toLongOrNull() ?: 0L
-        val width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH) ?: "?"
-        val height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT) ?: "?"
-        val bitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.let { (it.toIntOrNull() ?: 0) / 1000 } ?: 0
-        val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: "0"
-        val format = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_MIMETYPE) ?: "video/*"
-
-        val doc = DocumentFile.fromSingleUri(ctx, uri)
-        val name = doc?.name ?: uri.lastPathSegment ?: "Unknown video"
-
-        val desc = buildString {
-            append("Video titled \"$name\". ")
-            append("Duration ${formatDuration(durationMs)}. ")
-            append("Resolution ${width} by $height pixels. ")
-            if (bitrate > 0) append("Bitrate ${bitrate} kilobits per second. ")
-            if (rotation != "0") append("Rotated $rotation degrees. ")
-            append("Format $format. ")
-            append("This video is ready for playback.")
+private fun saveDescriptionToDownloads(ctx: Context, videoName: String, description: String): Boolean {
+    return runCatching {
+        val fileName = "video_desc_${System.currentTimeMillis()}.txt"
+        val content = "Video: $videoName\n\nDescription:\n$description\n\nGenerated by Nexus Plus AI"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                put(MediaStore.MediaColumns.MIME_TYPE, "text/plain")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/NexusPlus")
+            }
+            val uri = ctx.contentResolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+            uri?.let {
+                ctx.contentResolver.openOutputStream(it)?.use { os -> os.write(content.toByteArray()) }
+            }
+            MediaScannerConnection.scanFile(ctx, arrayOf(uri?.toString()), null, null)
+        } else {
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val appDir = File(downloadsDir, "NexusPlus").apply { mkdirs() }
+            val file = File(appDir, fileName)
+            file.writeText(content)
+            MediaScannerConnection.scanFile(ctx, arrayOf(file.absolutePath), null, null)
         }
-
-        onResult(VideoDescState(
-            videoUri = uri,
-            videoName = name,
-            durationMs = durationMs,
-            description = desc,
-            isAnalyzing = false,
-        ))
-    } catch (e: Exception) {
-        onResult(VideoDescState(videoUri = uri, error = "Could not read video: ${e.message}", isAnalyzing = false))
-    } finally {
-        retriever.release()
-    }
-}
-
-private fun speakDescription(ctx: Context, tts: TextToSpeech?, text: String, onDone: (String, Boolean) -> Unit) {
-    if (tts == null || text.isBlank()) return
-    val utteranceId = UUID.randomUUID().toString()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
-    }
-}
-
-private fun formatDuration(ms: Long): String {
-    val hrs = TimeUnit.MILLISECONDS.toHours(ms)
-    val mins = TimeUnit.MILLISECONDS.toMinutes(ms) % 60
-    val secs = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
-    return when {
-        hrs > 0 -> "%d:%02d:%02d".format(hrs, mins, secs)
-        else -> "%d:%02d".format(mins, secs)
-    }
+        true
+    }.getOrDefault(false)
 }
 
 @Composable
-private fun BulletItem(icon: ImageVector, text: String) {
+private fun BulletItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
         Text(text, style = MaterialTheme.typography.bodyMedium)

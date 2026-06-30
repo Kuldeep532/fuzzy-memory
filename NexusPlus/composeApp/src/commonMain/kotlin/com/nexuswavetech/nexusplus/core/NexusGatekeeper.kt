@@ -68,6 +68,8 @@ object NexusGatekeeper {
         FeatureId.DAILY_JOURNAL        to FeatureAccess.PUBLIC,
         FeatureId.VIDEO_DESCRIPTION    to FeatureAccess.AUTHENTICATED_ONLY,
         FeatureId.QR_CODE_SCANNER      to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.VIDEO_GENERATION     to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.API_MANAGER          to FeatureAccess.PUBLIC,
 
         // ── Authenticated only (Premium) ──────────────────────────────────────
         FeatureId.AI_IMAGE_GENERATOR     to FeatureAccess.AUTHENTICATED_ONLY,

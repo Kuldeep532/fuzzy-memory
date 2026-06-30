@@ -18,12 +18,20 @@ import com.nexuswavetech.nexusplus.billing.PremiumRepository
 import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 
-// ── Live Ad Unit IDs (Nexus Wave Technologies) ────────────────────────────────
+// ── Ad Unit IDs — read from BuildConfig (injected via GitHub Secrets / env vars) ──
 object NexusAdIds {
-    const val BANNER_ANDROID       = "ca-app-pub-9723434393305967/3163996172"
-    const val INTERSTITIAL_ANDROID = "ca-app-pub-9723434393305967/6401326195"
-    const val BANNER_IOS           = "ca-app-pub-9723434393305967/3163996172"
-    const val INTERSTITIAL_IOS     = "ca-app-pub-9723434393305967/6401326195"
+    /** Banner ad unit ID for Android. Injected at build time via BANNER_AD_UNIT_ID env var. */
+    val BANNER_ANDROID: String       = runCatching {
+        Class.forName("com.nexuswavetech.nexusplus.BuildConfig").getField("BANNER_AD_UNIT_ID").get(null) as? String
+    }.getOrNull()?.takeIf { it.isNotBlank() } ?: ""
+
+    /** Interstitial ad unit ID for Android. Injected at build time via INTERSTITIAL_AD_UNIT_ID env var. */
+    val INTERSTITIAL_ANDROID: String = runCatching {
+        Class.forName("com.nexuswavetech.nexusplus.BuildConfig").getField("INTERSTITIAL_AD_UNIT_ID").get(null) as? String
+    }.getOrNull()?.takeIf { it.isNotBlank() } ?: ""
+
+    val BANNER_IOS: String           = BANNER_ANDROID
+    val INTERSTITIAL_IOS: String     = INTERSTITIAL_ANDROID
 }
 
 // ── Ad frequency controller ───────────────────────────────────────────────────

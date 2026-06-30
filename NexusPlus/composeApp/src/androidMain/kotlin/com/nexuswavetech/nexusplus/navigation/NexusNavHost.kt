@@ -69,6 +69,8 @@ import com.nexuswavetech.nexusplus.features.worldclock.WorldClockScreen
 import com.nexuswavetech.nexusplus.features.units.UnitConverterScreen
 import com.nexuswavetech.nexusplus.features.currency.CurrencyConverterScreen
 import com.nexuswavetech.nexusplus.features.videodesc.VideoDescriptionScreen
+import com.nexuswavetech.nexusplus.features.videogen.VideoGenerationScreen
+import com.nexuswavetech.nexusplus.features.apimanager.ApiManagerScreen
 import com.nexuswavetech.nexusplus.features.battery.BatteryMonitorScreen
 import com.nexuswavetech.nexusplus.features.storage.StorageAnalyzerScreen
 import com.nexuswavetech.nexusplus.features.compass.CompassScreen
@@ -87,7 +89,6 @@ import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
 import com.nexuswavetech.nexusplus.features.dialer.NexusDialerScreen
 import com.nexuswavetech.nexusplus.features.textanalyzer.NexusTextAnalyzerScreen
 import com.nexuswavetech.nexusplus.features.docscanner.SmartDocumentScannerScreen
-import com.nexuswavetech.nexusplus.features.videodesc.VideoDescriptionScreen
 import com.nexuswavetech.nexusplus.features.weather.WeatherScreen
 import com.nexuswavetech.nexusplus.news.NewsScreen
 import com.nexuswavetech.nexusplus.science.ScienceScreen
@@ -413,6 +414,12 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         }
         composable(Screen.VideoDescription.route) {
             NexusAdScaffold { VideoDescriptionScreen(onBack = { navController.popBackStack() }) }
+        }
+        composable(Screen.VideoGeneration.route) {
+            NexusAdScaffold { VideoGenerationScreen(onBack = { navController.popBackStack() }) }
+        }
+        composable(Screen.ApiManager.route) {
+            NexusAdScaffold { ApiManagerScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Stub catch-all ────────────────────────────────────────────────
