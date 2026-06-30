@@ -53,7 +53,7 @@ jobs:
 
           # Force-clean any workspace, cached, or script-generated Firebase config first.
           rm -f app/google-services.json
-          find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -delete
+          find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -exec rm -f {} +
 
           if [ -z "${GOOGLE_SERVICES_JSON_B64}" ]; then
             echo "GOOGLE_SERVICES_JSON GitHub Secret is required and must be Base64-encoded." >&2
