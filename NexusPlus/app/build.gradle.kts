@@ -26,21 +26,6 @@ fun missingSigningConfiguration(): List<String> = buildList {
 
 val hasReleaseSigningConfiguration = missingSigningConfiguration().isEmpty()
 
-val googleServicesJson = environmentVariable("GOOGLE_SERVICES_JSON")
-
-val prepareGoogleServicesJson by tasks.registering {
-    group = "build setup"
-    description = "Writes app/google-services.json exclusively from the GOOGLE_SERVICES_JSON environment variable."
-
-    doLast {
-        val json = googleServicesJson ?: throw GradleException(
-            "GOOGLE_SERVICES_JSON must be provided by GitHub Secrets/environment variables for production builds."
-        )
-        file("google-services.json").writeText(json)
-        logger.lifecycle("✓ google-services.json written from GOOGLE_SERVICES_JSON secret.")
-    }
-}
-
 val prepareReleaseKeystore by tasks.registering {
     group = "build setup"
     description = "Validates release signing credentials and materializes the CI keystore when KEYSTORE_BASE64 is used."
@@ -54,7 +39,7 @@ val prepareReleaseKeystore by tasks.registering {
         if (missing.isNotEmpty()) {
             throw GradleException(
                 "Release signing is not configured. Missing GitHub Secrets/environment variables: ${missing.joinToString()}. " +
-                    "Provide GOOGLE_SERVICES_JSON, KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD in CI."
+                    "Provide KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD in CI. The workflow must inject app/google-services.json from the verified GitHub Secret before Gradle runs."
             )
         }
 
@@ -144,7 +129,32 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += setOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "META-INF/DEPENDENCIES",
+                "META-INF/LICENSE*",
+                "META-INF/NOTICE*",
+                "google-services.json"
+            )
+            pickFirsts += setOf(
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties"
+            )
+        }
+    }
+}
+
+val verifyGoogleServicesJson by tasks.registering {
+    group = "verification"
+    description = "Ensures CI injected the single canonical app/google-services.json before the Google Services plugin runs."
+
+    doLast {
+        val googleServicesFile = layout.projectDirectory.file("google-services.json").asFile
+        if (!googleServicesFile.isFile || googleServicesFile.length() == 0L) {
+            throw GradleException(
+                "app/google-services.json is missing. CI must force-clean the workspace and decode the Base64 " +
+                    "GOOGLE_SERVICES_JSON GitHub Secret before running Gradle."
+            )
         }
     }
 }
@@ -152,7 +162,7 @@ android {
 tasks.matching {
     it.name.startsWith("process") && it.name.endsWith("GoogleServices")
 }.configureEach {
-    dependsOn(prepareGoogleServicesJson)
+    dependsOn(verifyGoogleServicesJson)
 }
 
 tasks.matching {
