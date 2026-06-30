@@ -220,9 +220,9 @@ fun MoreScreen(
                 MoreMenuCard(
                     icon        = Icons.Filled.NewReleases,
                     title       = "App Version",
-                    subtitle    = "Nexus Plus v1.3.0 — ${FeatureCatalog.totalCount} features",
+                    subtitle    = "Nexus Plus v1.4.0 — ${FeatureCatalog.totalCount} features",
                     onClick     = {},
-                    contentDesc = "App version: Nexus Plus version 1.3.0 with ${FeatureCatalog.totalCount} features.",
+                    contentDesc = "App version: Nexus Plus version 1.4.0 with ${FeatureCatalog.totalCount} features.",
                     showChevron = false,
                 )
                 MoreMenuCard(

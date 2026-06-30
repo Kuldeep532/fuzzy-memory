@@ -140,8 +140,8 @@ android {
         applicationId = "com.nexuswavetech.nexusplus"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.3.0"
+        versionCode = 4
+        versionName = "1.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // AdMob App ID — set ADMOB_APP_ID in GitHub Secrets / local env.

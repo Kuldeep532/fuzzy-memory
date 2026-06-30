@@ -57,6 +57,7 @@ object NexusGatekeeper {
         FeatureId.NEXUS_DOC_READER     to FeatureAccess.PUBLIC,
         FeatureId.TOTP_AUTHENTICATOR   to FeatureAccess.PUBLIC,
         FeatureId.NETWORK_SPEED_TEST   to FeatureAccess.PUBLIC,
+        FeatureId.SMART_DOCUMENT_SCANNER to FeatureAccess.PUBLIC,
 
         // ── Authenticated only ────────────────────────────────────────────────
         FeatureId.AI_IMAGE_GENERATOR   to FeatureAccess.AUTHENTICATED_ONLY,

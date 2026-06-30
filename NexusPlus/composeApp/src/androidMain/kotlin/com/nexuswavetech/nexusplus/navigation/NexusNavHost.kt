@@ -39,7 +39,7 @@ import com.nexuswavetech.nexusplus.features.hub.UtilitiesHubScreen
 import com.nexuswavetech.nexusplus.features.pdfsuite.PdfSuiteScreen
 import com.nexuswavetech.nexusplus.features.imagegen.AiImageGeneratorScreen
 import com.nexuswavetech.nexusplus.features.tts.NexusTtsScreen
-import com.nexuswavetech.nexusplus.features.music.MusicStreamingScreen
+import com.nexuswavetech.nexusplus.features.music.FullMediaPlayerScreen
 import com.nexuswavetech.nexusplus.features.encryptor.EncrypterDecrypterScreen
 import com.nexuswavetech.nexusplus.features.translator.TextTranslatorScreen
 import com.nexuswavetech.nexusplus.features.objectdetector.ObjectDetectorScreen
@@ -84,6 +84,7 @@ import com.nexuswavetech.nexusplus.features.imageviewer.NexusImageViewerScreen
 import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
 import com.nexuswavetech.nexusplus.features.dialer.NexusDialerScreen
 import com.nexuswavetech.nexusplus.features.textanalyzer.NexusTextAnalyzerScreen
+import com.nexuswavetech.nexusplus.features.docscanner.SmartDocumentScannerScreen
 import com.nexuswavetech.nexusplus.features.weather.WeatherScreen
 import com.nexuswavetech.nexusplus.news.NewsScreen
 import com.nexuswavetech.nexusplus.science.ScienceScreen
@@ -226,7 +227,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         // ── Media ─────────────────────────────────────────────────────────
         composable(Screen.AiImageGenerator.route) { NexusAdScaffold { AiImageGeneratorScreen(onBack = { navController.popBackStack() }) } }
         composable(Screen.NexusTts.route)         { NexusAdScaffold { NexusTtsScreen        (onBack = { navController.popBackStack() }) } }
-        composable(Screen.MusicStreaming.route)   { NexusAdScaffold { MusicStreamingScreen  (onBack = { navController.popBackStack() }) } }
+        composable(Screen.MusicStreaming.route)   { NexusAdScaffold { FullMediaPlayerScreen (onBack = { navController.popBackStack() }) } }
         composable(Screen.SmartImageEditor.route) { NexusAdScaffold { SmartImageEditorScreen(onBack = { navController.popBackStack() }) } }
 
         // ── Documents ─────────────────────────────────────────────────────
@@ -403,6 +404,9 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         }
         composable(Screen.NetworkInfo.route) {
             NexusAdScaffold { NetworkInfoScreen(onBack = { navController.popBackStack() }) }
+        }
+        composable(Screen.SmartDocumentScanner.route) {
+            NexusAdScaffold { SmartDocumentScannerScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Stub catch-all ────────────────────────────────────────────────

@@ -90,6 +90,9 @@ enum class FeatureId {
     // ── Finance ───────────────────────────────────────────────────────────
     EXPENSE_TRACKER,
 
+    // v1.4.0
+    SMART_DOCUMENT_SCANNER,
+
     // ── Legacy backward-compat aliases ────────────────────────────────────
     RADIO_PLAYER,      // removed feature — kept for DataStore migration
     IPTV_PLAYER,       // removed feature — kept for DataStore migration

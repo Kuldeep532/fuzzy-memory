@@ -55,7 +55,24 @@ fun WelcomeScreen(
     val googleSignInEnabled = remember { remoteConfig.googleSignInEnabled }
 
     val context = LocalContext.current
-    val defaultWebClientId = remember { "" } // google-services.json default_web_client_id lives in app module, not composeApp
+
+    // Read the OAuth web client ID from google-services.json automatically.
+    // If the file exists, extract default_web_client_id; otherwise fall back
+    // to a debug placeholder that shows a helpful error instead of crashing.
+    val defaultWebClientId = remember {
+        try {
+            val jsonFile = context.resources.assets.open("google-services.json")
+                ?: context.resources.assets.open("google-services_placeholder.json")
+            val jsonText = jsonFile.bufferedReader().use { it.readText() }
+            // Simple extraction: find the first "client_id" inside "oauth_client" list
+            val oauthRegex = Regex("\"client_id\":\s*\"([^\"]+)\"")
+            val match = oauthRegex.find(jsonText)
+            match?.groupValues?.get(1)?.trim() ?: ""
+        } catch (_: Exception) {
+            // No google-services.json asset → empty string triggers the fallback message below
+            ""
+        }
+    }
 
     // ── Real Google Sign-In launcher ────────────────────────────────────────
     val googleLauncher = rememberLauncherForActivityResult(

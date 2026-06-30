@@ -90,6 +90,9 @@ class NseViewModel(
     private val _predictivePreBuffer = MutableStateFlow(false)
     val predictivePreBuffer: StateFlow<Boolean> = _predictivePreBuffer.asStateFlow()
 
+    private val _forceTalkBackRate = MutableStateFlow(false)
+    val forceTalkBackRate: StateFlow<Boolean> = _forceTalkBackRate.asStateFlow()
+
     // ── Screen-reader settings (persisted) ──────────────────────────
 
     private val _screenReaderMode = MutableStateFlow(SettingsRepository.TTS_MODE_AUTO)
@@ -180,6 +183,11 @@ class NseViewModel(
             _duplicateFilter.value = settings.ttsDuplicateFilter.first()
             _autoStart.value = settings.ttsAutoStart.first()
             _predictivePreBuffer.value = settings.predictivePreBuffer.first()
+            _forceTalkBackRate.value = settings.forceTalkBackRate.first()
+            if (_forceTalkBackRate.value) {
+                _speechRate.value = 1.0f  // TalkBack default
+                _pitch.value = 1.0f       // TalkBack default
+            }
         }
     }
 
@@ -197,6 +205,7 @@ class NseViewModel(
             settings.setTtsDuplicateFilter(_duplicateFilter.value)
             settings.setTtsAutoStart(_autoStart.value)
             settings.setPredictivePreBuffer(_predictivePreBuffer.value)
+            settings.setForceTalkBackRate(_forceTalkBackRate.value)
             _hasUnsavedChanges.value = false
         }
     }
@@ -216,6 +225,7 @@ class NseViewModel(
             _duplicateFilter.value = true
             _autoStart.value = false
             _predictivePreBuffer.value = false
+            _forceTalkBackRate.value = false
             _hasUnsavedChanges.value = true
         }
     }
@@ -328,6 +338,16 @@ class NseViewModel(
 
     fun onPredictivePreBufferChange(v: Boolean) {
         _predictivePreBuffer.value = v
+        _hasUnsavedChanges.value = true
+    }
+
+    fun onForceTalkBackRateChange(v: Boolean) {
+        _forceTalkBackRate.value = v
+        if (v) {
+            // Reset to TalkBack defaults when enabled
+            _speechRate.value = 1.0f
+            _pitch.value = 1.0f
+        }
         _hasUnsavedChanges.value = true
     }
 

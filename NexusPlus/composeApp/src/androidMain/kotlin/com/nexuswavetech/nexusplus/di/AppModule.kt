@@ -115,7 +115,7 @@ val appModule = module {
 
     // Media
     viewModel { AiImageViewModel() }
-    viewModel { MusicViewModel() }
+    viewModel { com.nexuswavetech.nexusplus.features.music.FullMediaPlayerViewModel() }
     viewModel { AiraViewModel(settingsRepo = get(), geminiRepo = get()) }
 
     // Security

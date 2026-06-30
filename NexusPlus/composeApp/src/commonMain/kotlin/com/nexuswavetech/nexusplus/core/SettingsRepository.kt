@@ -106,6 +106,7 @@ class SettingsRepository(private val store: SettingsStore) {
     private val KEY_SOUND_EFFECTS       = "sound_effects_enabled"
     private val KEY_NSE_VOICE           = "nse_voice_engine"
     private val KEY_PREDICTIVE_BUFFER     = "predictive_pre_buffer"
+    private val KEY_FORCE_TALKBACK_RATE   = "force_talkback_rate"
     private val KEY_GEMINI_API_KEY      = "gemini_api_key"
     private val KEY_GEMINI_MODEL        = "gemini_model"
     private val KEY_AIRA_GEMINI_PRIMARY = "aira_gemini_primary"
@@ -158,6 +159,7 @@ class SettingsRepository(private val store: SettingsStore) {
     // ── NSE Voice Engine ──────────────────────────────────────────────────────
     val nseVoice: Flow<String> = store.stringFlow(KEY_NSE_VOICE, NSE_VOICE_AUTO)
     val predictivePreBuffer: Flow<Boolean> = store.booleanFlow(KEY_PREDICTIVE_BUFFER, false)
+    val forceTalkBackRate: Flow<Boolean> = store.booleanFlow(KEY_FORCE_TALKBACK_RATE, false)
 
     // ── Aira AI / Gemini ──────────────────────────────────────────────────────
     val geminiApiKey: Flow<String>      = store.stringFlow(KEY_GEMINI_API_KEY, "")
@@ -191,6 +193,7 @@ class SettingsRepository(private val store: SettingsStore) {
     suspend fun setCalculatorAngleUnit(v: String)  = store.setString(KEY_CALC_ANGLE_UNIT, v)
     suspend fun setSoundEffectsEnabled(v: Boolean) = store.setBoolean(KEY_SOUND_EFFECTS, v)
     suspend fun setPredictivePreBuffer(v: Boolean) = store.setBoolean(KEY_PREDICTIVE_BUFFER, v)
+    suspend fun setForceTalkBackRate(v: Boolean) = store.setBoolean(KEY_FORCE_TALKBACK_RATE, v)
     suspend fun setNseVoice(v: String)             = store.setString(KEY_NSE_VOICE, v)
     suspend fun setGeminiApiKey(v: String)         = store.setString(KEY_GEMINI_API_KEY, v)
     suspend fun setGeminiModel(v: String)          = store.setString(KEY_GEMINI_MODEL, v)

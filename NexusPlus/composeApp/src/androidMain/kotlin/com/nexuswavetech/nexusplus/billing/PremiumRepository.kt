@@ -80,8 +80,8 @@ class PremiumRepository(
     suspend fun refreshFromFirestore(): Boolean {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return false
         return try {
-            val doc = FirebaseFirestore.getInstance()
-                .collection("premium_users").document(uid).get().await()
+            val db = FirebaseFirestore.getInstance()
+            val doc = db.collection("premium_users").document(uid).get().await()
             if (doc.exists() && doc.getBoolean("active") == true) {
                 val expiresAt = doc.getLong("expires_at_ms") ?: 0L
                 val plan      = doc.getString("plan") ?: "monthly"
@@ -89,6 +89,26 @@ class PremiumRepository(
                     setPremium(true, expiresAt, plan)
                     return true
                 }
+            }
+            // Check payment_requests for approved status (auto-verification path)
+            val req = db.collection("payment_requests").document(uid).get().await()
+            if (req.exists() && req.getString("status") == "approved") {
+                val plan = req.getString("plan") ?: "monthly"
+                val amount = req.getLong("amount")?.toInt() ?: monthlyAmount
+                val days = if (plan == "yearly") 365L else 30L
+                val expiresAt = System.currentTimeMillis() + (days * 24 * 60 * 60 * 1000L)
+                setPremium(true, expiresAt, plan)
+                db.collection("premium_users").document(uid).set(
+                    mapOf(
+                        "active"       to true,
+                        "uid"          to uid,
+                        "plan"         to plan,
+                        "amount"       to amount,
+                        "expires_at_ms" to expiresAt,
+                        "activated_at"  to com.google.firebase.Timestamp.now(),
+                    )
+                ).await()
+                return true
             }
             setPremium(false, 0L, "")
             false

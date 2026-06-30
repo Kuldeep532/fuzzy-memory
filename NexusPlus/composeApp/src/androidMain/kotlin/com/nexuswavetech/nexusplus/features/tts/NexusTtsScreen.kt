@@ -217,6 +217,53 @@ fun NexusTtsScreen(
                     )
                 }
 
+                // ── Mix mode language selector (NEW) ─────────────────────────
+                AnimatedVisibility(visible = currentModeLabel == "Mix") {
+                    MixLanguageSelector(
+                        selectedLanguage = selectedVoice?.locale?.toLanguageTag() ?: "",
+                        onLanguageSelected = { tag ->
+                            val locale = if (tag.isBlank()) null else NseLocale.forLanguageTag(tag)
+                            val voice = locale?.let { l -> repository.voicesForLocale(l).firstOrNull() }
+                            viewModel.onVoiceSelected(voice)
+                        },
+                    )
+                }
+
+                // ── Force TalkBack default rate toggle (NEW) ─────────────────
+                val forceTalkBackRate by viewModel.forceTalkBackRate.collectAsState()
+                Card(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(1.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .semantics(mergeDescendants = true) {
+                                contentDescription = "Force TalkBack default speech rate. ${if (forceTalkBackRate) "Enabled" else "Disabled"}. When on, pitch and speed sliders use Android TalkBack default values instead of custom ones."
+                            },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Use TalkBack Defaults",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                            )
+                            Text(
+                                "Match Android accessibility speech rate & pitch",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = forceTalkBackRate,
+                            onCheckedChange = viewModel::onForceTalkBackRateChange,
+                        )
+                    }
+                }
+
                 // ── Text input ────────────────────────────────────────────────
                 Card(
                     shape = MaterialTheme.shapes.extraLarge,

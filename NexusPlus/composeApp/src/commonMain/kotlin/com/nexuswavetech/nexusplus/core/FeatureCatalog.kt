@@ -599,6 +599,16 @@ object FeatureCatalog {
             keywords    = listOf("color", "colour", "palette", "design", "hex", "complementary", "analogous", "triadic", "scheme"),
             isNew       = true,
         ),
+        FeatureItem(
+            id          = FeatureId.SMART_DOCUMENT_SCANNER,
+            name        = "Smart Document Scanner",
+            description = "Scan documents with camera or gallery, run on-device OCR, and export as PDF",
+            icon        = Icons.Filled.DocumentScanner,
+            route       = Screen.SmartDocumentScanner.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("scan", "document", "ocr", "pdf", "camera", "ml kit", "text", "export"),
+            isNew       = true,
+        ),
 
     )
 

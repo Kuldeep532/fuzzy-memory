@@ -46,18 +46,28 @@ fun PaymentScreen(
         runCatching { context.startActivity(intent) }
     }
 
+    // Auto-verify when user returns to this screen after payment
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME && state.autoVerifyPending.not() && state.isPremium.not() && state.submitSuccess.not()) {
+                viewModel.onPaymentReturned()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         NexusTopBar(title = "Nexus Plus Premium", onBack = onBack)
 
         if (state.isPremium) {
-            // Already premium
             PremiumActiveView(onBack = onBack)
             return@Column
         }
 
         if (state.submitSuccess) {
-            // Payment submitted
-            SubmitSuccessView(onBack = onBack)
+            PremiumActivatedView(onBack = onBack)
             return@Column
         }
 
@@ -90,7 +100,7 @@ fun PaymentScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf("No ads", "All 40+ features unlocked", "Unlimited AI Chat", "Priority support").forEach { b ->
+                    listOf("No ads", "All 45+ premium features unlocked", "Unlimited AI Chat", "Priority support", "Auto-verified payments").forEach { b ->
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                             Text(b, style = MaterialTheme.typography.bodyMedium)
@@ -141,25 +151,25 @@ fun PaymentScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
-            HorizontalDivider()
-
-            // After payment — enter transaction ID
-            Text(
-                "After payment, enter your UPI Transaction ID below:",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                textAlign = TextAlign.Center,
-            )
-            OutlinedTextField(
-                value         = state.transactionId,
-                onValueChange = viewModel::setTransactionId,
-                label         = { Text("UPI Transaction ID") },
-                placeholder   = { Text("e.g. 123456789012") },
-                singleLine    = true,
-                modifier      = Modifier.fillMaxWidth().semantics {
-                    contentDescription = "Enter the UPI transaction ID from your payment app"
-                },
-                leadingIcon   = { Icon(Icons.Filled.ConfirmationNumber, null) },
-            )
+            // Auto-verify info
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                shape = MaterialTheme.shapes.large,
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Filled.AutoAwesome, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    Text(
+                        "After payment, return to Nexus Plus. Your premium will be verified automatically — no transaction ID needed.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
 
             AnimatedVisibility(visible = state.errorMessage != null) {
                 state.errorMessage?.let { err ->
@@ -172,30 +182,17 @@ fun PaymentScreen(
                 }
             }
 
-            Button(
-                onClick  = { viewModel.submitPayment() },
-                enabled  = !state.isSubmitting && state.transactionId.isNotBlank(),
-                modifier = Modifier.fillMaxWidth().height(52.dp).semantics { contentDescription = "Submit payment for verification" },
-                shape    = MaterialTheme.shapes.large,
-                colors   = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            ) {
-                if (state.isSubmitting) {
-                    CircularProgressIndicator(Modifier.size(18.dp), color = MaterialTheme.colorScheme.onSecondary, strokeWidth = 2.dp)
+            if (state.isSubmitting) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(8.dp))
-                    Text("Submitting…")
-                } else {
-                    Icon(Icons.Filled.Send, null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Submit for Verification", fontWeight = FontWeight.Bold)
+                    Text("Verifying payment…", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-
-            Text(
-                "Our team verifies payments within 24 hours. You'll receive premium access after verification.",
-                style = MaterialTheme.typography.bodySmall,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
@@ -242,13 +239,13 @@ private fun PremiumActiveView(onBack: () -> Unit) {
 }
 
 @Composable
-private fun SubmitSuccessView(onBack: () -> Unit) {
+private fun PremiumActivatedView(onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Icon(Icons.Filled.HourglassTop, null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.primary)
+        Icon(Icons.Filled.CheckCircle, null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(16.dp))
-        Text("Payment Submitted!", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold), textAlign = TextAlign.Center)
+        Text("Premium Activated!", style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold), textAlign = TextAlign.Center)
         Spacer(Modifier.height(8.dp))
-        Text("Your payment is under review. Premium access will be activated within 24 hours.", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Payment verified automatically. Enjoy all premium features!", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(24.dp))
         Button(onClick = onBack) { Text("Back to App") }
     }

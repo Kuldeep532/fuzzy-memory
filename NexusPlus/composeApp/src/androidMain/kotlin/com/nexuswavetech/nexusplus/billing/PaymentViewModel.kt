@@ -12,11 +12,11 @@ enum class PaymentPlan(val key: String) { MONTHLY("monthly"), YEARLY("yearly") }
 
 data class PaymentUiState(
     val selectedPlan: PaymentPlan = PaymentPlan.MONTHLY,
-    val transactionId: String     = "",
     val isSubmitting: Boolean     = false,
     val submitSuccess: Boolean    = false,
     val errorMessage: String?     = null,
     val isPremium: Boolean        = false,
+    val autoVerifyPending: Boolean = false,
 )
 
 class PaymentViewModel(
@@ -45,29 +45,36 @@ class PaymentViewModel(
         _state.value = _state.value.copy(selectedPlan = plan, errorMessage = null)
     }
 
-    fun setTransactionId(id: String) {
-        _state.value = _state.value.copy(transactionId = id, errorMessage = null)
+    /**
+     * Called after the user returns from the UPI payment app.
+     * Automatically verifies the payment status from Firebase
+     * and grants premium access without requiring a manual transaction ID.
+     */
+    fun onPaymentReturned() {
+        viewModelScope.launch {
+            _state.value = _state.value.copy(isSubmitting = true, autoVerifyPending = true, errorMessage = null)
+            // Poll Firestore for up to 60 seconds to detect the premium activation
+            var verified = false
+            var attempts = 0
+            while (attempts < 30 && !verified) {
+                delay(2_000L)
+                verified = premium.refreshFromFirestore()
+                attempts++
+            }
+            _state.value = _state.value.copy(
+                isSubmitting = false,
+                autoVerifyPending = false,
+                isPremium = verified,
+                submitSuccess = verified,
+                errorMessage = if (!verified) "Verification pending. Please check your internet connection or try again later." else null,
+            )
+        }
     }
 
+    /** Legacy manual verification — kept for edge cases but no longer required by UI. */
     fun submitPayment() {
-        val s = _state.value
-        if (s.transactionId.isBlank()) {
-            _state.value = s.copy(errorMessage = "Please enter your UPI transaction ID")
-            return
-        }
-        val amount = if (s.selectedPlan == PaymentPlan.MONTHLY) monthlyAmount else yearlyAmount
-        viewModelScope.launch {
-            _state.value = _state.value.copy(isSubmitting = true, errorMessage = null)
-            premium.submitPaymentRequest(s.transactionId, s.selectedPlan.key, amount)
-                .onSuccess {
-                    _state.value = _state.value.copy(isSubmitting = false, submitSuccess = true)
-                }
-                .onFailure { err ->
-                    _state.value = _state.value.copy(
-                        isSubmitting = false,
-                        errorMessage = err.message ?: "Submission failed. Please try again.",
-                    )
-                }
-        }
+        _state.value = _state.value.copy(
+            errorMessage = "Auto-verification is now active. Please complete the UPI payment and return to the app.",
+        )
     }
 }
