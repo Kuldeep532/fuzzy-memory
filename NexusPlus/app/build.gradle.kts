@@ -1,5 +1,4 @@
 import java.util.Base64
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -8,94 +7,37 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
-val keyPropertiesFile = rootProject.file("key.properties")
-val keyProperties = Properties().apply {
-    if (keyPropertiesFile.isFile) {
-        keyPropertiesFile.inputStream().use(::load)
-    }
-}
-
-fun localProperty(name: String): String? =
-    keyProperties.getProperty(name)?.trim()?.takeIf(String::isNotEmpty)
-
 fun environmentVariable(name: String): String? =
     providers.environmentVariable(name).orNull?.trim()?.takeIf(String::isNotEmpty)
 
-fun signingValue(propertyName: String, environmentName: String): String? =
-    localProperty(propertyName) ?: environmentVariable(environmentName)
-
-val ciKeystoreFile = layout.buildDirectory.file("signing/nexusplus-release.jks")
+val ciKeystoreFile = layout.buildDirectory.file("signing/release-keystore")
 val keystoreBase64 = environmentVariable("KEYSTORE_BASE64")
-val configuredStoreFile = localProperty("storeFile")
-    ?.let { rootProject.file(it) }
-    ?: environmentVariable("KEYSTORE_FILE")?.let { file(it) }
-    ?: keystoreBase64?.let { ciKeystoreFile.get().asFile }
-
-val releaseStorePassword = signingValue("storePassword", "KEYSTORE_PASSWORD")
-val releaseKeyAlias = signingValue("keyAlias", "KEY_ALIAS")
-val releaseKeyPassword = signingValue("keyPassword", "KEY_PASSWORD")
+val releaseStorePassword = environmentVariable("KEYSTORE_PASSWORD")
+val releaseKeyAlias = environmentVariable("KEY_ALIAS")
+val releaseKeyPassword = environmentVariable("KEY_PASSWORD")
+val configuredStoreFile = keystoreBase64?.let { ciKeystoreFile.get().asFile }
 
 fun missingSigningConfiguration(): List<String> = buildList {
-    if (configuredStoreFile == null) add("storeFile in key.properties, KEYSTORE_FILE, or KEYSTORE_BASE64")
-    if (releaseStorePassword == null) add("storePassword in key.properties or KEYSTORE_PASSWORD")
-    if (releaseKeyAlias == null) add("keyAlias in key.properties or KEY_ALIAS")
-    if (releaseKeyPassword == null) add("keyPassword in key.properties or KEY_PASSWORD")
+    if (keystoreBase64 == null) add("KEYSTORE_BASE64")
+    if (releaseStorePassword == null) add("KEYSTORE_PASSWORD")
+    if (releaseKeyAlias == null) add("KEY_ALIAS")
+    if (releaseKeyPassword == null) add("KEY_PASSWORD")
 }
 
 val hasReleaseSigningConfiguration = missingSigningConfiguration().isEmpty()
 
-
 val googleServicesJson = environmentVariable("GOOGLE_SERVICES_JSON")
 
 val prepareGoogleServicesJson by tasks.registering {
-    group       = "build setup"
-    description = "Writes app/google-services.json from GOOGLE_SERVICES_JSON env var when available, or a local-debug placeholder when absent."
+    group = "build setup"
+    description = "Writes app/google-services.json exclusively from the GOOGLE_SERVICES_JSON environment variable."
 
     doLast {
-        val target = file("google-services.json")
-        if (googleServicesJson != null) {
-            // Always overwrite — ensures CI/CD secret is the authoritative source.
-            // This intentionally replaces any stale or placeholder file.
-            target.writeText(googleServicesJson)
-            logger.lifecycle("✓ google-services.json written from GOOGLE_SERVICES_JSON secret.")
-        } else if (target.exists()) {
-            // Developer placed a real file locally — leave it untouched.
-            logger.lifecycle("✓ google-services.json found locally — skipping generation.")
-        } else {
-            // No secret and no local file → write a debug placeholder so the build does not fail.
-            target.writeText(
-                """{
-  "project_info": {
-    "project_number": "000000000000",
-    "project_id": "nexusplus-local-debug",
-    "storage_bucket": "nexusplus-local-debug.appspot.com"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
-        "android_client_info": {
-          "package_name": "com.nexuswavetech.nexusplus"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "local-debug-placeholder-not-for-production"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
-}"""
-            )
-            logger.lifecycle("⚠ google-services.json placeholder generated — set GOOGLE_SERVICES_JSON secret for real builds.")
-        }
+        val json = googleServicesJson ?: throw GradleException(
+            "GOOGLE_SERVICES_JSON must be provided by GitHub Secrets/environment variables for production builds."
+        )
+        file("google-services.json").writeText(json)
+        logger.lifecycle("✓ google-services.json written from GOOGLE_SERVICES_JSON secret.")
     }
 }
 
@@ -103,7 +45,6 @@ val prepareReleaseKeystore by tasks.registering {
     group = "build setup"
     description = "Validates release signing credentials and materializes the CI keystore when KEYSTORE_BASE64 is used."
 
-    inputs.property("hasKeyProperties", keyPropertiesFile.isFile)
     inputs.property("hasKeyStoreBase64", keystoreBase64 != null)
     outputs.file(ciKeystoreFile)
         .optional()
@@ -112,17 +53,14 @@ val prepareReleaseKeystore by tasks.registering {
         val missing = missingSigningConfiguration()
         if (missing.isNotEmpty()) {
             throw GradleException(
-                "Release signing is not configured. Missing: ${missing.joinToString()}. " +
-                    "For local builds, create root key.properties with storeFile, storePassword, keyAlias, and keyPassword. " +
-                    "For GitHub Actions, provide GOOGLE_SERVICES_JSON, KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD."
+                "Release signing is not configured. Missing GitHub Secrets/environment variables: ${missing.joinToString()}. " +
+                    "Provide GOOGLE_SERVICES_JSON, KEYSTORE_BASE64, KEYSTORE_PASSWORD, KEY_ALIAS, and KEY_PASSWORD in CI."
             )
         }
 
         val keystoreFile = configuredStoreFile ?: error("Signing store file was unexpectedly null.")
-        if (keystoreBase64 != null && localProperty("storeFile") == null && environmentVariable("KEYSTORE_FILE") == null) {
-            keystoreFile.parentFile.mkdirs()
-            keystoreFile.writeBytes(Base64.getDecoder().decode(keystoreBase64))
-        }
+        keystoreFile.parentFile.mkdirs()
+        keystoreFile.writeBytes(Base64.getDecoder().decode(keystoreBase64!!))
 
         if (!keystoreFile.isFile) {
             throw GradleException("Release signing keystore does not exist: ${keystoreFile.absolutePath}")
@@ -132,6 +70,13 @@ val prepareReleaseKeystore by tasks.registering {
 
 kotlin {
     jvmToolchain(17)
+}
+
+
+androidComponents {
+    beforeVariants(selector().withBuildType("debug")) { variantBuilder ->
+        variantBuilder.enable = false
+    }
 }
 
 android {
@@ -146,10 +91,8 @@ android {
         versionName = "1.4.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // AdMob App ID — set ADMOB_APP_ID in GitHub Secrets / local env.
-        // Falls back to Google's official test App ID so debug builds always work.
-        val admobAppId = environmentVariable("ADMOB_APP_ID")
-            ?: "ca-app-pub-3940256099942544~3347511713"
+        // AdMob App ID must be supplied by GitHub Secrets / environment variables for production builds.
+        val admobAppId = environmentVariable("ADMOB_APP_ID") ?: ""
         manifestPlaceholders["ADMOB_APP_ID"] = admobAppId
 
         // Gemini API key — set GEMINI_API_KEY in GitHub Secrets / local env.
@@ -170,10 +113,6 @@ android {
     }
 
     buildTypes {
-        debug {
-            isMinifyEnabled = false
-        }
-
         release {
             isMinifyEnabled = true
             isShrinkResources = true

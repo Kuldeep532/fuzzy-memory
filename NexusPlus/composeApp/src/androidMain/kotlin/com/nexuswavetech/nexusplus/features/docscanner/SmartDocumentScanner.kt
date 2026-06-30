@@ -403,7 +403,7 @@ private fun buildScanPdf(
         canvas.drawText("Extracted Text:", margin, y, titlePaint.apply { textSize = 14f })
         y += 25f
 
-        val words = ocrText.split(Regex("\s+"))
+        val words = ocrText.split(Regex("\\s+"))
         var line = ""
         val textW = pageW - 2 * margin
         for (word in words) {
