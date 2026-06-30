@@ -270,6 +270,23 @@ class NseViewModel(
         _hasUnsavedChanges.value = true
     }
 
+    /**
+     * Pick a voice for the current language WITHOUT changing the speech mode.
+     * Used by the Language selector so Auto/Mix/Dual modes stay intact.
+     */
+    fun onLanguageSelected(tag: String) {
+        val locale = if (tag.isBlank()) null else NseLocale.forLanguageTag(tag)
+        val voice = locale?.let { l -> repository.voicesForLocale(l).firstOrNull() }
+        _selectedVoice.value = voice
+        // Only switch to SingleVoice if we are currently in Auto and user explicitly picked a language.
+        // In Mix/Dual we just set the primary voice but keep the mode.
+        if (voice != null && _mode.value is NseSpeechMode.Auto) {
+            _mode.value = NseSpeechMode.SingleVoice(voice.locale)
+            _screenReaderMode.value = SettingsRepository.TTS_MODE_SINGLE
+        }
+        _hasUnsavedChanges.value = true
+    }
+
     fun onSecondaryVoiceSelected(voice: NseVoiceProfile?) {
         _secondaryVoice.value = voice
         if (_mode.value is NseSpeechMode.Auto || _mode.value is NseSpeechMode.SingleVoice) {

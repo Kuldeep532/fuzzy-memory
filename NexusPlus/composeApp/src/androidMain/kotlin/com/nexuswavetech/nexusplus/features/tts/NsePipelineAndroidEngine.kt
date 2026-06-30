@@ -189,8 +189,28 @@ class NsePipelineAndroidEngine(
 
         val javaLocale = locale.toJavaLocale()
         // Configure voice (safe: called from synthesis coroutine only, sequential)
-        val langStatus   = engine.isLanguageAvailable(javaLocale)
-        engine.language  = if (langStatus >= TextToSpeech.LANG_AVAILABLE) javaLocale else Locale.ENGLISH
+        val langStatus = engine.isLanguageAvailable(javaLocale)
+        if (langStatus >= TextToSpeech.LANG_AVAILABLE) {
+            engine.language = javaLocale
+            // Try to set a matching voice for this locale if voices API available
+            try {
+                engine.voices?.firstOrNull { it.locale == javaLocale || it.locale.language == javaLocale.language }
+                    ?.let { engine.voice = it }
+            } catch (_: Exception) { /* voices API may not be supported by this engine */ }
+        } else {
+            // Fallback: try to find closest voice for this language instead of hardcoding English
+            val closestVoice = try {
+                engine.voices?.firstOrNull {
+                    it.locale.language == javaLocale.language || it.locale.toLanguageTag().startsWith(javaLocale.language)
+                }
+            } catch (_: Exception) { null }
+            if (closestVoice != null) {
+                engine.voice = closestVoice
+                engine.language = closestVoice.locale
+            } else {
+                engine.language = Locale.ENGLISH
+            }
+        }
         engine.setPitch(req.pitch)
         engine.setSpeechRate(req.speechRate)
 

@@ -20,10 +20,10 @@ import java.util.Locale
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * NSE 4.0 — Auto TTS Screen Reader Accessibility Service.
+ * NSE 4.0 — Nexus Speech Engine Screen Reader Accessibility Service.
  *
  * Receives accessibility events system-wide and automatically speaks
- * screen content using the Nexus Auto Speech Engine pipeline. Supports four
+ * screen content using the Nexus Speech Engine pipeline. Supports four
  * screen-reader modes: Auto, Single, Dual, and Mixed.
  *
  * Features:

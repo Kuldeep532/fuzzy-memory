@@ -96,7 +96,7 @@ val appModule = module {
     single<com.nexuswavetech.nexusplus.platform.PlatformOcr> { com.nexuswavetech.nexusplus.platform.PlatformOcr(androidContext()) }
     single<com.nexuswavetech.nexusplus.platform.PlatformUrlHandler> { com.nexuswavetech.nexusplus.platform.PlatformUrlHandler(androidContext()) }
 
-    // ── NSE 4.0 — Nexus Auto Speech Engine (Pipeline) ──────────────────────
+    // ── NSE 4.0 — Nexus Speech Engine (Pipeline) ──────────────────────
     single  { NsePcmCache() }
     factory { NseAudioFocusManager(androidContext()) }
     factory<NseEngine> { NsePipelineAndroidEngine(androidContext(), get(), get(), get<ModelDownloadManager>().modelsDir) }

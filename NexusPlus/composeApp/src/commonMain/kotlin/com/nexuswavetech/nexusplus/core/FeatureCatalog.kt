@@ -127,12 +127,12 @@ object FeatureCatalog {
         // ── Utilities ─────────────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEXUS_TTS,
-            name        = "Nexus Auto Speech Engine",
+            name        = "Nexus Speech Engine",
             description = "Multi-language text-to-speech with auto-locale detection",
             icon        = Icons.Filled.RecordVoiceOver,
             route       = Screen.NexusTts.route,
             category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("tts", "text to speech", "speak", "voice", "read aloud", "language", "nse", "audio", "nexus auto speech engine", "nase"),
+            keywords    = listOf("tts", "text to speech", "speak", "voice", "read aloud", "language", "nse", "audio", "nexus speech engine", "nase"),
         ),
         FeatureItem(
             id          = FeatureId.VOICE_TYPER,

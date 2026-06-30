@@ -71,7 +71,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- ── Accessibility Service ─────────────────────────────────────────────
-         Used by: NSE Auto TTS Screen Reader (reads on-screen text aloud).
+         Used by: Nexus Speech Engine Screen Reader (reads on-screen text aloud).
          Declared as a system accessibility service; user must enable it manually.
     -->
     <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
@@ -221,7 +221,7 @@
         <!-- Nexus Speech Engine (NSE) — registered as a system TTS provider -->
         <service
             android:name=".features.tts.NseTtsService"
-            android:label="Nexus Auto Speech Engine"
+            android:label="Nexus Speech Engine"
             android:exported="true"
             android:permission="android.permission.BIND_TEXT_TO_SPEECH_SERVICE">
             <intent-filter>
@@ -244,10 +244,10 @@
             </intent-filter>
         </service>
 
-        <!-- NSE Auto TTS Screen Reader — Accessibility Service for reading screen content aloud -->
+        <!-- Nexus Speech Engine Screen Reader — Accessibility Service for reading screen content aloud -->
         <service
             android:name=".features.tts.NseAccessibilityService"
-            android:label="Nexus Auto Speech Engine Screen Reader"
+            android:label="Nexus Speech Engine Screen Reader"
             android:description="@string/nse_accessibility_desc"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">

@@ -61,7 +61,7 @@ fun NexusTtsScreen(
     }
 
     Scaffold(
-        topBar = { NexusTopBar(title = "Auto TTS", onBack = onBack) },
+        topBar = { NexusTopBar(title = "Nexus Speech Engine", onBack = onBack) },
         snackbarHost = { SnackbarHost(snack) },
         bottomBar = {
             if (hasUnsaved) Surface(tonalElevation = 4.dp, shadowElevation = 8.dp) {
@@ -219,13 +219,9 @@ fun NexusTtsScreen(
 
                 // ── Language selector (visible in ALL modes) ─────────────────
                 MixLanguageSelector(
-                    label = "Language",
+                    label = "Preferred Language",
                     selectedLanguage = selectedVoice?.locale?.toLanguageTag() ?: "",
-                    onLanguageSelected = { tag ->
-                        val locale = if (tag.isBlank()) null else NseLocale.forLanguageTag(tag)
-                        val voice = locale?.let { l -> repository.voicesForLocale(l).firstOrNull() }
-                        viewModel.onVoiceSelected(voice)
-                    },
+                    onLanguageSelected = viewModel::onLanguageSelected,
                 )
 
                 // ── Mix mode extra hint ──────────────────────────────────────

@@ -239,7 +239,6 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
 
         // ── Security ──────────────────────────────────────────────────────
         composable(Screen.EncrypterDecrypter.route) { NexusAdScaffold { EncrypterDecrypterScreen(onBack = { navController.popBackStack() }) } }
-        composable(Screen.TextEncryptor.route)      { NexusAdScaffold { EncrypterDecrypterScreen(onBack = { navController.popBackStack() }) } }
         composable(Screen.HashGenerator.route)      { NexusAdScaffold { HashGeneratorScreen    (onBack = { navController.popBackStack() }) } }
         composable(Screen.PasswordGenerator.route)  { NexusAdScaffold { PasswordGeneratorScreen(onBack = { navController.popBackStack() }) } }
         composable(Screen.Base64Tool.route)         { NexusAdScaffold { Base64ToolScreen       (onBack = { navController.popBackStack() }) } }

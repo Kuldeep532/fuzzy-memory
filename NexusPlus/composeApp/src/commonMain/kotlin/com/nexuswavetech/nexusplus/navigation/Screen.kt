@@ -33,7 +33,6 @@ sealed class Screen(val route: String) {
 
     // ── Security feature screens ────────────────────────────────────────────
     object EncrypterDecrypter : Screen("feature/encrypter_decrypter")
-    object TextEncryptor      : Screen("feature/text_encryptor")
     object HashGenerator      : Screen("feature/hash_generator")
     object PasswordGenerator  : Screen("feature/password_generator")
     object Base64Tool         : Screen("feature/base64_tool")
