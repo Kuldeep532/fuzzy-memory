@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
@@ -115,7 +116,7 @@ fun QrCodeScannerScreen(onBack: () -> Unit) {
                 ) {
                     Icon(Icons.Filled.QrCodeScanner, null, modifier = Modifier.size(28.dp))
                     Spacer(Modifier.width(12.dp))
-                    Text("Scan from Image", fontSize = androidx.compose.ui.unit.sp(18), fontWeight = FontWeight.Bold)
+                    Text("Scan from Image", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
