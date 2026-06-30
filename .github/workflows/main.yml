@@ -17,11 +17,17 @@ jobs:
       run:
         working-directory: NexusPlus
     env:
-      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      # Isme aapka raw text format json safe rahega
+      GOOGLE_SERVICES_JSON_TEXT: ${{ secrets.GOOGLE_SERVICES_JSON }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      # Safe fallback system variables agar code directly context se uthaye
+      admob_app_id: ${{ secrets.ADMOB_APP_ID }}
+      gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
       ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
@@ -44,7 +50,7 @@ jobs:
         id: check_secrets
         run: |
           MISSING=""
-          [ -z "$GOOGLE_SERVICES_JSON" ] && MISSING="$MISSING GOOGLE_SERVICES_JSON"
+          [ -z "$GOOGLE_SERVICES_JSON_TEXT" ] && MISSING="$MISSING GOOGLE_SERVICES_JSON"
           [ -z "$KEYSTORE_BASE64" ] && MISSING="$MISSING KEYSTORE_BASE64"
           [ -z "$KEYSTORE_PASSWORD" ] && MISSING="$MISSING KEYSTORE_PASSWORD"
           [ -z "$KEY_ALIAS" ] && MISSING="$MISSING KEY_ALIAS"
@@ -58,6 +64,23 @@ jobs:
           else
             echo "has_errors=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Safe Injection (No Conflict Mode)
+        run: |
+          # 1. Pure text JSON file ko direct copy karna bina kisi decoding ke
+          mkdir -p app/
+          echo "$GOOGLE_SERVICES_JSON_TEXT" > app/google-services.json
+
+          # 2. Local properties ko fresh handle karna bina project files ko chhede
+          touch local.properties
+          
+          # 3. Multiple naming formats taaki unke kisi bhi variable name se match ho sake
+          echo "admob.app.id=$ADMOB_APP_ID" >> local.properties
+          echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
+          echo "ADMOB_APP_ID=$ADMOB_APP_ID" >> local.properties
+          echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> local.properties
+          echo "admob_id=$ADMOB_APP_ID" >> local.properties
+          echo "gemini_key=$GEMINI_API_KEY" >> local.properties
 
       - name: Grant Gradlew Permission
         run: chmod +x gradlew
