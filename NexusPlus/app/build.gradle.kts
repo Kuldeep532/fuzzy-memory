@@ -42,6 +42,8 @@ fun missingSigningConfiguration(): List<String> = buildList {
     if (releaseKeyPassword == null) add("keyPassword in key.properties or KEY_PASSWORD")
 }
 
+val hasReleaseSigningConfiguration = missingSigningConfiguration().isEmpty()
+
 
 val googleServicesJson = environmentVariable("GOOGLE_SERVICES_JSON")
 
@@ -157,11 +159,13 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            storeFile = configuredStoreFile
-            storePassword = releaseStorePassword
-            keyAlias = releaseKeyAlias
-            keyPassword = releaseKeyPassword
+        if (hasReleaseSigningConfiguration) {
+            create("release") {
+                storeFile = configuredStoreFile
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
         }
     }
 
@@ -177,7 +181,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
+            signingConfigs.findByName("release")?.let { signingConfig = it }
         }
     }
 
@@ -218,7 +222,9 @@ tasks.matching {
         (it.name.startsWith("assemble") && it.name.endsWith("Release")) ||
         (it.name.startsWith("bundle") && it.name.endsWith("Release"))
 }.configureEach {
-    dependsOn(prepareReleaseKeystore)
+    if (hasReleaseSigningConfiguration) {
+        dependsOn(prepareReleaseKeystore)
+    }
 }
 
 dependencies {
@@ -263,11 +269,13 @@ dependencies {
 
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     implementation(libs.mlkit.translate)
     // REMOVED: ML Kit Object Detection - Causing persistent build failures
     // If needed later, can be re-added as: implementation(libs.mlkit.object.detection)
     implementation(libs.mlkit.image.labeling)
+    implementation(libs.mlkit.text.recognition)
 
     implementation(libs.accompanist.permissions)
     implementation(libs.zxing.core)

@@ -65,7 +65,7 @@ fun WelcomeScreen(
                 ?: context.resources.assets.open("google-services_placeholder.json")
             val jsonText = jsonFile.bufferedReader().use { it.readText() }
             // Simple extraction: find the first "client_id" inside "oauth_client" list
-            val oauthRegex = Regex("\"client_id\":\s*\"([^\"]+)\"")
+            val oauthRegex = Regex("""\"client_id\"\s*:\s*\"([^\"]+)\"""")
             val match = oauthRegex.find(jsonText)
             match?.groupValues?.get(1)?.trim() ?: ""
         } catch (_: Exception) {

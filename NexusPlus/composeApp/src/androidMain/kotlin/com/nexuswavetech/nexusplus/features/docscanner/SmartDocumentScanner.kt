@@ -43,6 +43,7 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.*
+import kotlinx.coroutines.tasks.await
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
