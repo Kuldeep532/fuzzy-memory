@@ -11,6 +11,9 @@ data class NseLocale(
     val language: String,
     val country:  String = "",
 ) {
+    /** Human-readable display name for this locale (language code as fallback). */
+    val displayLanguage: String get() = language.replaceFirstChar { it.uppercase() }
+
     /** Returns a BCP-47 language tag, e.g. "en-US" or "hi-IN". */
     fun toLanguageTag(): String =
         if (country.isEmpty()) language else "$language-$country"

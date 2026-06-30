@@ -34,7 +34,6 @@ import androidx.navigation.NavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.nexuswavetech.nexusplus.composeapp.R
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusWaveLogo
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
@@ -56,7 +55,7 @@ fun WelcomeScreen(
     val googleSignInEnabled = remember { remoteConfig.googleSignInEnabled }
 
     val context = LocalContext.current
-    val defaultWebClientId = stringResource(id = R.string.default_web_client_id)
+    val defaultWebClientId = remember { "" } // google-services.json default_web_client_id lives in app module, not composeApp
 
     // ── Real Google Sign-In launcher ────────────────────────────────────────
     val googleLauncher = rememberLauncherForActivityResult(
