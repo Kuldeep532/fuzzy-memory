@@ -44,6 +44,13 @@ object RemoteConfigKeys {
     const val ANNOUNCEMENT_ENABLED  = "app_announcement_enabled"
     const val ANNOUNCEMENT_TEXT     = "app_announcement"
 
+    // ── UPI Payment ──────────────────────────────────────────────────────────
+    /** Base64-encoded UPI ID so it is not plaintext in the APK. Set via Firebase Console. */
+    const val PAYMENT_UPI_ID        = "payment_upi_id"
+    const val PAYMENT_UPI_NAME      = "payment_upi_name"
+    const val PAYMENT_MONTHLY_AMT   = "payment_monthly_amount"
+    const val PAYMENT_YEARLY_AMT    = "payment_yearly_amount"
+
     // ── Feature premium flags ────────────────────────────────────────────────
     const val FEATURE_AIRA_PREMIUM           = "feature_aira_premium"
     const val FEATURE_BIOMETRIC_VAULT_PREMIUM = "feature_biometric_vault_premium"
@@ -98,6 +105,12 @@ object RemoteConfigDefaults {
         // Announcement (off by default)
         RemoteConfigKeys.ANNOUNCEMENT_ENABLED   to false,
         RemoteConfigKeys.ANNOUNCEMENT_TEXT      to "",
+
+        // UPI Payment (empty by default — set in Firebase Console)
+        RemoteConfigKeys.PAYMENT_UPI_ID      to "",
+        RemoteConfigKeys.PAYMENT_UPI_NAME    to "Nexus Wave Technologies",
+        RemoteConfigKeys.PAYMENT_MONTHLY_AMT to "35",
+        RemoteConfigKeys.PAYMENT_YEARLY_AMT  to "300",
 
         // Premium features (all free by default)
         RemoteConfigKeys.FEATURE_AIRA_PREMIUM            to false,

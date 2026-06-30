@@ -1,69 +1,51 @@
 ---
 name: Nexus Plus Play Store overhaul
-description: Summary of all Play Store readiness changes across two sessions. Reference .local/nexusplus_remaining_work.md for outstanding items.
+description: Full audit of Play Store readiness changes: copyright removals, accessibility, manifest, billing migration to UPI, TTS fixes.
 ---
 
-## Session 1 — what was done
+## Session 1 — Play Store readiness (earlier)
 
 ### Copyright removals
 - **JioSaavn** completely removed from `MusicStreamingScreen.kt` — local-only player now.
 - **PrivacyPolicy** Section 2 updated — no Radio Browser/JioSaavn/IPTV references.
-- **Nexus OTT** removed from `FeatureCatalog.kt`, `NexusNavHost.kt`, `FeatureId.kt`.
+- Removed copyright-risky features from FeatureCatalog and screens.
 
-### New features (replacing Radio / IPTV / FormX)
-- `TextToPdfScreen` — commonMain. Callback: `onExportPdf(title, body, fontSizePt)`.
-- `DailyJournalScreen` — commonMain. Persists via `SettingsStore` (DataStore on Android).
-- `ColorPaletteScreen` — commonMain. `onCopyToClip` callback via ClipboardManager.
-- All wired in `FeatureId.kt`, `Screen.kt`, `FeatureCatalog.kt`, `NexusNavHost.kt`.
+## Session 2 — Play Billing → UPI Payment Migration
 
-### TTS screen
-- Order: Language → TTS Engine → Voice. Modes: Auto / Single / Mix / Advanced.
+### What was removed
+- `BillingManager.kt`, old `PremiumRepository.kt`, old `SubscriptionScreen.kt` — deleted
+- `playBilling = "7.1.1"` and `play-billing` library from `libs.versions.toml` — removed
+- `implementation(libs.play.billing)` from `app/build.gradle.kts` — removed
+- Billing imports from `AppModule.kt` cleaned; `PremiumRepository.init()` from `NexusPlusApplication.kt` removed
 
-### Core screen redesigns
-- **MoreScreen** — Material3 hero header, StatPill, colored icon cards. `onRateApp` param.
-- **AllFeaturesScreen** — banner, animated count, icon chips, improved empty state.
-- **HomeScreen** — emoji-free `contentDescription` via `getAccessibleGreeting()`.
+### New UPI Payment System (billing/ directory)
+- `PremiumRepository.kt` — DataStore-cached premium state, Firestore `premium_users/{uid}` check, Remote Config Base64 UPI ID, submits to Firestore `payment_requests/{uid}`
+- `PaymentViewModel.kt` — exposes `isPremiumFlow`, `upiId`, `monthlyAmount`, `yearlyAmount`, `submitPayment()`
+- `PaymentScreen.kt` — plan cards (₹35/month, ₹300/year), UPI deep-link button, transaction ID entry, submit for manual review
+- `Screen.Subscription.route` unchanged — NavHost now shows `PaymentScreen`
 
-### Manifest & build
-- `AndroidManifest.xml` — Play Protect justification inline comments per permission group.
-- `AndroidManifest.xml` — **FileProvider** added for PDF sharing (Session 2).
-- `app/src/main/res/xml/file_provider_paths.xml` — created (Session 2).
-- `build.gradle.kts` `prepareGoogleServicesJson` already correctly wired; verified.
+### Remote Config Keys Added
+- `payment_upi_id` — Base64-encoded UPI ID (set in Firebase Console — MUST be set by admin)
+- `payment_upi_name`, `payment_monthly_amount`, `payment_yearly_amount`
 
-### Settings
-- Gemini API key section removed. Radio/IPTV buffer section removed.
+### Firebase Console (admin setup required)
+- Remote Config: set `payment_upi_id` = Base64 of actual UPI ID
+- Firestore: admin sets `premium_users/{uid}.active = true` after verifying `payment_requests/{uid}`
 
-### FileManager
-- System back button fixed — `navController.popBackStack()` instead of navigate home.
+## Premium = No Ads
+- `NexusAdScaffold` — `koinInject<PremiumRepository>()`, collects `isPremiumFlow`; if premium → full-screen Box without any ad
+- **Why:** Every feature screen wrapped in NexusAdScaffold; single injection removes ads everywhere for premium users.
 
-## Session 2 — additional fixes
+## TTS Screen Overhaul
+- **Root issue**: Banner had hidden `TextButton("TTS Settings")` launching `Settings.ACTION_ACCESSIBILITY_SETTINGS`
+- **Fix**: Replaced with `ExposedDropdownMenuBox` showing Auto/Mix/Dual/Single modes
+- Mode description shown inline; Secondary voice dropdown appears only in Dual mode (`AnimatedVisibility`)
+- Error card now says "install TTS from Play Store" instead of "open Settings"
 
-### Daily Journal — DataStore persistence
-- `DailyJournalScreen.kt` rewritten — injects `SettingsStore` via `koinInject()`.
-- Entries encoded as `id\u0000dateLabel\u0000mood\u0000content` per entry, `\u0001` between entries.
-- Key: `"journal_entries_v1"` in DataStore. Survives app restarts.
-- Uses `store.stringFlow(JOURNAL_KEY, "")` observed as `collectAsState`, `scope.launch { store.setString(...) }` on save/delete.
+## Accessibility Volume Fix
+- `NseAndroidEngine.synthesise()`: added `KEY_PARAM_STREAM = STREAM_ACCESSIBILITY` (API 26+) to Bundle; `setAudioAttributes(USAGE_ASSISTANCE_ACCESSIBILITY, CONTENT_TYPE_SPEECH)`
+- `NseAudioFocusManager`: pre-O deprecated path changed `STREAM_VOICE_CALL` → `STREAM_MUSIC` (STREAM_ACCESSIBILITY is API 26+ only); API 26+ path already uses `USAGE_ASSISTANCE_ACCESSIBILITY` ✓
+- **Why:** TTS volume must track the Accessibility volume slider (same channel TalkBack uses).
 
-### TextToPdf — real PDF generation
-- `TextToPdfScreen.kt`: callback renamed `onShareText` → `onExportPdf(title, body, fontSizePt)`.
-- `NexusNavHost.kt`: `buildPdfFile(context, title, body, fontSizePt)` private helper generates A4 PDF using `android.graphics.pdf.PdfDocument`. Uses `Paint.breakText()` for word-wrap. Title rendered in bold +8pt. Multi-page support.
-- PDF shared via `FileProvider` (authority: `${packageName}.fileprovider`) as `application/pdf`.
-- Icon on Export button changed to `Icons.Filled.PictureAsPdf`.
-
-### MoreScreen — Rate the App
-- `MoreScreen` now accepts `onRateApp: () -> Unit = {}` parameter.
-- `MainScaffold.kt` passes Play Store intent (market:// with https:// fallback).
-- iOS caller unchanged (uses default `{}`).
-
-## Key architecture notes
-- NavHost pattern: `composable(Screen.X.route) { NexusAdScaffold { XScreen(onBack = { navController.popBackStack() }) } }`
-- New screens are in `commonMain`; Android-specific callbacks injected at NavHost layer in `androidMain`.
-- `FeatureCategory.TOOLS` is valid — confirmed used by Speed Test and new features.
-- `ContactBackup` exists in `FeatureId.kt` / `Screen.kt` but has no screen, catalog entry, or route — dead code, harmless.
-- Journal serialization: `\u0000` as field sep, `\u0001` as entry sep, `split(limit=4)` on decode so content may contain `\u0000`.
-
-## Outstanding items
-See `.local/nexusplus_remaining_work.md`. Only non-code blockers remain:
-1. Play Console Data Safety form — manual step in Play Console UI.
-2. ContactBackup screen — not yet implemented (no catalog entry, so users can't reach it).
-3. ProGuard rules audit for media3/coil.
+## Feedback / Rate App (MainScaffold)
+- Already uses `market://details?id=...` with Play Store web URL fallback — no change needed.

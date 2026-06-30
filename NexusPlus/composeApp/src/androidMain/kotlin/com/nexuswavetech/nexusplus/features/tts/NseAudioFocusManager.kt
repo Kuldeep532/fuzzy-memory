@@ -55,10 +55,11 @@ class NseAudioFocusManager(context: Context) {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
             audioManager.requestAudioFocus(focusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         } else {
+            // STREAM_ACCESSIBILITY available from API 26; pre-O falls back to STREAM_MUSIC
             @Suppress("DEPRECATION")
             audioManager.requestAudioFocus(
                 focusChangeListener,
-                AudioManager.STREAM_VOICE_CALL,
+                AudioManager.STREAM_MUSIC,
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
             ) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         }

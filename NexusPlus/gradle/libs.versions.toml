@@ -34,7 +34,6 @@ zxing = "3.5.3"
 firebaseBom = "33.10.0"
 googleServices = "4.4.2"
 googlePlayAuth = "21.3.0"
-playBilling = "7.1.1"
 junit = "4.13.2"
 androidxTestExtJunit = "1.2.1"
 espressoCore = "3.6.1"
@@ -109,7 +108,6 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 google-play-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "googlePlayAuth" }
-play-billing = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "playBilling" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxTestExtJunit" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }

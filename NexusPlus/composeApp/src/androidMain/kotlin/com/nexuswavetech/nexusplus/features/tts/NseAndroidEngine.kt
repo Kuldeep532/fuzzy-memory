@@ -1,6 +1,9 @@
 package com.nexuswavetech.nexusplus.features.tts
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -135,6 +138,20 @@ class NseAndroidEngine(
 
         val params = Bundle().apply {
             putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, utteranceId)
+            // Route audio through the ACCESSIBILITY stream so volume matches TalkBack
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                putInt(TextToSpeech.Engine.KEY_PARAM_STREAM, AudioManager.STREAM_ACCESSIBILITY)
+            }
+        }
+
+        // Set accessibility audio attributes so system treats our speech like TalkBack
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            engine.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+            )
         }
 
         val queueMode = if (flush) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD

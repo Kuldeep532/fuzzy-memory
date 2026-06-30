@@ -1,7 +1,6 @@
 package com.nexuswavetech.nexusplus.features.tts
 
-import android.content.Intent
-import android.provider.Settings
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -18,7 +17,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -29,37 +27,50 @@ import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
+// ── Mode display names ─────────────────────────────────────────────────────────
+
+private data class ModeOption(
+    val mode: NseSpeechMode,
+    val label: String,
+    val description: String,
+)
+
+private val MODE_OPTIONS = listOf(
+    ModeOption(NseSpeechMode.Auto,   "Auto",   "Engine detects language automatically"),
+    ModeOption(NseSpeechMode.Mix,    "Mix",    "Multi-language, voiced per segment"),
+    ModeOption(NseSpeechMode.Auto,   "Dual",   "Two voices for primary/secondary language"),
+    ModeOption(NseSpeechMode.Auto,   "Single", "One chosen voice for all text"),
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NexusTtsScreen(
     onBack: () -> Unit,
     viewModel: NseViewModel = koinViewModel(),
 ) {
-    val context = LocalContext.current
-    val view    = LocalView.current
-    val scope   = rememberCoroutineScope()
-    val snack   = remember { SnackbarHostState() }
+    val view          = LocalView.current
+    val scope         = rememberCoroutineScope()
+    val snack         = remember { SnackbarHostState() }
 
-    val engineState by viewModel.engineState.collectAsState()
-    val voices      by viewModel.availableVoices.collectAsState()
-    val inputText   by viewModel.inputText.collectAsState()
-    val isSpeaking  by viewModel.isSpeaking.collectAsState()
-    val speechRate  by viewModel.speechRate.collectAsState()
-    val pitch       by viewModel.pitch.collectAsState()
+    val engineState   by viewModel.engineState.collectAsState()
+    val voices        by viewModel.availableVoices.collectAsState()
+    val inputText     by viewModel.inputText.collectAsState()
+    val isSpeaking    by viewModel.isSpeaking.collectAsState()
+    val speechRate    by viewModel.speechRate.collectAsState()
+    val pitch         by viewModel.pitch.collectAsState()
+    val currentMode   by viewModel.mode.collectAsState()
     val selectedVoice by viewModel.selectedVoice.collectAsState()
-    val hasUnsaved  by viewModel.hasUnsavedChanges.collectAsState()
+    val secondaryVoice by viewModel.secondaryVoice.collectAsState()
+    val hasUnsaved    by viewModel.hasUnsavedChanges.collectAsState()
 
     val isReady = engineState == NseState.Ready || engineState == NseState.Speaking
 
-    // Build simple voice list for dropdown
-    val voiceOptions: List<Pair<NseVoiceProfile?, String>> = remember(voices) {
-        listOf(null to "Auto (detect language)") +
-        voices.map { v ->
-            v to buildString {
-                append(v.locale.displayLanguage.ifBlank { v.locale.toLanguageTag() })
-                if (v.name.isNotBlank()) append(" — ${v.name}")
-            }
-        }
+    // Infer current mode label
+    val currentModeLabel = when (currentMode) {
+        is NseSpeechMode.Auto        -> "Auto"
+        is NseSpeechMode.Mix         -> "Mix"
+        is NseSpeechMode.DualVoice   -> "Dual"
+        is NseSpeechMode.SingleVoice -> "Single"
     }
 
     Scaffold(
@@ -68,16 +79,11 @@ fun NexusTtsScreen(
         bottomBar = {
             if (hasUnsaved) Surface(tonalElevation = 4.dp, shadowElevation = 8.dp) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedButton(
-                        onClick = {
-                            viewModel.resetSettings()
-                            scope.launch { snack.showSnackbar("Reset to defaults") }
-                        },
+                        onClick = { viewModel.resetSettings(); scope.launch { snack.showSnackbar("Reset to defaults") } },
                         modifier = Modifier.weight(1f),
                     ) {
                         Icon(Icons.Filled.Refresh, null, modifier = Modifier.size(16.dp))
@@ -85,15 +91,12 @@ fun NexusTtsScreen(
                         Text("Reset")
                     }
                     Button(
-                        onClick = {
-                            viewModel.saveSettings()
-                            scope.launch { snack.showSnackbar("Settings saved") }
-                        },
+                        onClick = { viewModel.saveSettings(); scope.launch { snack.showSnackbar("Settings saved") } },
                         modifier = Modifier.weight(2f),
                     ) {
                         Icon(Icons.Filled.Save, null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Save Settings", fontWeight = FontWeight.Bold)
+                        Text("Save", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -105,74 +108,48 @@ fun NexusTtsScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
 
-            // ── Engine status banner ───────────────────────────────────────
+            // ── Engine status banner ─────────────────────────────────────────
             val bannerColor by animateColorAsState(
                 targetValue = when (engineState) {
-                    NseState.Ready, NseState.Speaking ->
-                        MaterialTheme.colorScheme.primaryContainer
-                    NseState.Initialising ->
-                        MaterialTheme.colorScheme.surfaceVariant
-                    else ->
-                        MaterialTheme.colorScheme.errorContainer
+                    NseState.Ready, NseState.Speaking -> MaterialTheme.colorScheme.primaryContainer
+                    NseState.Initialising             -> MaterialTheme.colorScheme.surfaceVariant
+                    else                              -> MaterialTheme.colorScheme.errorContainer
                 },
-                animationSpec = tween(400),
-                label = "bannerColor",
+                animationSpec = tween(400), label = "bannerColor",
             )
-            val bannerTextColor = when (engineState) {
-                NseState.Ready, NseState.Speaking ->
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                NseState.Initialising ->
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                else ->
-                    MaterialTheme.colorScheme.onErrorContainer
+            val bannerFg = when (engineState) {
+                NseState.Ready, NseState.Speaking -> MaterialTheme.colorScheme.onPrimaryContainer
+                NseState.Initialising             -> MaterialTheme.colorScheme.onSurfaceVariant
+                else                              -> MaterialTheme.colorScheme.onErrorContainer
             }
             val bannerText = when (engineState) {
                 NseState.Initialising -> "Setting up voice engine…"
-                NseState.Ready        -> "Ready to speak"
+                NseState.Ready        -> "Ready · Mode: $currentModeLabel"
                 NseState.Speaking     -> "Speaking…"
-                else                  -> "Voice engine error — check TTS settings"
+                else                  -> "Voice engine error — install a TTS engine from Play Store"
             }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(bannerColor)
                     .padding(horizontal = 16.dp, vertical = 10.dp)
-                    .semantics { contentDescription = "TTS engine status: $bannerText" },
+                    .semantics { contentDescription = "Engine status: $bannerText" },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (engineState == NseState.Initialising) {
-                    CircularProgressIndicator(
-                        Modifier.size(14.dp),
-                        strokeWidth = 2.dp,
-                        color = bannerTextColor,
-                    )
+                    CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = bannerFg)
                 } else {
                     Icon(
                         if (isReady) Icons.Filled.RecordVoiceOver else Icons.Filled.Error,
                         contentDescription = null,
-                        tint = bannerTextColor,
+                        tint = bannerFg,
                         modifier = Modifier.size(16.dp),
                     )
                 }
-                Text(bannerText, style = MaterialTheme.typography.labelMedium, color = bannerTextColor)
-
-                if (engineState != NseState.Initialising) {
-                    Spacer(Modifier.weight(1f))
-                    TextButton(
-                        onClick = {
-                            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(intent)
-                        },
-                        contentPadding = PaddingValues(horizontal = 4.dp),
-                    ) {
-                        Text("TTS Settings", style = MaterialTheme.typography.labelSmall, color = bannerTextColor)
-                    }
-                }
+                Text(bannerText, style = MaterialTheme.typography.labelMedium, color = bannerFg, modifier = Modifier.weight(1f))
             }
 
             Column(
@@ -180,7 +157,60 @@ fun NexusTtsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
 
-                // ── Text input ─────────────────────────────────────────────
+                // ── Mode selector dropdown ────────────────────────────────────
+                ModeDropdown(
+                    currentLabel = currentModeLabel,
+                    onModeSelected = { label ->
+                        when (label) {
+                            "Auto"   -> viewModel.onModeChange(NseSpeechMode.Auto)
+                            "Mix"    -> viewModel.onModeChange(NseSpeechMode.Mix)
+                            "Dual"   -> {
+                                val p = selectedVoice
+                                val s = secondaryVoice
+                                viewModel.onModeChange(
+                                    if (p != null && s != null) NseSpeechMode.DualVoice(p.locale, s.locale)
+                                    else NseSpeechMode.Auto
+                                )
+                            }
+                            "Single" -> {
+                                val v = selectedVoice
+                                viewModel.onModeChange(
+                                    if (v != null) NseSpeechMode.SingleVoice(v.locale)
+                                    else NseSpeechMode.Auto
+                                )
+                            }
+                        }
+                    },
+                )
+
+                // ── Primary voice dropdown ────────────────────────────────────
+                val primaryOptions: List<Pair<NseVoiceProfile?, String>> =
+                    listOf(null to "Auto (detect language)") +
+                    voices.map { v ->
+                        v to buildString {
+                            append(v.locale.displayLanguage.ifBlank { v.locale.toLanguageTag() })
+                            if (v.name.isNotBlank()) append(" — ${v.name}")
+                        }
+                    }
+
+                VoiceDropdown(
+                    label       = when (currentModeLabel) { "Dual" -> "Primary Voice"; else -> "Voice" },
+                    options     = primaryOptions,
+                    selected    = selectedVoice,
+                    onSelect    = viewModel::onVoiceSelected,
+                )
+
+                // ── Secondary voice (only for Dual mode) ─────────────────────
+                AnimatedVisibility(visible = currentModeLabel == "Dual") {
+                    VoiceDropdown(
+                        label       = "Secondary Voice",
+                        options     = primaryOptions,
+                        selected    = secondaryVoice,
+                        onSelect    = viewModel::onSecondaryVoiceSelected,
+                    )
+                }
+
+                // ── Text input ────────────────────────────────────────────────
                 Card(
                     shape = MaterialTheme.shapes.extraLarge,
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -193,31 +223,24 @@ fun NexusTtsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
-                                "Enter text to speak",
+                                "Text to speak",
                                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.primary,
                             )
                             if (inputText.isNotBlank()) {
-                                IconButton(
-                                    onClick = { viewModel.clearText() },
-                                    modifier = Modifier.size(28.dp),
-                                ) {
+                                IconButton(onClick = { viewModel.clearText() }, modifier = Modifier.size(28.dp)) {
                                     Icon(Icons.Filled.Clear, "Clear text", modifier = Modifier.size(16.dp))
                                 }
                             }
                         }
-
                         Spacer(Modifier.height(8.dp))
-
                         BasicTextField(
                             value = inputText,
                             onValueChange = viewModel::onTextChange,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .heightIn(min = 130.dp)
-                                .semantics {
-                                    contentDescription = "Text input. Type what you want the device to speak aloud."
-                                },
+                                .heightIn(min = 120.dp)
+                                .semantics { contentDescription = "Type what you want spoken aloud" },
                             textStyle = MaterialTheme.typography.bodyLarge.copy(
                                 color = MaterialTheme.colorScheme.onSurface,
                                 lineHeight = 26.sp,
@@ -233,192 +256,178 @@ fun NexusTtsScreen(
                                 inner()
                             },
                         )
-
-                        Spacer(Modifier.height(12.dp))
-
+                        Spacer(Modifier.height(10.dp))
                         // Quick phrase chips
-                        val quickPhrases = listOf("Hello, how are you?", "Welcome!", "Thank you.", "Please wait.")
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(vertical = 2.dp),
-                        ) {
-                            items(quickPhrases) { phrase ->
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 2.dp)) {
+                            items(listOf("Hello!", "Welcome!", "Thank you.", "Please wait.", "Good morning!")) { phrase ->
                                 SuggestionChip(
                                     onClick = { viewModel.onTextChange(phrase) },
                                     label = { Text(phrase, style = MaterialTheme.typography.labelSmall) },
-                                    modifier = Modifier.semantics {
-                                        contentDescription = "Quick phrase: $phrase"
-                                    },
+                                    modifier = Modifier.semantics { contentDescription = "Quick phrase: $phrase" },
                                 )
                             }
                         }
                     }
                 }
 
-                // ── Speak / Stop buttons ────────────────────────────────────
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(
-                        onClick = {
-                            if (isSpeaking) {
-                                viewModel.stop()
-                                view.announceForAccessibility("Speech stopped.")
-                            } else {
-                                viewModel.speak()
-                                view.announceForAccessibility("Speaking.")
-                            }
-                        },
-                        enabled = isReady && inputText.isNotBlank(),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(60.dp)
-                            .semantics {
-                                contentDescription = if (isSpeaking) "Stop speaking" else "Speak text aloud"
-                            },
-                        shape = MaterialTheme.shapes.large,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isSpeaking) MaterialTheme.colorScheme.error
-                                            else MaterialTheme.colorScheme.primary,
-                        ),
-                    ) {
-                        Icon(
-                            if (isSpeaking) Icons.Filled.Stop else Icons.Filled.PlayArrow,
-                            contentDescription = null,
-                            modifier = Modifier.size(26.dp),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            if (isSpeaking) "Stop" else "Speak",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
-
-                // ── Speed slider ────────────────────────────────────────────
-                Card(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(1.dp),
+                // ── Speak / Stop ─────────────────────────────────────────────
+                Button(
+                    onClick = {
+                        if (isSpeaking) {
+                            viewModel.stop()
+                            view.announceForAccessibility("Speech stopped.")
+                        } else {
+                            viewModel.speak()
+                            view.announceForAccessibility("Speaking.")
+                        }
+                    },
+                    enabled = isReady && inputText.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .semantics { contentDescription = if (isSpeaking) "Stop speaking" else "Speak text aloud" },
+                    shape = MaterialTheme.shapes.large,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isSpeaking) MaterialTheme.colorScheme.error
+                                         else MaterialTheme.colorScheme.primary,
+                    ),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                "Speed",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface,
+                    AnimatedContent(isSpeaking, label = "speakIcon") { speaking ->
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Icon(
+                                if (speaking) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                                contentDescription = null,
+                                modifier = Modifier.size(26.dp),
                             )
                             Text(
-                                "${"%.1f".format(speechRate)}×",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
+                                if (speaking) "Stop" else "Speak",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Bold,
                             )
-                        }
-                        Slider(
-                            value = speechRate,
-                            onValueChange = viewModel::onSpeechRateChange,
-                            valueRange = 0.25f..3.0f,
-                            steps = 27,
-                            modifier = Modifier.semantics {
-                                contentDescription = "Speech speed slider. Current speed: ${"%.1f".format(speechRate)} times normal."
-                            },
-                        )
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Slow", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Normal (1×)", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Fast", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
 
-                // ── Pitch slider ────────────────────────────────────────────
-                Card(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(1.dp),
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text(
-                                "Pitch",
-                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                "${"%.1f".format(pitch)}×",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                        Slider(
-                            value = pitch,
-                            onValueChange = viewModel::onPitchChange,
-                            valueRange = 0.5f..2.0f,
-                            steps = 15,
-                            modifier = Modifier.semantics {
-                                contentDescription = "Pitch slider. Current pitch: ${"%.1f".format(pitch)}."
-                            },
-                        )
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Low", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("Normal", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("High", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
-
-                // ── Voice selector ──────────────────────────────────────────
-                VoiceDropdown(
-                    label = "Voice",
-                    options = voiceOptions,
-                    selected = selectedVoice,
-                    onSelect = viewModel::onVoiceSelected,
+                // ── Speed ────────────────────────────────────────────────────
+                SliderCard(
+                    label    = "Speed",
+                    valueStr = "${"%.1f".format(speechRate)}×",
+                    value    = speechRate,
+                    onValue  = viewModel::onSpeechRateChange,
+                    range    = 0.25f..3.0f,
+                    steps    = 27,
+                    lo = "Slow", mid = "Normal", hi = "Fast",
+                    cd = "Speed slider. Current: ${"%.1f".format(speechRate)} times normal.",
                 )
 
-                // ── TTS engine not ready message ────────────────────────────
+                // ── Pitch ────────────────────────────────────────────────────
+                SliderCard(
+                    label    = "Pitch",
+                    valueStr = "${"%.1f".format(pitch)}×",
+                    value    = pitch,
+                    onValue  = viewModel::onPitchChange,
+                    range    = 0.5f..2.0f,
+                    steps    = 15,
+                    lo = "Low", mid = "Normal", hi = "High",
+                    cd = "Pitch slider. Current: ${"%.1f".format(pitch)}.",
+                )
+
+                // ── Engine error card ────────────────────────────────────────
                 AnimatedVisibility(visible = !isReady && engineState != NseState.Initialising) {
                     Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                        ),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                         shape = MaterialTheme.shapes.large,
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
+                        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                "TTS engine not available",
+                                "Voice engine not available",
                                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                             )
                             Text(
-                                "Install a TTS engine from the Play Store (e.g. Google Text-to-Speech), then return here.",
+                                "Install Google Text-to-Speech or any TTS engine from the Play Store, then reopen this screen.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                             )
-                            OutlinedButton(
-                                onClick = {
-                                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    context.startActivity(intent)
-                                },
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                                ),
-                            ) {
-                                Text("Open TTS Settings")
-                            }
                         }
                     }
                 }
 
                 Spacer(Modifier.height(12.dp))
+            }
+        }
+    }
+}
+
+// ── Mode dropdown ─────────────────────────────────────────────────────────────
+
+private val MODE_LABELS = listOf(
+    "Auto"   to "Engine detects language automatically",
+    "Mix"    to "Multi-language, voiced per segment",
+    "Dual"   to "Two voices: primary & secondary language",
+    "Single" to "One chosen voice for all text",
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModeDropdown(
+    currentLabel: String,
+    onModeSelected: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val currentDesc = MODE_LABELS.firstOrNull { it.first == currentLabel }?.second ?: ""
+
+    Card(
+        shape  = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                "Speech Mode",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            Text(
+                currentDesc,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = it },
+            ) {
+                OutlinedTextField(
+                    value         = currentLabel,
+                    onValueChange = {},
+                    readOnly      = true,
+                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors        = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier      = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                        .fillMaxWidth()
+                        .semantics { contentDescription = "Speech mode selector. Current: $currentLabel. $currentDesc" },
+                    singleLine    = true,
+                    leadingIcon   = { Icon(Icons.Filled.Tune, null, modifier = Modifier.size(18.dp)) },
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    MODE_LABELS.forEach { (label, desc) ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(label, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                                    Text(desc, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            },
+                            onClick = { onModeSelected(label); expanded = false },
+                            leadingIcon = if (label == currentLabel) {
+                                { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                            } else null,
+                        )
+                    }
+                }
             }
         }
     }
@@ -438,7 +447,7 @@ private fun VoiceDropdown(
     val selectedLabel = options.firstOrNull { it.first == selected }?.second ?: "Auto (detect language)"
 
     Card(
-        shape = MaterialTheme.shapes.extraLarge,
+        shape  = MaterialTheme.shapes.extraLarge,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(1.dp),
     ) {
@@ -449,27 +458,21 @@ private fun VoiceDropdown(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 8.dp),
             )
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
-            ) {
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
                 OutlinedTextField(
-                    value = selectedLabel,
+                    value         = selectedLabel,
                     onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
-                    modifier = Modifier
+                    readOnly      = true,
+                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors        = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier      = Modifier
                         .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
                         .fillMaxWidth()
-                        .semantics { contentDescription = "Voice selector. Currently: $selectedLabel." },
-                    singleLine = true,
+                        .semantics { contentDescription = "$label selector. Currently: $selectedLabel." },
+                    singleLine    = true,
+                    leadingIcon   = { Icon(Icons.Filled.RecordVoiceOver, null, modifier = Modifier.size(18.dp)) },
                 )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                ) {
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     options.forEach { (voiceProfile, voiceLabel) ->
                         DropdownMenuItem(
                             text = { Text(voiceLabel, style = MaterialTheme.typography.bodyMedium) },
@@ -480,6 +483,39 @@ private fun VoiceDropdown(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+// ── Slider card ────────────────────────────────────────────────────────────────
+
+@Composable
+private fun SliderCard(
+    label: String, valueStr: String,
+    value: Float, onValue: (Float) -> Unit,
+    range: ClosedFloatingPointRange<Float>, steps: Int,
+    lo: String, mid: String, hi: String, cd: String,
+) {
+    Card(
+        shape  = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(label, style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
+                Text(valueStr, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            }
+            Slider(
+                value = value, onValueChange = onValue,
+                valueRange = range, steps = steps,
+                modifier = Modifier.semantics { contentDescription = cd },
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(lo,  style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(mid, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(hi,  style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

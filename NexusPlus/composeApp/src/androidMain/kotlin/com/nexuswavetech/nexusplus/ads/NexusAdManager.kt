@@ -14,7 +14,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nexuswavetech.nexusplus.billing.PremiumRepository
 import kotlinx.coroutines.delay
+import org.koin.compose.koinInject
 
 // ── Live Ad Unit IDs (Nexus Wave Technologies) ────────────────────────────────
 object NexusAdIds {
@@ -189,7 +191,14 @@ fun NexusAdScaffold(
     adUnitId: String   = NexusAdIds.BANNER_ANDROID,
     content: @Composable () -> Unit,
 ) {
-    var adLoaded by remember { mutableStateOf(false) }
+    val premiumRepo: PremiumRepository = koinInject()
+    val isPremium by premiumRepo.isPremiumFlow.collectAsState(initial = false)
+
+    if (isPremium) {
+        // Premium users see no ads — just full-screen content
+        Box(modifier = modifier.fillMaxSize()) { content() }
+        return
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1f)) {
@@ -198,8 +207,8 @@ fun NexusAdScaffold(
         NexusBannerAd(
             modifier    = Modifier.fillMaxWidth(),
             adUnitId    = adUnitId,
-            onAdLoaded  = { adLoaded = true },
-            onAdFailed  = { adLoaded = false },
+            onAdLoaded  = {},
+            onAdFailed  = {},
         )
     }
 }
