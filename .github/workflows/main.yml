@@ -18,6 +18,11 @@ jobs:
     env:
       ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -34,77 +39,33 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode Google Services JSON (Global & App Level)
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: |
-          if [ -z "$GOOGLE_SERVICES_JSON" ]; then
-            echo "GOOGLE_SERVICES_JSON secret is not set" >&2
-            exit 1
-          fi
-          # Ensure directories exist explicitly from repo root
-          mkdir -p NexusPlus/app
-          
-          # Decode directly into the correct absolute locations
-          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > NexusPlus/google-services.json
-          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > NexusPlus/app/google-services.json
-
-      - name: Inject Configuration Files
-        run: |
-          cd NexusPlus
-          touch local.properties
-          echo "admob.app.id=$ADMOB_APP_ID" >> local.properties
-          echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
-          echo "ADMOB_APP_ID=$ADMOB_APP_ID" >> local.properties
-          echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> local.properties
-
       - name: Grant Gradlew Permission
         run: |
           cd NexusPlus
           chmod +x gradlew
 
-      - name: Build Unsigned Release APK
+      # Gradle aapke env variables se khud signed APK banayega
+      - name: Build Signed Release APK
         if: github.event.inputs.build_type == 'apk'
         run: |
           cd NexusPlus
           set -eo pipefail
           ./gradlew clean assembleRelease 2>&1 | tee build_output.log
 
-      - name: Build Unsigned Release AAB
+      # Gradle aapke env variables se khud signed AAB banayega
+      - name: Build Signed Release AAB
         if: github.event.inputs.build_type == 'aab'
         run: |
           cd NexusPlus
           set -eo pipefail
           ./gradlew clean bundleRelease 2>&1 | tee build_output.log
 
-      - name: Sign APK with r0adkll
-        if: github.event.inputs.build_type == 'apk'
-        uses: r0adkll/sign-android-release@v1
-        id: sign_apk
-        with:
-          releaseDirectory: NexusPlus/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Sign AAB with r0adkll
-        if: github.event.inputs.build_type == 'aab'
-        uses: r0adkll/sign-android-release@v1
-        id: sign_aab
-        with:
-          releaseDirectory: NexusPlus/app/build/outputs/bundle/release
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-
       - name: Upload Signed APK
         if: github.event.inputs.build_type == 'apk' && success()
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-APK
-          path: ${{ steps.sign_apk.outputs.signedReleaseFile }}
+          path: NexusPlus/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 7
 
@@ -113,7 +74,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: NexusPlus-Release-AAB
-          path: ${{ steps.sign_aab.outputs.signedReleaseFile }}
+          path: NexusPlus/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 7
 
