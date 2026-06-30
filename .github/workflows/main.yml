@@ -22,45 +22,45 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
-
+        
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 17
-
+          
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
+        
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
+        
       - name: Inject Configuration Files
         run: |
           mkdir -p app
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > app/google-services.json
-          
+          # Base64 string ko decode karke valid json file create karne ke liye niche wali line update ki hai
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > app/google-services.json
           touch local.properties
           echo "admob.app.id=$ADMOB_APP_ID" >> local.properties
           echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
           echo "ADMOB_APP_ID=$ADMOB_APP_ID" >> local.properties
           echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> local.properties
-
+          
       - name: Grant Gradlew Permission
         run: chmod +x gradlew
-
+        
       - name: Build Release APK
         if: github.event.inputs.build_type == 'apk'
         run: |
           set -eo pipefail
           ./gradlew clean assembleRelease 2>&1 | tee build_output.log
-
+          
       - name: Build Release AAB
         if: github.event.inputs.build_type == 'aab'
         run: |
           set -eo pipefail
           ./gradlew clean bundleRelease 2>&1 | tee build_output.log
-
+          
       - name: Sign Artifacts (No Gradle Edit Mode)
         uses: r0adkll/sign-android-release@v1
         id: sign_app
@@ -70,7 +70,7 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-
+          
       - name: Upload Signed APK
         if: github.event.inputs.build_type == 'apk' && success()
         uses: actions/upload-artifact@v4
@@ -79,7 +79,7 @@ jobs:
           path: ${{ steps.sign_app.outputs.signedReleaseFile }}
           if-no-files-found: error
           retention-days: 7
-
+          
       - name: Upload Signed AAB
         if: github.event.inputs.build_type == 'aab' && success()
         uses: actions/upload-artifact@v4
@@ -88,7 +88,7 @@ jobs:
           path: ${{ steps.sign_app.outputs.signedReleaseFile }}
           if-no-files-found: error
           retention-days: 7
-
+          
       - name: Upload Logs on Failure
         if: failure()
         uses: actions/upload-artifact@v4
