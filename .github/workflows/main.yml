@@ -15,9 +15,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: NexusPlus
     env:
       ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -45,15 +42,16 @@ jobs:
             echo "GOOGLE_SERVICES_JSON secret is not set" >&2
             exit 1
           fi
-          # Save globally in the working directory (NexusPlus/)
-          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > google-services.json
+          # Ensure directories exist explicitly from repo root
+          mkdir -p NexusPlus/app
           
-          # Also save inside the app module explicitly to prevent any plugin issues
-          mkdir -p app
-          cp google-services.json app/google-services.json
+          # Decode directly into the correct absolute locations
+          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > NexusPlus/google-services.json
+          printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > NexusPlus/app/google-services.json
 
       - name: Inject Configuration Files
         run: |
+          cd NexusPlus
           touch local.properties
           echo "admob.app.id=$ADMOB_APP_ID" >> local.properties
           echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
@@ -61,17 +59,21 @@ jobs:
           echo "GEMINI_API_KEY=$GEMINI_API_KEY" >> local.properties
 
       - name: Grant Gradlew Permission
-        run: chmod +x gradlew
+        run: |
+          cd NexusPlus
+          chmod +x gradlew
 
       - name: Build Unsigned Release APK
         if: github.event.inputs.build_type == 'apk'
         run: |
+          cd NexusPlus
           set -eo pipefail
           ./gradlew clean assembleRelease 2>&1 | tee build_output.log
 
       - name: Build Unsigned Release AAB
         if: github.event.inputs.build_type == 'aab'
         run: |
+          cd NexusPlus
           set -eo pipefail
           ./gradlew clean bundleRelease 2>&1 | tee build_output.log
 
