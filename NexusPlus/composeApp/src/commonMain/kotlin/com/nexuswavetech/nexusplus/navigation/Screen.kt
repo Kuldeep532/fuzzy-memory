@@ -125,6 +125,8 @@ sealed class Screen(val route: String) {
 
     // v1.4.0
     object SmartDocumentScanner : Screen("feature/doc_scanner")
+    object VideoDescription     : Screen("feature/video_description")
+    object QrCodeScanner        : Screen("feature/qr_scanner")
 
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")

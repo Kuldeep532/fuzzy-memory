@@ -56,6 +56,7 @@ import com.nexuswavetech.nexusplus.features.stub.StubFeatureScreen
 import com.nexuswavetech.nexusplus.features.biometricvault.BiometricVaultScreen
 import com.nexuswavetech.nexusplus.features.reminder.MyReminderScreen
 import com.nexuswavetech.nexusplus.features.qrcode.QrCodeScreen
+import com.nexuswavetech.nexusplus.features.qrcodescanner.QrCodeScannerScreen
 import com.nexuswavetech.nexusplus.features.calculator.CalculatorCenterScreen
 import com.nexuswavetech.nexusplus.features.dochub.DocHubScreen
 import com.nexuswavetech.nexusplus.features.voicetyper.VoiceTyperScreen
@@ -86,6 +87,7 @@ import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
 import com.nexuswavetech.nexusplus.features.dialer.NexusDialerScreen
 import com.nexuswavetech.nexusplus.features.textanalyzer.NexusTextAnalyzerScreen
 import com.nexuswavetech.nexusplus.features.docscanner.SmartDocumentScannerScreen
+import com.nexuswavetech.nexusplus.features.videodesc.VideoDescriptionScreen
 import com.nexuswavetech.nexusplus.features.weather.WeatherScreen
 import com.nexuswavetech.nexusplus.news.NewsScreen
 import com.nexuswavetech.nexusplus.science.ScienceScreen
@@ -253,6 +255,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         composable(Screen.VoiceTyper.route)       { NexusAdScaffold { VoiceTyperScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.MyReminder.route)       { NexusAdScaffold { MyReminderScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.QrCode.route)           { NexusAdScaffold { QrCodeScreen          (onBack = { navController.popBackStack() }) } }
+        composable(Screen.QrCodeScanner.route)    { NexusAdScaffold { QrCodeScannerScreen   (onBack = { navController.popBackStack() }) } }
         composable(Screen.Flashlight.route)       { NexusAdScaffold { FlashlightScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.Stopwatch.route)        { NexusAdScaffold { StopwatchScreen       (onBack = { navController.popBackStack() }) } }
         composable(Screen.WorldClock.route)       { NexusAdScaffold { WorldClockScreen      (onBack = { navController.popBackStack() }) } }
@@ -408,6 +411,9 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         }
         composable(Screen.SmartDocumentScanner.route) {
             NexusAdScaffold { SmartDocumentScannerScreen(onBack = { navController.popBackStack() }) }
+        }
+        composable(Screen.VideoDescription.route) {
+            NexusAdScaffold { VideoDescriptionScreen(onBack = { navController.popBackStack() }) }
         }
 
         // ── Stub catch-all ────────────────────────────────────────────────

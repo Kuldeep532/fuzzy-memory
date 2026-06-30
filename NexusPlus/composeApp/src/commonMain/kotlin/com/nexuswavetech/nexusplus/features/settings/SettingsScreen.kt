@@ -501,6 +501,13 @@ fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}, onSubs
                             checked  = airaGeminiPrimary,
                             onToggle = { scope.launch { settings.setAiraGeminiPrimary(it) } },
                         )
+
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Aira AI is gated by the premium subscription system. Users without an active subscription will see a paywall when accessing Aira AI.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
@@ -519,7 +526,7 @@ fun SettingsScreen(onBack: () -> Unit, onDownloadVoices: () -> Unit = {}, onSubs
                         SettingsInfoRow(
                             icon  = Icons.Filled.Android,
                             title = "Version",
-                            value = "1.3.0",
+                            value = "1.4.0",
                         )
                         HorizontalDivider()
                         SettingsInfoRow(

@@ -217,16 +217,20 @@ fun NexusTtsScreen(
                     )
                 }
 
-                // ── Mix mode language selector (NEW) ─────────────────────────
+                // ── Language selector (visible in ALL modes) ─────────────────
+                MixLanguageSelector(
+                    label = "Language",
+                    selectedLanguage = selectedVoice?.locale?.toLanguageTag() ?: "",
+                    onLanguageSelected = { tag ->
+                        val locale = if (tag.isBlank()) null else NseLocale.forLanguageTag(tag)
+                        val voice = locale?.let { l -> repository.voicesForLocale(l).firstOrNull() }
+                        viewModel.onVoiceSelected(voice)
+                    },
+                )
+
+                // ── Mix mode extra hint ──────────────────────────────────────
                 AnimatedVisibility(visible = currentModeLabel == "Mix") {
-                    MixLanguageSelector(
-                        selectedLanguage = selectedVoice?.locale?.toLanguageTag() ?: "",
-                        onLanguageSelected = { tag ->
-                            val locale = if (tag.isBlank()) null else NseLocale.forLanguageTag(tag)
-                            val voice = locale?.let { l -> repository.voicesForLocale(l).firstOrNull() }
-                            viewModel.onVoiceSelected(voice)
-                        },
-                    )
+                    Text("Mix mode auto-detects multiple languages from input text", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 // ── Force TalkBack default rate toggle (NEW) ─────────────────

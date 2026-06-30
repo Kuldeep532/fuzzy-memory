@@ -17,7 +17,6 @@ object NexusGatekeeper {
         FeatureId.FILE_MANAGER         to FeatureAccess.PUBLIC,
         FeatureId.CURRENCY_CONVERTER   to FeatureAccess.PUBLIC,
         FeatureId.QR_GENERATOR         to FeatureAccess.PUBLIC,
-        FeatureId.QR_SCANNER           to FeatureAccess.PUBLIC,
         FeatureId.WEATHER              to FeatureAccess.PUBLIC,
         FeatureId.UNIT_CONVERTER       to FeatureAccess.PUBLIC,
         FeatureId.CALCULATOR_CENTER    to FeatureAccess.PUBLIC,
@@ -60,14 +59,16 @@ object NexusGatekeeper {
         FeatureId.SMART_DOCUMENT_SCANNER to FeatureAccess.PUBLIC,
 
         // ── Authenticated only ────────────────────────────────────────────────
-        FeatureId.AI_IMAGE_GENERATOR   to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.IPTV_PLAYER          to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.MUSIC_STREAMING      to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.ENCRYPTED_NOTES      to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.CONTACT_BACKUP       to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.SCREEN_RECORDER      to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.APP_LOCKER           to FeatureAccess.AUTHENTICATED_ONLY,
-        FeatureId.BIOMETRIC_VAULT      to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.AI_IMAGE_GENERATOR     to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.AIRA_AI                to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.SMART_DOCUMENT_SCANNER to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.IPTV_PLAYER            to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.MUSIC_STREAMING        to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.ENCRYPTED_NOTES        to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.CONTACT_BACKUP         to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.SCREEN_RECORDER        to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.APP_LOCKER             to FeatureAccess.AUTHENTICATED_ONLY,
+        FeatureId.BIOMETRIC_VAULT        to FeatureAccess.AUTHENTICATED_ONLY,
     )
 
     fun checkAccess(featureId: FeatureId, session: UserSession, featureName: String): AccessResult {

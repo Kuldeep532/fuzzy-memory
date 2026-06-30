@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 fun MixLanguageSelector(
     selectedLanguage: String,
     onLanguageSelected: (String) -> Unit,
+    label: String = "Mix Mode Language",
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -59,13 +60,13 @@ fun MixLanguageSelector(
     ) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(
-                "Mix Mode Language",
+                label,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             Text(
-                "Pick a preferred voice for mixed-language text. Auto detects each segment's language when unset.",
+                "Pick a preferred voice language. Auto-detects when unset.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 8.dp),

@@ -609,6 +609,26 @@ object FeatureCatalog {
             keywords    = listOf("scan", "document", "ocr", "pdf", "camera", "ml kit", "text", "export"),
             isNew       = true,
         ),
+        FeatureItem(
+            id          = FeatureId.VIDEO_DESCRIPTION,
+            name        = "Video Description",
+            description = "AI-powered video analysis with spoken descriptions using on-device TTS. 100% offline & free.",
+            icon        = Icons.Filled.VideoLibrary,
+            route       = Screen.VideoDescription.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("video", "description", "tts", "blind", "accessibility", "offline", "ai"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.QR_CODE_SCANNER,
+            name        = "QR Scanner Pro",
+            description = "Scan QR codes, barcodes, Wi-Fi credentials, contacts, URLs and more. Full history with quick actions.",
+            icon        = Icons.Filled.QrCodeScanner,
+            route       = Screen.QrCodeScanner.route,
+            category    = FeatureCategory.TOOLS,
+            keywords    = listOf("qr", "scanner", "barcode", "scan", "wifi", "contact", "url", "code"),
+            isNew       = true,
+        ),
 
     )
 

@@ -92,6 +92,8 @@ enum class FeatureId {
 
     // v1.4.0
     SMART_DOCUMENT_SCANNER,
+    VIDEO_DESCRIPTION,
+    QR_CODE_SCANNER,
 
     // ── Legacy backward-compat aliases ────────────────────────────────────
     RADIO_PLAYER,      // removed feature — kept for DataStore migration
