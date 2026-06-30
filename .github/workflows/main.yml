@@ -38,8 +38,19 @@ jobs:
       - name: Inject Configuration Files
         run: |
           mkdir -p app
-          # Base64 string ko decode karke valid json file create karne ke liye niche wali line update ki hai
+          # Base64 decode for google-services.json
           echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > app/google-services.json
+          
+          # Create key.properties to prevent Gradle build from skipping/failing on missing signing configuration
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> key.properties
+          echo "storeFile=release.keystore" >> key.properties
+          
+          # Decode Keystore binary file inside app directory
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
+          
+          # Inject Environment local properties
           touch local.properties
           echo "admob.app.id=$ADMOB_APP_ID" >> local.properties
           echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
