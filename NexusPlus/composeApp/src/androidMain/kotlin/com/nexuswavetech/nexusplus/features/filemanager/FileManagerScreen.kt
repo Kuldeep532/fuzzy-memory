@@ -82,7 +82,7 @@ private val DOC_EXTS   = setOf("pdf","txt","doc","docx","xls","xlsx","ppt","pptx
 
 private fun openFileWithSystem(context: android.content.Context, file: File) {
     runCatching {
-        val uri  = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+        val uri  = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         val ext  = file.extension.lowercase()
         val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "*/*"
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -185,12 +185,12 @@ fun FileManagerScreen(
         when {
             ext in IMAGE_EXTS && onOpenImageViewer != null ->
                 runCatching {
-                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                     onOpenImageViewer(uri)
                 }.onFailure { openFileWithSystem(context, file) }
             ext in DOC_EXTS && onOpenDocReader != null ->
                 runCatching {
-                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                     onOpenDocReader(uri)
                 }.onFailure { openFileWithSystem(context, file) }
             else -> openFileWithSystem(context, file)

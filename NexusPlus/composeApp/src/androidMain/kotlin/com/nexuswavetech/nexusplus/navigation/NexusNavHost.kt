@@ -67,6 +67,7 @@ import com.nexuswavetech.nexusplus.features.stopwatch.StopwatchScreen
 import com.nexuswavetech.nexusplus.features.worldclock.WorldClockScreen
 import com.nexuswavetech.nexusplus.features.units.UnitConverterScreen
 import com.nexuswavetech.nexusplus.features.currency.CurrencyConverterScreen
+import com.nexuswavetech.nexusplus.features.videodesc.VideoDescriptionScreen
 import com.nexuswavetech.nexusplus.features.battery.BatteryMonitorScreen
 import com.nexuswavetech.nexusplus.features.storage.StorageAnalyzerScreen
 import com.nexuswavetech.nexusplus.features.compass.CompassScreen

@@ -175,6 +175,21 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="audio/*" />
             </intent-filter>
+            <!-- Open local video files (Nexus Media Player) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+            <!-- Open document files (Nexus Document Reader) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/markdown" />
+                <data android:mimeType="application/msword" />
+                <data android:mimeType="application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+            </intent-filter>
         </activity>
 
         <!-- Nexus Media Player — Media3 background playback service (local files only) -->
@@ -206,7 +221,7 @@
         <!-- Nexus Speech Engine (NSE) — registered as a system TTS provider -->
         <service
             android:name=".features.tts.NseTtsService"
-            android:label="Nexus Speech Engine"
+            android:label="Nexus Auto Speech Engine"
             android:exported="true"
             android:permission="android.permission.BIND_TEXT_TO_SPEECH_SERVICE">
             <intent-filter>
@@ -232,7 +247,7 @@
         <!-- NSE Auto TTS Screen Reader — Accessibility Service for reading screen content aloud -->
         <service
             android:name=".features.tts.NseAccessibilityService"
-            android:label="NSE Auto TTS Screen Reader"
+            android:label="Nexus Auto Speech Engine Screen Reader"
             android:description="@string/nse_accessibility_desc"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
