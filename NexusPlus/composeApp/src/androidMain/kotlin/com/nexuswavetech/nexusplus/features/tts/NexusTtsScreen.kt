@@ -23,24 +23,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.nexuswavetech.nexusplus.features.tts.NseTtsEngineInfo
 import com.nexuswavetech.nexusplus.ui.components.NexusTopBar
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-// ── Mode display names ─────────────────────────────────────────────────────────
-
-private data class ModeOption(
-    val mode: NseSpeechMode,
-    val label: String,
-    val description: String,
-)
-
-private val MODE_OPTIONS = listOf(
-    ModeOption(NseSpeechMode.Auto,   "Auto",   "Engine detects language automatically"),
-    ModeOption(NseSpeechMode.Mix,    "Mix",    "Multi-language, voiced per segment"),
-    ModeOption(NseSpeechMode.Auto,   "Dual",   "Two voices for primary/secondary language"),
-    ModeOption(NseSpeechMode.Auto,   "Single", "One chosen voice for all text"),
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,6 +96,26 @@ fun NexusTtsScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState()),
         ) {
+
+            // ── Engine selector ──────────────────────────────────────────────
+            val engines        by viewModel.engines.collectAsState()
+            val selectedEngine   by viewModel.selectedEngine.collectAsState()
+
+            if (engines.isNotEmpty()) {
+                EngineDropdown(
+                    engines      = engines,
+                    selected     = selectedEngine,
+                    onSelect     = viewModel::onEngineSelected,
+                )
+            }
+
+            // ── Predictive Pre-Buffer toggle ───────────────────────────────
+            val predictiveBuffer by viewModel.predictivePreBuffer.collectAsState()
+
+            PredictiveBufferToggle(
+                enabled  = predictiveBuffer,
+                onToggle = viewModel::onPredictivePreBufferChange,
+            )
 
             // ── Engine status banner ─────────────────────────────────────────
             val bannerColor by animateColorAsState(
@@ -517,6 +524,121 @@ private fun SliderCard(
                 Text(mid, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(hi,  style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+    }
+}
+
+// ── Engine Dropdown ────────────────────────────────────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EngineDropdown(
+    engines: List<NseTtsEngineInfo>,
+    selected: NseTtsEngineInfo?,
+    onSelect: (NseTtsEngineInfo?) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = selected?.label ?: "System default"
+
+    Card(
+        shape  = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Text(
+                "Voice Engine",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            Text(
+                "Select the speech synthesis engine installed on this device.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+                OutlinedTextField(
+                    value         = selectedLabel,
+                    onValueChange = {},
+                    readOnly      = true,
+                    trailingIcon  = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    colors        = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                    modifier      = Modifier
+                        .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                        .fillMaxWidth()
+                        .semantics { contentDescription = "Voice engine selector. Currently: $selectedLabel." },
+                    singleLine    = true,
+                    leadingIcon   = { Icon(Icons.Filled.SettingsVoice, null, modifier = Modifier.size(18.dp)) },
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    DropdownMenuItem(
+                        text = { Text("System default", style = MaterialTheme.typography.bodyMedium) },
+                        onClick = { onSelect(null); expanded = false },
+                        leadingIcon = if (selected == null) {
+                            { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                        } else null,
+                    )
+                    engines.forEach { engine ->
+                        DropdownMenuItem(
+                            text = {
+                                Column {
+                                    Text(engine.label, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium))
+                                    Text(engine.packageName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            },
+                            onClick = { onSelect(engine); expanded = false },
+                            leadingIcon = if (engine.packageName == selected?.packageName) {
+                                { Icon(Icons.Filled.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                            } else null,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ── Predictive Pre-Buffer Toggle ────────────────────────────────────────────────────────────────────────
+
+@Composable
+private fun PredictiveBufferToggle(
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    Card(
+        shape  = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "Predictive Pre-Buffer. ${if (enabled) "On" else "Off"}. Pre-synthesizes upcoming sentences so even slow engines feel instant."
+                },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Predictive Pre-Buffer",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    "Pre-synthesizes upcoming sentences. Makes slow engines feel instant.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = onToggle,
+                modifier = Modifier.semantics { contentDescription = "Toggle predictive pre-buffer" },
+            )
         }
     }
 }

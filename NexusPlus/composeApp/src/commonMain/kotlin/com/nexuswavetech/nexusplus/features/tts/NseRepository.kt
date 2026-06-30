@@ -98,6 +98,11 @@ class NseRepository(private val engine: NseEngine) {
     fun voicesForLocale(locale: NseLocale): List<NseVoiceProfile> =
         engine.availableVoices(locale)
 
+    fun availableEngines(): List<NseTtsEngineInfo> = engine.availableEngines()
+
+    suspend fun switchEngine(packageName: String): Result<Unit> =
+        engine.switchEngine(packageName)
+
     fun shutdown() {
         engine.shutdown()
         _state.value = NseState.Initialising

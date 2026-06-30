@@ -73,6 +73,15 @@ data class NseSpeechRequest(
     val utteranceId: String = "nse_${Random.nextLong().and(Long.MAX_VALUE)}",
 )
 
+// ─── TTS engine metadata (platform-specific engines like Google, Samsung, etc.) ───
+
+data class NseTtsEngineInfo(
+    val name: String,
+    val packageName: String,
+    val label: String,
+    val icon: Int = 0,   // Android resource id; 0 on non-Android platforms
+)
+
 // ─── Engine contract ────────────────────────────────────────────────
 
 interface NseEngine {
@@ -87,6 +96,12 @@ interface NseEngine {
 
     /** List available voices, filtered by locale if provided. */
     fun availableVoices(locale: NseLocale? = null): List<NseVoiceProfile>
+
+    /** List installed TTS engines on the device (Android-specific; empty elsewhere). */
+    fun availableEngines(): List<NseTtsEngineInfo> = emptyList()
+
+    /** Switch to a different TTS engine by package name. Returns success/failure. */
+    suspend fun switchEngine(packageName: String): Result<Unit> = Result.failure(UnsupportedOperationException())
 
     /** Release all resources. Must be called when the engine is no longer needed. */
     fun shutdown()

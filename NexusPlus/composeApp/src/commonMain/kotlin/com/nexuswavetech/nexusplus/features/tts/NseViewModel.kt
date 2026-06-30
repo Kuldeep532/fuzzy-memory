@@ -75,6 +75,21 @@ class NseViewModel(
     private val _secondaryVoice = MutableStateFlow<NseVoiceProfile?>(null)
     val secondaryVoice: StateFlow<NseVoiceProfile?> = _secondaryVoice.asStateFlow()
 
+    // ── TTS engine selection ────────────────────────────────────────────────
+
+    private val _engines = MutableStateFlow<List<NseTtsEngineInfo>>(emptyList())
+    val engines: StateFlow<List<NseTtsEngineInfo>> = _engines.asStateFlow()
+
+    private val _selectedEngine = MutableStateFlow<NseTtsEngineInfo?>(null)
+    val selectedEngine: StateFlow<NseTtsEngineInfo?> = _selectedEngine.asStateFlow()
+
+    // ── Predictive Pre-Buffer — unique fast-screen-reader feature ──────────────
+    // When ON: pipeline pre-synthesizes 2 sentences ahead (instead of 1).
+    // Makes even slow TTS engines feel instant — critical for blind users.
+
+    private val _predictivePreBuffer = MutableStateFlow(false)
+    val predictivePreBuffer: StateFlow<Boolean> = _predictivePreBuffer.asStateFlow()
+
     // ── Screen-reader settings (persisted) ──────────────────────────
 
     private val _screenReaderMode = MutableStateFlow(SettingsRepository.TTS_MODE_AUTO)
@@ -122,6 +137,7 @@ class NseViewModel(
     init {
         repository.initialise()
         loadSavedSettings()
+        refreshEngines()
 
         // Debounced language detection as user types
         _inputText
@@ -163,6 +179,7 @@ class NseViewModel(
             _continuousRead.value = settings.ttsContinuousRead.first()
             _duplicateFilter.value = settings.ttsDuplicateFilter.first()
             _autoStart.value = settings.ttsAutoStart.first()
+            _predictivePreBuffer.value = settings.predictivePreBuffer.first()
         }
     }
 
@@ -179,6 +196,7 @@ class NseViewModel(
             settings.setTtsContinuousRead(_continuousRead.value)
             settings.setTtsDuplicateFilter(_duplicateFilter.value)
             settings.setTtsAutoStart(_autoStart.value)
+            settings.setPredictivePreBuffer(_predictivePreBuffer.value)
             _hasUnsavedChanges.value = false
         }
     }
@@ -197,6 +215,7 @@ class NseViewModel(
             _continuousRead.value = true
             _duplicateFilter.value = true
             _autoStart.value = false
+            _predictivePreBuffer.value = false
             _hasUnsavedChanges.value = true
         }
     }
@@ -281,6 +300,34 @@ class NseViewModel(
 
     fun onAutoStartChange(v: Boolean) {
         _autoStart.value = v
+        _hasUnsavedChanges.value = true
+    }
+
+    // ── Engine selection ────────────────────────────────────────────────
+
+    fun refreshEngines() {
+        viewModelScope.launch {
+            _engines.value = repository.availableEngines()
+        }
+    }
+
+    fun onEngineSelected(engine: NseTtsEngineInfo?) {
+        viewModelScope.launch {
+            _selectedEngine.value = engine
+            if (engine != null) {
+                repository.switchEngine(engine.packageName)
+                    .onSuccess {
+                        // Re-initialise voice list after engine switch
+                        _availableVoices.value = repository.availableVoices()
+                        _engines.value = repository.availableEngines()
+                    }
+            }
+            _hasUnsavedChanges.value = true
+        }
+    }
+
+    fun onPredictivePreBufferChange(v: Boolean) {
+        _predictivePreBuffer.value = v
         _hasUnsavedChanges.value = true
     }
 

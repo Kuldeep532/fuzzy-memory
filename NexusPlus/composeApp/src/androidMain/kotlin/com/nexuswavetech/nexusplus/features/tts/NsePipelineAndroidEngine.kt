@@ -47,6 +47,7 @@ class NsePipelineAndroidEngine(
 
     private var tts: TextToSpeech? = null
     @Volatile private var ttsReady = false
+    private var currentEnginePackage: String = ""
 
     /** utteranceId → (deferred result, wav temp file) for in-flight synthesizeToFile calls */
     private val pendingFileMap = ConcurrentHashMap<String, Pair<CompletableDeferred<Boolean>, File>>()
@@ -133,7 +134,7 @@ class NsePipelineAndroidEngine(
                 // ── Channel-based pipeline ──────────────────────────────────────
                 // Capacity 1: synthesis runs exactly 1 sentence ahead of playback.
                 // Only one synthesis call runs at a time → no TTS engine state races.
-                val channel = Channel<NsePcmCache.Entry?>(capacity = 1)
+                val channel = Channel<NsePcmCache.Entry?>(capacity = 2)
 
                 // Synthesis coroutine: runs sequentially, pre-buffers 1 sentence
                 val synthJob = launch {
@@ -376,6 +377,45 @@ class NsePipelineAndroidEngine(
 
         return piperVoices + systemVoices
     }
+
+    // ── Engine listing & switching ────────────────────────────────────────────────
+
+    override fun availableEngines(): List<NseTtsEngineInfo> = try {
+        val intent = android.content.Intent("android.intent.action.TTS_SERVICE")
+        context.packageManager.queryIntentServices(intent, 0)
+            .map { resolveInfo ->
+                val pkg = resolveInfo.serviceInfo.packageName
+                val label = resolveInfo.loadLabel(context.packageManager)?.toString() ?: pkg
+                NseTtsEngineInfo(
+                    name        = pkg,
+                    packageName = pkg,
+                    label       = label,
+                    icon        = resolveInfo.serviceInfo.icon,
+                )
+            }
+    } catch (_: Exception) { emptyList() }
+
+    override suspend fun switchEngine(packageName: String): Result<Unit> =
+        suspendCancellableCoroutine { cont ->
+            // Shut down old engine
+            tts?.stop()
+            tts?.shutdown()
+            tts = null
+            ttsReady = false
+            currentEnginePackage = packageName
+
+            val engine = TextToSpeech(context, { status ->
+                ttsReady = status == TextToSpeech.SUCCESS
+                if (ttsReady) {
+                    registerListener()
+                    cont.resume(Result.success(Unit))
+                } else {
+                    cont.resume(Result.failure(IllegalStateException("Engine switch failed: status=$status")))
+                }
+            }, packageName)
+            tts = engine
+            cont.invokeOnCancellation { engine.shutdown() }
+        }
 
     override fun shutdown() {
         speakJob?.cancel()
