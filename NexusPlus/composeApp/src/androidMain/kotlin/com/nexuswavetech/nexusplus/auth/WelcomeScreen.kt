@@ -33,6 +33,7 @@ import androidx.credentials.*
 import androidx.credentials.exceptions.*
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.nexuswavetech.nexusplus.BuildConfig
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.NexusWaveLogo
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
@@ -59,13 +60,18 @@ fun WelcomeScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Read WEB_CLIENT_ID from BuildConfig (injected from WEB_CLIENT_ID env var / GitHub Secret)
+    // ═════════════════════════════════════════════════════════════════════════
+    // Read WEB_CLIENT_ID from BuildConfig (injected from Gradle during build)
+    // ═════════════════════════════════════════════════════════════════════════
     val webClientId = remember {
         try {
-            val clazz = Class.forName("com.nexuswavetech.nexusplus.BuildConfig")
-            val field = clazz.getField("WEB_CLIENT_ID")
-            (field.get(null) as? String)?.trim()?.takeIf { it.isNotBlank() } ?: ""
-        } catch (_: Exception) { "" }
+            BuildConfig.WEB_CLIENT_ID
+                .trim()
+                .takeIf { it.isNotBlank() && !it.startsWith("YOUR_") }
+                ?: ""
+        } catch (_: Exception) {
+            ""
+        }
     }
 
     LaunchedEffect(uiState.navigateToMain) {
@@ -131,31 +137,25 @@ fun WelcomeScreen(
                 onOpenTerms      = { navController?.navigate(Screen.TermsConditions.route) },
             )
 
-            // ── Google Sign-In button — uses Credential Manager (Android 14+) ──
-            if (googleSignInEnabled) GoogleSignInButton(
-                isLoading = uiState.isLoading,
-                enabled   = consentGranted,
-                onClick   = {
-                    if (webClientId.isBlank() ||
-                        webClientId == "YOUR_WEB_CLIENT_ID" ||
-                        webClientId.startsWith("YOUR_")) {
-                        viewModel.onGoogleSignInError(
-                            "Google Sign-In not configured. Set WEB_CLIENT_ID in GitHub Secrets / env vars, or continue as Guest."
-                        )
-                        return@GoogleSignInButton
-                    }
-                    scope.launch {
-                        viewModel.onGoogleSignInStarted()
-                        signInWithCredentialManager(context as Activity, webClientId) { idToken, error ->
-                            if (idToken != null) {
-                                viewModel.onGoogleSignInTokenReceived(idToken)
-                            } else {
-                                viewModel.onGoogleSignInError(error ?: "Google Sign-In failed")
+            // ── Google Sign-In button — shows only if configured ──
+            if (googleSignInEnabled && webClientId.isNotBlank()) {
+                GoogleSignInButton(
+                    isLoading = uiState.isLoading,
+                    enabled   = consentGranted,
+                    onClick   = {
+                        scope.launch {
+                            viewModel.onGoogleSignInStarted()
+                            signInWithCredentialManager(context as Activity, webClientId) { idToken, error ->
+                                if (idToken != null) {
+                                    viewModel.onGoogleSignInTokenReceived(idToken)
+                                } else {
+                                    viewModel.onGoogleSignInError(error ?: "Google Sign-In failed")
+                                }
                             }
                         }
-                    }
-                },
-            )
+                    },
+                )
+            }
 
             OutlinedButton(
                 onClick  = viewModel::onContinueAsGuestClicked,
@@ -207,7 +207,9 @@ fun WelcomeScreen(
     }
 }
 
-// ── Credential Manager Sign-In ──────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════
+// Credential Manager Sign-In with proper error handling
+// ═════════════════════════════════════════════════════════════════════════
 
 private suspend fun signInWithCredentialManager(
     activity: Activity,
@@ -245,29 +247,31 @@ private suspend fun signInWithCredentialManager(
                     if (!idToken.isNullOrBlank()) {
                         onResult(idToken, null)
                     } else {
-                        onResult(null, "No ID token received from Google")
+                        onResult(null, "❌ No ID token received from Google")
                     }
                 } else {
-                    onResult(null, "Unexpected credential type")
+                    onResult(null, "❌ Unexpected credential type")
                 }
             }
             else -> {
-                onResult(null, "Unsupported credential type")
+                onResult(null, "❌ Unsupported credential type")
             }
         }
     } catch (e: GetCredentialException) {
         when (e) {
             is GetCredentialCancellationException -> onResult(null, "Sign-in cancelled")
-            is NoCredentialException -> onResult(null, "No Google accounts found on device")
-            is GetCredentialProviderConfigurationException -> onResult(null, "Google Sign-In not configured correctly")
-            else -> onResult(null, "Sign-in failed: ${e.localizedMessage ?: "Unknown error"}")
+            is NoCredentialException -> onResult(null, "❌ No Google accounts found on device")
+            is GetCredentialProviderConfigurationException -> onResult(null, "❌ Google Sign-In not configured correctly on this device")
+            else -> onResult(null, "❌ Sign-in failed: ${e.localizedMessage ?: "Unknown error"}")
         }
     } catch (e: Exception) {
-        onResult(null, "Sign-in error: ${e.localizedMessage ?: "Unknown error"}")
+        onResult(null, "❌ Sign-in error: ${e.localizedMessage ?: "Unknown error"}")
     }
 }
 
-// ── Compliance gate UI ─────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════
+// Legal Consent UI
+// ═════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun LegalConsentSection(
@@ -349,7 +353,9 @@ private fun LegalConsentSection(
     }
 }
 
-// ── Google Sign-In button ──────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════
+// Google Sign-In Button
+// ═════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun GoogleSignInButton(isLoading: Boolean, enabled: Boolean, onClick: () -> Unit) {
@@ -383,7 +389,9 @@ private fun GoogleSignInButton(isLoading: Boolean, enabled: Boolean, onClick: ()
     }
 }
 
-// ── Guest name dialog ──────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════
+// Guest Name Dialog
+// ═════════════════════════════════════════════════════════════════════════
 
 @Composable
 private fun GuestNameDialog(
