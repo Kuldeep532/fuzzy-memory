@@ -1,6 +1,6 @@
 package com.nexuswavetech.nexusplus.platform
 
-import com.nexuswavetech.nexusplus.BuildConfig
+import com.nexuswavetech.nexusplus.composeapp.BuildConfig
 
 /**
  * Safe accessor for all injected secrets from BuildConfig.
