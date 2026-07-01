@@ -65,11 +65,13 @@ jobs:
           mv /tmp/google-services.json.validated app/google-services.json
           chmod 600 app/google-services.json
 
-      # NAYA STEP: Keystore File ko Base64 se Decode karke generate karna
+      # Fix: Setup Keystore File with correct absolute path
       - name: Setup Keystore File
         run: |
           cd NexusPlus
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
+          chmod 600 app/release.keystore
+          echo "KEYSTORE_PATH=$(pwd)/app/release.keystore" >> $GITHUB_ENV
 
       - name: Build Signed Release APK
         if: github.event.inputs.build_type == 'apk'
@@ -77,7 +79,7 @@ jobs:
           cd NexusPlus
           set -eo pipefail
           ./gradlew clean assembleRelease \
-            -Pandroid.injected.signing.store.file=release.keystore \
+            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
             -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
@@ -89,7 +91,7 @@ jobs:
           cd NexusPlus
           set -eo pipefail
           ./gradlew clean bundleRelease \
-            -Pandroid.injected.signing.store.file=release.keystore \
+            -Pandroid.injected.signing.store.file=${{ env.KEYSTORE_PATH }} \
             -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
