@@ -24,6 +24,7 @@ jobs:
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
       KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
@@ -47,8 +48,6 @@ jobs:
 
       - name: Inject Google Services JSON from GitHub Secret
         shell: bash
-        env:
-          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -euo pipefail
           cd NexusPlus
@@ -66,26 +65,35 @@ jobs:
           mv /tmp/google-services.json.validated app/google-services.json
           chmod 600 app/google-services.json
 
-          duplicate_count=$(find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -print | wc -l | tr -d ' ')
-          if [ "${duplicate_count}" != "1" ]; then
-            echo "ERROR: Expected exactly one google-services.json after CI injection; found ${duplicate_count}." >&2
-            find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -print >&2
-            exit 1
-          fi
+      # NAYA STEP: Keystore File ko Base64 se Decode karke generate karna
+      - name: Setup Keystore File
+        run: |
+          cd NexusPlus
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
 
       - name: Build Signed Release APK
         if: github.event.inputs.build_type == 'apk'
         run: |
           cd NexusPlus
           set -eo pipefail
-          ./gradlew clean assembleRelease 2>&1 | tee build_output.log
+          ./gradlew clean assembleRelease \
+            -Pandroid.injected.signing.store.file=release.keystore \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            2>&1 | tee build_output.log
 
       - name: Build Signed Release AAB
         if: github.event.inputs.build_type == 'aab'
         run: |
           cd NexusPlus
           set -eo pipefail
-          ./gradlew clean bundleRelease 2>&1 | tee build_output.log
+          ./gradlew clean bundleRelease \
+            -Pandroid.injected.signing.store.file=release.keystore \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            2>&1 | tee build_output.log
 
       - name: Upload Signed APK
         if: github.event.inputs.build_type == 'apk' && success()
