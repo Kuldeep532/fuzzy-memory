@@ -2,6 +2,7 @@ package com.nexuswavetech.nexusplus.ads
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -62,6 +63,13 @@ object NexusUnityAdsManager {
     }
 }
 
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 // ── Banner Ad (50 dp) — replaces NexusBannerAd ──────────────────────────────
 
 @Composable
@@ -82,7 +90,8 @@ fun NexusBannerAd(
     ) {
         AndroidView(
             factory = {
-                BannerView(it, placementId, UnityBannerSize(320, 50)).apply {
+                val activity = it.findActivity() ?: return@AndroidView android.view.View(it)
+                BannerView(activity, placementId, UnityBannerSize(320, 50)).apply {
                     listener = object : BannerView.IListener {
                         override fun onBannerLoaded(bannerAdView: BannerView?) {
                             isLoaded = true
