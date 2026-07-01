@@ -16,8 +16,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
+      UNITY_GAME_ID: ${{ secrets.UNITY_GAME_ID }}
+      NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
       KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
       KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
@@ -46,34 +48,31 @@ jobs:
       - name: Inject Google Services JSON from GitHub Secret
         shell: bash
         env:
-          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: |
           set -euo pipefail
           cd NexusPlus
 
-          # Force-clean any workspace, cached, or script-generated Firebase config first.
           rm -f app/google-services.json
           find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -exec rm -f {} +
 
-          if [ -z "${GOOGLE_SERVICES_JSON_B64}" ]; then
-            echo "GOOGLE_SERVICES_JSON GitHub Secret is required and must be Base64-encoded." >&2
+          if [ -z "${GOOGLE_SERVICES_JSON}" ]; then
+            echo "ERROR: GOOGLE_SERVICES_JSON GitHub Secret is required and must be Base64-encoded." >&2
             exit 1
           fi
 
-          printf '%s' "${GOOGLE_SERVICES_JSON_B64}" | base64 --decode > app/google-services.json
+          printf '%s' "${GOOGLE_SERVICES_JSON}" | base64 --decode > app/google-services.json
           python3 -m json.tool app/google-services.json > /tmp/google-services.json.validated
           mv /tmp/google-services.json.validated app/google-services.json
           chmod 600 app/google-services.json
 
-          # Fail fast if anything recreated a second Firebase config outside the app module.
           duplicate_count=$(find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -print | wc -l | tr -d ' ')
           if [ "${duplicate_count}" != "1" ]; then
-            echo "Expected exactly one google-services.json after CI injection; found ${duplicate_count}." >&2
+            echo "ERROR: Expected exactly one google-services.json after CI injection; found ${duplicate_count}." >&2
             find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -print >&2
             exit 1
           fi
 
-      # Gradle aapke env variables se khud signed APK banayega
       - name: Build Signed Release APK
         if: github.event.inputs.build_type == 'apk'
         run: |
@@ -81,7 +80,6 @@ jobs:
           set -eo pipefail
           ./gradlew clean assembleRelease 2>&1 | tee build_output.log
 
-      # Gradle aapke env variables se khud signed AAB banayega
       - name: Build Signed Release AAB
         if: github.event.inputs.build_type == 'aab'
         run: |
