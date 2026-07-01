@@ -44,7 +44,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
                         modifier = Modifier.semantics { heading() }
                     )
                     Text(
-                        text = "Effective Date: June 1, 2025",
+                        text = "Effective Date: July 1, 2026",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -61,8 +61,9 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Text(
-                        "Nexus Wave Technologies ensures 100% data privacy, non-collection of personal " +
-                        "data, and zero remote tracking logs.",
+                        "Nexus Wave Technologies limits sensitive access to user-requested features, " +
+                        "clearly discloses SMS, location, package visibility, accessibility, " +
+                        "and advertising behavior, and does not sell personal data.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -121,7 +122,18 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "6. Children's Privacy",
+                title = "6. Sensitive Permissions and Safety Features",
+                content = "Emergency Guardian requests Send SMS, phone call, notification, and location permissions only after you open that feature. The service starts only when you turn Guardian on, shows a persistent notification, waits through a visible 10-second cancelable countdown, then sends an SOS SMS only to contacts you saved in the app. Location is acquired once for that SOS message and is not used for advertising, analytics, or tracking. Nexus Plus does not read incoming SMS or monitor messages.\n\n" +
+                    "The Installed Apps tool does not request QUERY_ALL_PACKAGES; Android may show only the packages visible under platform package-visibility rules. Accessibility service access is optional and user-enabled in Android Settings only for screen reading and text-to-speech support."
+            )
+
+            LegalSection(
+                title = "7. Advertising",
+                content = "Free users may see Unity Ads banners labeled as ads. Ads are not disguised as app controls, are not injected into system screens, and are not shown as sudden automatic pop-ups during navigation. Premium users do not see ads. Ad SDK partners may process device or ad identifiers according to their own policies; Nexus Wave Technologies does not use Emergency Guardian SMS/location data for ads."
+            )
+
+            LegalSection(
+                title = "8. Children's Privacy",
                 content = "Nexus Plus does not knowingly collect any information from children " +
                     "under the age of 13. The application is intended for general audiences. " +
                     "If you believe a child has provided personal information through this app, " +
@@ -129,7 +141,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "7. Changes to This Policy",
+                title = "9. Changes to This Policy",
                 content = "Nexus Wave Technologies reserves the right to update this Privacy " +
                     "Policy at any time. Changes will be reflected within the application. " +
                     "Continued use of Nexus Plus after changes constitutes acceptance of " +
@@ -137,7 +149,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "8. Contact",
+                title = "10. Contact",
                 content = "For any privacy-related questions or concerns, please contact Nexus Wave " +
                     "Technologies through the official channels listed in the More screen of " +
                     "this application."

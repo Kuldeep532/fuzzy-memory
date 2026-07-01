@@ -125,10 +125,16 @@ fun AppInfoCenterScreen(onBack: () -> Unit) {
         )
 
         Text(
-            "${filtered.size} ${if (showSystem) "apps" else "user apps"}",
+            "${filtered.size} ${if (showSystem) "visible apps" else "visible user apps"}",
             style    = MaterialTheme.typography.labelMedium,
             color    = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+        )
+        Text(
+            "Package visibility is limited by Android policy; Nexus Plus does not request QUERY_ALL_PACKAGES and keeps this list on your device.",
+            style    = MaterialTheme.typography.labelSmall,
+            color    = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
         )
 
         if (isLoading) {

@@ -57,7 +57,7 @@ fun AboutUsScreen(
             // ── Company Story ─────────────────────────────────────────────
             LegalSection(
                 title = "Our Story",
-                content = "Nexus Plus is a flagship multi-utility super-app developed by Nexus Wave Technologies, a forward-thinking technology company committed to building powerful, accessible, and privacy-first mobile tools. What started as a simple idea — putting every essential utility in one app — has grown into a comprehensive ecosystem serving thousands of users daily."
+                content = "Nexus Plus is a multi-utility Android application developed and maintained by Nexus Wave Technologies. We build practical tools for productivity, accessibility, security, media, documents, and emergency support while keeping ownership and data practices transparent inside the app."
             )
 
             // ── Founder ───────────────────────────────────────────────────
@@ -98,7 +98,7 @@ fun AboutUsScreen(
             // ── Company ─────────────────────────────────────────────────────
             LegalSection(
                 title = "Nexus Wave Technologies",
-                content = "We are an independent technology company focused on creating intelligent mobile applications that combine utility, security, and accessibility. Our mission is to empower users with tools that work offline, respect privacy, and remain accessible to everyone — including people with visual impairments."
+                content = "Nexus Wave Technologies is an independent app publisher owned and led by Kuldeep Kumar Yadav. We are responsible for Nexus Plus design, development, release management, and policy compliance. Our mission is to empower users with tools that work offline where possible, request sensitive permissions only for clear user-facing features, and remain accessible to everyone — including people with visual impairments."
             )
 
             // ── Mission ─────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ fun AboutUsScreen(
                         modifier = Modifier.semantics { heading() }
                     )
                     Text(
-                        text = "1. Privacy First — Your data stays on your device.\n2. Accessibility Always — Built for screen readers and all abilities.\n3. Offline Power — Works without internet whenever possible.\n4. One App, Everything — Replace dozens of single-purpose apps.",
+                        text = "1. Privacy First — sensitive SMS, location, contacts, media, and accessibility access is tied to visible features.\n2. User Control — safety actions require explicit setup and show clear notices before sending SMS or calls.\n3. Accessibility Always — built for screen readers and all abilities.\n4. Offline Power — works without internet whenever possible.\n5. Transparent Monetization — free users may see clearly labeled ads; premium users do not.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.9f),
                         lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.2f,

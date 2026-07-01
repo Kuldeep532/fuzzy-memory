@@ -44,7 +44,7 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
                         modifier = Modifier.semantics { heading() }
                     )
                     Text(
-                        text = "Last Updated: June 1, 2025",
+                        text = "Last Updated: July 1, 2026",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -111,7 +111,22 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "6. Limitation of Liability",
+                title = "6. Sensitive Permission Consent",
+                content = "By enabling features that require sensitive permissions, you consent to the specific use described in-app: Emergency Guardian may send SMS messages, place a call, and include a one-time location link only after you activate the service and the cancelable countdown completes; location tools use location only to display requested results; media and storage tools access files you choose or files required for the selected tool; accessibility features operate only after you enable them in Android Settings. You may revoke permissions in Android Settings at any time, but affected features may stop working."
+            )
+
+            LegalSection(
+                title = "7. Emergency and Safety Feature Limitations",
+                content = "Emergency Guardian is a convenience safety aid, not a replacement for emergency services, police, medical care, or professional monitoring. SMS delivery, phone calls, GPS accuracy, notifications, sensors, battery optimization, carrier coverage, and device settings can fail or be delayed. You are responsible for testing the feature, keeping contacts current, obtaining consent from emergency contacts, and calling local emergency services directly when needed."
+            )
+
+            LegalSection(
+                title = "8. Advertising and Monetization",
+                content = "The free version may display clearly labeled ads or sponsored placements. Ads must not be used to mislead, create hidden clicks, or interrupt critical safety flows. Premium purchases remove ads where supported. Third-party ad networks may process ad-related identifiers under their own terms; Nexus Plus does not use Emergency Guardian SMS or location content for advertising."
+            )
+
+            LegalSection(
+                title = "9. Limitation of Liability",
                 content = "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, NEXUS WAVE " +
                     "TECHNOLOGIES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, " +
                     "CONSEQUENTIAL, OR PUNITIVE DAMAGES WHATSOEVER, INCLUDING BUT NOT LIMITED " +
@@ -126,7 +141,7 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "7. Disclaimer of Warranties",
+                title = "10. Disclaimer of Warranties",
                 content = "THE APPLICATION IS PROVIDED \"AS IS\" AND \"AS AVAILABLE\" WITHOUT " +
                     "WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT " +
                     "LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A " +
@@ -136,7 +151,7 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "8. Modifications",
+                title = "11. Modifications",
                 content = "Nexus Wave Technologies reserves the right to modify these Terms at " +
                     "any time. We will notify you of significant changes by updating the " +
                     "\"Last Updated\" date. Your continued use of the Application after any " +
@@ -144,7 +159,7 @@ fun TermsConditionsScreen(onBack: () -> Unit) {
             )
 
             LegalSection(
-                title = "9. Governing Law",
+                title = "12. Governing Law",
                 content = "These Terms shall be governed by and construed in accordance with " +
                     "applicable laws. Any disputes arising from or related to these Terms or " +
                     "the Application shall be resolved through binding arbitration, except " +

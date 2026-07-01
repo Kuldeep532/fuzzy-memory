@@ -134,12 +134,14 @@ fun EmergencyGuardianScreen(onBack: () -> Unit) {
                         if (active) {
                             if (!permissionsState.allPermissionsGranted) {
                                 permissionsState.launchMultiplePermissionRequest()
+                                viewModel.setGuardActive(false)
+                            } else {
+                                viewModel.setGuardActive(EmergencyGuardianService.start(context))
                             }
-                            EmergencyGuardianService.start(context)
                         } else {
                             EmergencyGuardianService.stop(context)
+                            viewModel.setGuardActive(false)
                         }
-                        viewModel.setGuardActive(active)
                     },
                 )
             }
@@ -534,10 +536,11 @@ private fun HowItWorksCard() {
             Spacer(Modifier.height(10.dp))
             val steps = listOf(
                 "1. Activate the Guardian and grant all permissions.",
-                "2. Guardian runs silently in the background.",
+                "2. Guardian runs only after you turn it on and shows a persistent notification while active.",
                 "3. A rapid shake (5+ shakes detected) triggers a 10-second countdown.",
-                "4. Tap Cancel in the notification to abort.",
-                "5. After countdown: GPS location is acquired, SMS is sent to all contacts, and the first contact is called.",
+                "4. Tap Cancel in the notification to abort before any SMS, call, or location lookup happens.",
+                "5. After countdown: current location is acquired once, SMS is sent only to your saved contacts, and the first contact is called.",
+                "6. Nexus Plus does not use Emergency Guardian SMS or location for ads, analytics, tracking, or background collection.",
             )
             steps.forEach { step ->
                 Text(
