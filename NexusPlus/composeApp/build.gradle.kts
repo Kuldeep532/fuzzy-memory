@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.api.GradleException
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -122,38 +123,30 @@ android {
         minSdk = 26
         targetSdk = 35
 
-        // ═══════════════════════════════════════════════════════════════════════
-        // SECRETS INJECTION VIA GRADLE — Read from environment variables / GitHub Secrets
-        // ═══════════════════════════════════════════════════════════════════════
-        buildConfigField(
-            "String",
-            "WEB_CLIENT_ID",
-            "\"${System.getenv("WEB_CLIENT_ID") ?: System.getProperty("WEB_CLIENT_ID", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "GEMINI_API_KEY",
-            "\"${System.getenv("GEMINI_API_KEY") ?: System.getProperty("GEMINI_API_KEY", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "ADMOB_APP_ID",
-            "\"${System.getenv("ADMOB_APP_ID") ?: System.getProperty("ADMOB_APP_ID", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "ADMOB_BANNER_ID",
-            "\"${System.getenv("ADMOB_BANNER_ID") ?: System.getProperty("ADMOB_BANNER_ID", "")}\""
-        )
-        buildConfigField(
-            "String",
-            "ADMOB_INTERSTITIAL_ID",
-            "\"${System.getenv("ADMOB_INTERSTITIAL_ID") ?: System.getProperty("ADMOB_INTERSTITIAL_ID", "")}\""
-        )
+        // ═════════════════════════════════════════════════════════════
+        // SECRETS INJECTION VIA GRADLE — Require secrets only from CI (-P properties)
+        // No local System.getenv fallbacks allowed. Build will fail fast if a required secret is missing.
+        // ═════════════════════════════════════════════════════════════
 
-        // Manifest placeholders for Firebase & Google Sign-In
-        manifestPlaceholders["WEB_CLIENT_ID"] = System.getenv("WEB_CLIENT_ID") ?: System.getProperty("WEB_CLIENT_ID", "")
-        manifestPlaceholders["ADMOB_APP_ID"] = System.getenv("ADMOB_APP_ID") ?: System.getProperty("ADMOB_APP_ID", "")
+        fun requireSecret(key: String): String {
+            return project.findProperty(key)?.toString()
+                ?: throw GradleException("Missing required secret Gradle project property '$' + key + "'. Provide it via -P<key> in CI (GitHub Actions secrets).")
+        }
+
+        val webClient = requireSecret("WEB_CLIENT_ID")
+        val gemini = requireSecret("GEMINI_API_KEY")
+        val admobApp = requireSecret("ADMOB_APP_ID")
+        val admobBanner = requireSecret("ADMOB_BANNER_ID")
+        val admobInterstitial = requireSecret("ADMOB_INTERSTITIAL_ID")
+
+        buildConfigField("String", "WEB_CLIENT_ID", "\"$webClient\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$gemini\"")
+        buildConfigField("String", "ADMOB_APP_ID", "\"$admobApp\"")
+        buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBanner\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_ID", "\"$admobInterstitial\"")
+
+        manifestPlaceholders["WEB_CLIENT_ID"] = webClient
+        manifestPlaceholders["ADMOB_APP_ID"] = admobApp
     }
 
     buildFeatures {
