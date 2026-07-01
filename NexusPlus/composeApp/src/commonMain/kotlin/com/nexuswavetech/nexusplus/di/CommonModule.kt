@@ -14,10 +14,6 @@ import com.nexuswavetech.nexusplus.features.tts.NseRepository
 import com.nexuswavetech.nexusplus.features.tts.NseViewModel
 import com.nexuswavetech.nexusplus.features.weather.WeatherService
 import com.nexuswavetech.nexusplus.features.weather.WeatherViewModel
-import com.nexuswavetech.nexusplus.news.NewsService
-import com.nexuswavetech.nexusplus.news.NewsViewModel
-import com.nexuswavetech.nexusplus.science.ScienceService
-import com.nexuswavetech.nexusplus.science.ScienceViewModel
 import org.koin.dsl.module
 
 /**
@@ -36,16 +32,12 @@ val commonModule = module {
 
     // ── Services ────────────────────────────────────────────────────────
     single { WeatherService() }
-    single { NewsService() }
-    single { ScienceService() }
 
     // ── ViewModels (factory scope) ────────────────────────────────────────────────
     factory { WelcomeViewModel(authRepository = get(), sessionManager = get(), consentRepository = get()) }
     factory { AllFeaturesViewModel(sessionManager = get(), favoritesRepository = get()) }
     factory { NseViewModel(repository = get(), settings = get()) }
     factory { WeatherViewModel(service = get(), repository = get()) }
-    factory { NewsViewModel(service = get()) }
-    factory { ScienceViewModel(service = get()) }
 
     // ── Auth (placeholder for non-Android) ─────────────────────────────────────────
     // Android overrides with FirebaseAuthRepository in appModule

@@ -41,10 +41,6 @@ import com.nexuswavetech.nexusplus.features.tts.NseViewModel
 import com.nexuswavetech.nexusplus.features.weather.WeatherService
 import com.nexuswavetech.nexusplus.features.weather.WeatherRepository
 import com.nexuswavetech.nexusplus.features.weather.WeatherViewModel
-import com.nexuswavetech.nexusplus.news.NewsService
-import com.nexuswavetech.nexusplus.news.NewsViewModel
-import com.nexuswavetech.nexusplus.science.ScienceService
-import com.nexuswavetech.nexusplus.science.ScienceViewModel
 import com.nexuswavetech.nexusplus.ai.GeminiRepository
 import com.nexuswavetech.nexusplus.model.ModelDownloadManager
 import com.nexuswavetech.nexusplus.model.FirstLaunchManager
@@ -81,8 +77,6 @@ val appModule = module {
     // ── Services (KMP, commonMain-backed) ──────────────────────────────
     single { WeatherService() }
     single { WeatherRepository(get()) }
-    single { NewsService() }
-    single { ScienceService() }
     single { HealthVaultRepository(androidContext()) }
     single<SearchManager>            { SearchManager() }
     single<NotificationRepository>   { NotificationRepository(androidContext()) }
@@ -148,8 +142,6 @@ val appModule = module {
 
     // New KMP commonMain screens (Priority 5-7)
     viewModel { WeatherViewModel(service = get(), repository = get()) }
-    viewModel { NewsViewModel(service = get()) }
-    viewModel { ScienceViewModel(service = get()) }
 
     // Camera / sensor features: ObjectDetector, ColorDetector, SmartImageEditor,
     // DocHub, VoiceTyper — state managed locally in composables.

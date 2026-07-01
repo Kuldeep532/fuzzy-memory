@@ -26,7 +26,6 @@ enum class FeatureId {
     DOC_HUB,
     NEXUS_DOC_READER,
     TEXT_TO_PDF,
-    DAILY_JOURNAL,
 
     // ── Utilities ─────────────────────────────────────────────────────────
     NEXUS_TTS,
@@ -41,15 +40,11 @@ enum class FeatureId {
     NUMBER_SYSTEM,
     WEATHER,
     MY_REMINDER,
-    NEWS,
-    SCIENCE,
-    COLOR_PALETTE,
 
     // ── Smart Tools ───────────────────────────────────────────────────────
     QR_GENERATOR,
     FLASHLIGHT,
     COMPASS,
-    SPEEDOMETER,
     VOICE_RECORDER,
     WIFI_ANALYZER,
     BATTERY_MONITOR,
@@ -57,7 +52,6 @@ enum class FeatureId {
     OBJECT_DETECTOR,
     COLOR_DETECTOR,
     BARCODE_GENERATOR,
-    TASK_MANAGER,
     APP_INFO_CENTER,
     NETWORK_INFO,
 
@@ -72,7 +66,6 @@ enum class FeatureId {
     PASSWORD_GENERATOR,
     BASE64_TOOL,
     ENCRYPTED_NOTES,
-    CONTACT_BACKUP,
     NEXUS_HEALTH_VAULT,
     TOTP_AUTHENTICATOR,
 
@@ -80,15 +73,10 @@ enum class FeatureId {
     NETWORK_SPEED_TEST,
 
     // ── Utilities (additional) ────────────────────────────────────────────
-    NEXUS_DIALER,
-    TEXT_ANALYZER,
-    URL_SHORTENER,
 
     // ── Entertainment ─────────────────────────────────────────────────────
-    NEXUS_GAMES,
 
     // ── Finance ───────────────────────────────────────────────────────────
-    EXPENSE_TRACKER,
 
     // v1.4.0
     SMART_DOCUMENT_SCANNER,
@@ -100,6 +88,19 @@ enum class FeatureId {
     API_MANAGER,
 
     // ── Legacy backward-compat aliases ────────────────────────────────────
+    NEWS,              // removed in v1.5.0 — kept for DataStore migration
+    SCIENCE,           // removed in v1.5.0 — kept for DataStore migration
+    NEXUS_GAMES,       // removed in v1.5.0 — kept for DataStore migration
+    DAILY_JOURNAL,     // removed in v1.5.0 — kept for DataStore migration
+    COLOR_PALETTE,     // removed in v1.5.0 — kept for DataStore migration
+    EXPENSE_TRACKER,   // removed in v1.5.0 — kept for DataStore migration
+    NEXUS_DIALER,      // removed in v1.5.0 — kept for DataStore migration
+    TEXT_ANALYZER,     // removed in v1.5.0 — kept for DataStore migration
+    URL_SHORTENER,     // removed in v1.5.0 — kept for DataStore migration
+    CONTACT_BACKUP,    // removed in v1.5.0 — kept for DataStore migration
+    SPEEDOMETER,       // removed in v1.5.0 — kept for DataStore migration
+    TASK_MANAGER,      // removed in v1.5.0 — kept for DataStore migration
+
     RADIO_PLAYER,      // removed feature — kept for DataStore migration
     IPTV_PLAYER,       // removed feature — kept for DataStore migration
     FORM_X,            // removed feature — kept for DataStore migration

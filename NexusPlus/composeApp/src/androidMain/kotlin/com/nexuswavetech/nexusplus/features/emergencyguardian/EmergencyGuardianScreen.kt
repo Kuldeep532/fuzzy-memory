@@ -223,14 +223,14 @@ private fun GuardStatusCard(
                     modifier = Modifier
                         .size(52.dp)
                         .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.15f)),
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center,
                 ) {
                     AnimatedContent(targetState = isActive, label = "shieldIcon") { active ->
                         Icon(
                             imageVector = if (active) Icons.Filled.Shield else Icons.Filled.Security,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.size(28.dp),
                         )
                     }
@@ -239,13 +239,13 @@ private fun GuardStatusCard(
                 Column {
                     Text(
                         text = if (isActive) "Guardian Active" else "Guardian Inactive",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
                     )
                     Text(
                         text = if (isActive) "Monitoring for distress signals" else "Tap to activate protection",
-                        color = Color.White.copy(alpha = 0.8f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                         fontSize = 13.sp,
                     )
                 }
@@ -254,10 +254,10 @@ private fun GuardStatusCard(
                 checked = isActive,
                 onCheckedChange = onToggle,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor   = Color.White,
-                    checkedTrackColor   = Color.White.copy(alpha = 0.35f),
-                    uncheckedThumbColor = Color.White.copy(alpha = 0.6f),
-                    uncheckedTrackColor = Color.White.copy(alpha = 0.15f),
+                    checkedThumbColor   = MaterialTheme.colorScheme.onSurface,
+                    checkedTrackColor   = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    uncheckedTrackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f),
                 ),
                 modifier = Modifier.semantics {
                     contentDescription = if (isActive) "Deactivate Emergency Guardian" else "Activate Emergency Guardian"

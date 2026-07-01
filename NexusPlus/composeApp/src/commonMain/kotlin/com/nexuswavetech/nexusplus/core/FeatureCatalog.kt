@@ -273,15 +273,7 @@ object FeatureCatalog {
             category    = FeatureCategory.TOOLS,
             keywords    = listOf("compass", "direction", "magnetic", "north", "navigate"),
         ),
-        FeatureItem(
-            id          = FeatureId.SPEEDOMETER,
-            name        = "Speedometer",
-            description = "GPS-powered speed tracker",
-            icon        = Icons.Filled.Speed,
-            route       = Screen.Speedometer.route,
-            category    = FeatureCategory.TOOLS,
-            keywords    = listOf("speed", "gps", "velocity", "km", "mph", "track"),
-        ),
+
         FeatureItem(
             id          = FeatureId.VOICE_RECORDER,
             name        = "Voice Recorder",
@@ -346,15 +338,7 @@ object FeatureCatalog {
             category    = FeatureCategory.TOOLS,
             keywords    = listOf("barcode", "generate", "ean", "upc", "code128", "scan"),
         ),
-        FeatureItem(
-            id          = FeatureId.TASK_MANAGER,
-            name        = "Task Manager",
-            description = "Monitor and manage running processes",
-            icon        = Icons.Filled.Dashboard,
-            route       = Screen.TaskManager.route,
-            category    = FeatureCategory.TOOLS,
-            keywords    = listOf("task", "process", "manage", "monitor", "cpu", "ram"),
-        ),
+
         FeatureItem(
             id          = FeatureId.APP_INFO_CENTER,
             name        = "Installed Apps",
@@ -442,17 +426,7 @@ object FeatureCatalog {
             keywords    = listOf("network", "ip", "wifi", "dns", "signal", "connection", "info", "public ip", "ping"),
             isNew       = true,
         ),
-        FeatureItem(
-            id          = FeatureId.CONTACT_BACKUP,
-            name        = "Contact Backup",
-            description = "Backup and restore your contacts securely as a VCF file",
-            icon        = Icons.Filled.Contacts,
-            route       = Screen.ContactBackup.route,
-            category    = FeatureCategory.SECURITY,
-            keywords    = listOf("contact", "backup", "restore", "sync", "vcf", "secure"),
-        ),
 
-        // ── Health & Wellbeing ────────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.NEXUS_HEALTH_VAULT,
             name        = "Health Vault",
@@ -487,88 +461,8 @@ object FeatureCatalog {
         ),
 
         // ── Stage 4 ───────────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.NEXUS_DIALER,
-            name        = "Nexus Dialer",
-            description = "Full-featured phone dialer with contacts browser and quick-dial",
-            icon        = Icons.Filled.Call,
-            route       = Screen.NexusDialer.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("dialer", "phone", "call", "contacts", "dial", "number", "telephone"),
-            isNew       = true,
-        ),
-        FeatureItem(
-            id          = FeatureId.TEXT_ANALYZER,
-            name        = "Text Analyzer",
-            description = "Instant word count, reading time, top words and character stats",
-            icon        = Icons.Filled.Analytics,
-            route       = Screen.TextAnalyzer.route,
-            category    = FeatureCategory.PRODUCTIVITY,
-            keywords    = listOf("text", "analyze", "word", "count", "reading", "time", "stats", "characters"),
-            isNew       = true,
-        ),
 
-        // ── Stage 5 ─────────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.URL_SHORTENER,
-            name        = "URL Shortener",
-            description = "Shorten long URLs using TinyURL, is.gd or v.gd — with copy & open",
-            icon        = Icons.Filled.Link,
-            route       = Screen.UrlShortener.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("url", "shortener", "link", "shorten", "tinyurl", "isgd", "share", "web"),
-            isNew       = true,
-        ),
 
-        // ── Nexus Games Hub ───────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.NEXUS_GAMES,
-            name        = "Nexus Games",
-            description = "6 offline HTML5 mini-games: Snake, 2048, Tic-Tac-Toe, Memory, Breakout & Minesweeper",
-            icon        = Icons.Filled.SportsEsports,
-            route       = Screen.NexusGames.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("game", "games", "snake", "2048", "tictactoe", "memory", "breakout", "minesweeper", "play", "fun", "offline"),
-            isNew       = true,
-        ),
-
-        // ── News & ePapers ────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.NEWS,
-            name        = "News & ePapers",
-            description = "Read top headlines and ePapers from public RSS and news feeds",
-            icon        = Icons.Filled.Newspaper,
-            route       = Screen.News.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("news", "headline", "rss", "feed", "newspaper", "epaper", "read", "article", "current affairs"),
-            isNew       = true,
-        ),
-
-        // ── Science ──────────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.SCIENCE,
-            name        = "Science Explorer",
-            description = "Explore science facts, discoveries and articles from open sources",
-            icon        = Icons.Filled.Science,
-            route       = Screen.Science.route,
-            category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("science", "facts", "discover", "research", "physics", "biology", "chemistry", "space", "article"),
-            isNew       = true,
-        ),
-
-        // ── Finance ───────────────────────────────────────────────────────────
-        FeatureItem(
-            id          = FeatureId.EXPENSE_TRACKER,
-            name        = "Nexus Expense Tracker",
-            description = "Track income and expenses with categories, summaries and local storage",
-            icon        = Icons.Filled.AccountBalanceWallet,
-            route       = Screen.ExpenseTracker.route,
-            category    = FeatureCategory.PRODUCTIVITY,
-            keywords    = listOf("expense", "budget", "finance", "money", "income", "spend", "tracker", "wallet", "balance"),
-            isNew       = true,
-        ),
-
-        // ── New features (replacing Radio / IPTV / FormX) ─────────────────────
         FeatureItem(
             id          = FeatureId.TEXT_TO_PDF,
             name        = "Text to PDF",
@@ -579,26 +473,8 @@ object FeatureCatalog {
             keywords    = listOf("text", "pdf", "convert", "document", "export", "create", "format", "word", "print"),
             isNew       = true,
         ),
-        FeatureItem(
-            id          = FeatureId.DAILY_JOURNAL,
-            name        = "Daily Journal",
-            description = "Write private daily journal entries with mood tracking — stored locally",
-            icon        = Icons.Filled.MenuBook,
-            route       = Screen.DailyJournal.route,
-            category    = FeatureCategory.PRODUCTIVITY,
-            keywords    = listOf("journal", "diary", "daily", "notes", "private", "mood", "write", "entries", "reflection"),
-            isNew       = true,
-        ),
-        FeatureItem(
-            id          = FeatureId.COLOR_PALETTE,
-            name        = "Color Palette Generator",
-            description = "Generate complementary, analogous, triadic and monochromatic colour palettes",
-            icon        = Icons.Filled.Palette,
-            route       = Screen.ColorPalette.route,
-            category    = FeatureCategory.TOOLS,
-            keywords    = listOf("color", "colour", "palette", "design", "hex", "complementary", "analogous", "triadic", "scheme"),
-            isNew       = true,
-        ),
+
+
         FeatureItem(
             id          = FeatureId.SMART_DOCUMENT_SCANNER,
             name        = "Smart Document Scanner",

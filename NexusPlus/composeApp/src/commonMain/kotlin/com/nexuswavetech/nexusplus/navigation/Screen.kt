@@ -87,40 +87,12 @@ sealed class Screen(val route: String) {
     object PrivacyPolicy   : Screen("legal/privacy")
     object TermsConditions : Screen("legal/terms")
 
-    // ── Stage 4 features ────────────────────────────────────────────────────
-    object NexusDialer  : Screen("feature/nexus_dialer")
-    object TextAnalyzer : Screen("feature/text_analyzer")
-
-    // ── Stage 5 features ────────────────────────────────────────────────────
-    object UrlShortener : Screen("feature/url_shortener")
-
-    // ── News & Science ──────────────────────────────────────────────────────
-    object News    : Screen("feature/news")
-    object Science : Screen("feature/science")
-
-    // ── Nexus Games Hub ─────────────────────────────────────────────────────
-    object NexusGames : Screen("feature/nexus_games")
-
-    // ── Finance Tracker ──────────────────────────────────────────────────────
-    object ExpenseTracker : Screen("feature/expense_tracker")
-
     // ── Download Voices (TTS model manager) ─────────────────────────────────
     object DownloadVoices : Screen("settings/download_voices")
 
-    // ── Social Media & Community ─────────────────────────────────────────────
-    object SocialMedia : Screen("community/social_media")
-
     // ── Security features ────────────────────────────────────────────────────
     object EncryptedNotes  : Screen("feature/encrypted_notes")
-    object Speedometer     : Screen("feature/speedometer")
-    object TaskManager     : Screen("feature/task_manager")
-    object ContactBackup   : Screen("feature/contact_backup")
     object EmergencyGuardian : Screen("feature/emergency_guardian")
-
-    // ── New features (v1.3+) ─────────────────────────────────────────────────
-    object TextToPdf    : Screen("feature/text_to_pdf")
-    object DailyJournal : Screen("feature/daily_journal")
-    object ColorPalette : Screen("feature/color_palette")
 
     // v1.4.0
     object SmartDocumentScanner : Screen("feature/doc_scanner")

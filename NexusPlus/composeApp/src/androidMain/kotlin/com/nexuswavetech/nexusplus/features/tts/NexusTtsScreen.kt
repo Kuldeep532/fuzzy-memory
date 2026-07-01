@@ -61,7 +61,7 @@ fun NexusTtsScreen(
     }
 
     Scaffold(
-        topBar = { NexusTopBar(title = "Nexus Speech Engine", onBack = onBack) },
+        topBar = { NexusTopBar(title = "Auto Speech Engine", onBack = onBack) },
         snackbarHost = { SnackbarHost(snack) },
         bottomBar = {
             if (hasUnsaved) Surface(tonalElevation = 4.dp, shadowElevation = 8.dp) {
@@ -108,14 +108,6 @@ fun NexusTtsScreen(
                     onSelect     = viewModel::onEngineSelected,
                 )
             }
-
-            // ── Predictive Pre-Buffer toggle ───────────────────────────────
-            val predictiveBuffer by viewModel.predictivePreBuffer.collectAsState()
-
-            PredictiveBufferToggle(
-                enabled  = predictiveBuffer,
-                onToggle = viewModel::onPredictivePreBufferChange,
-            )
 
             // ── Engine status banner ─────────────────────────────────────────
             val bannerColor by animateColorAsState(

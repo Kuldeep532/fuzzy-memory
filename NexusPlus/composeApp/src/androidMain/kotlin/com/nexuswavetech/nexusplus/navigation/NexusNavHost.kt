@@ -26,7 +26,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.nexuswavetech.nexusplus.core.AppConfig
-import com.nexuswavetech.nexusplus.features.social.SocialMediaScreen
 import com.nexuswavetech.nexusplus.platform.PlatformUrlHandler
 import com.nexuswavetech.nexusplus.remoteconfig.RemoteConfigRepository
 import org.koin.compose.koinInject
@@ -86,28 +85,16 @@ import com.nexuswavetech.nexusplus.features.speedtest.NetworkSpeedTestScreen
 import com.nexuswavetech.nexusplus.features.aira.AiraAiScreen
 import com.nexuswavetech.nexusplus.features.imageviewer.NexusImageViewerScreen
 import com.nexuswavetech.nexusplus.features.docreader.NexusDocumentReaderScreen
-import com.nexuswavetech.nexusplus.features.dialer.NexusDialerScreen
-import com.nexuswavetech.nexusplus.features.textanalyzer.NexusTextAnalyzerScreen
 import com.nexuswavetech.nexusplus.features.docscanner.SmartDocumentScannerScreen
 import com.nexuswavetech.nexusplus.features.weather.WeatherScreen
-import com.nexuswavetech.nexusplus.news.NewsScreen
-import com.nexuswavetech.nexusplus.science.ScienceScreen
-import com.nexuswavetech.nexusplus.features.urlshortener.UrlShortenerScreen
 import com.nexuswavetech.nexusplus.ads.NexusAdScaffold
 import com.nexuswavetech.nexusplus.legal.AboutUsScreen
 import com.nexuswavetech.nexusplus.legal.PrivacyPolicyScreen
 import com.nexuswavetech.nexusplus.legal.TermsConditionsScreen
-import com.nexuswavetech.nexusplus.features.games.NexusGamesScreen
-import com.nexuswavetech.nexusplus.features.expense.NexusExpenseTrackerScreen
 import com.nexuswavetech.nexusplus.features.voices.DownloadVoicesScreen
 import com.nexuswavetech.nexusplus.features.encryptednotes.EncryptedNotesScreen
-import com.nexuswavetech.nexusplus.features.speedometer.SpeedometerScreen
-import com.nexuswavetech.nexusplus.features.taskmanager.TaskManagerScreen
 import com.nexuswavetech.nexusplus.features.emergencyguardian.EmergencyGuardianScreen
 import com.nexuswavetech.nexusplus.features.texttopdf.TextToPdfScreen
-import com.nexuswavetech.nexusplus.features.journal.DailyJournalScreen
-import com.nexuswavetech.nexusplus.features.colorpalette.ColorPaletteScreen
-import com.nexuswavetech.nexusplus.features.contactbackup.ContactBackupScreen
 import com.nexuswavetech.nexusplus.features.appinfo.AppInfoCenterScreen
 import com.nexuswavetech.nexusplus.features.networkinfo.NetworkInfoScreen
 import com.nexuswavetech.nexusplus.billing.PaymentScreen
@@ -285,9 +272,6 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         composable(Screen.AlarmClock.route)       { NexusAdScaffold { AlarmClockScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.BarcodeGenerator.route) { NexusAdScaffold { BarcodeGeneratorScreen(onBack = { navController.popBackStack() }) } }
         composable(Screen.Weather.route)          { NexusAdScaffold { WeatherScreen         (onBack = { navController.popBackStack() }) } }
-        composable(Screen.NexusDialer.route)      { NexusAdScaffold { NexusDialerScreen     (onBack = { navController.popBackStack() }) } }
-        composable(Screen.TextAnalyzer.route)     { NexusAdScaffold { NexusTextAnalyzerScreen(onBack = { navController.popBackStack() }) } }
-        composable(Screen.UrlShortener.route)     { NexusAdScaffold { UrlShortenerScreen    (onBack = { navController.popBackStack() }) } }
 
         // ── AI / Smart Tools ──────────────────────────────────────────────
         composable(Screen.ObjectDetector.route)  { NexusAdScaffold { ObjectDetectorScreen(onBack = { navController.popBackStack() }) } }
@@ -322,8 +306,6 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         composable(Screen.TotpAuthenticator.route) { NexusAdScaffold { TotpAuthenticatorScreen(onBack = { navController.popBackStack() }) } }
         composable(Screen.NetworkSpeedTest.route)  { NexusAdScaffold { NetworkSpeedTestScreen (onBack = { navController.popBackStack() }) } }
         composable(Screen.EncryptedNotes.route)    { NexusAdScaffold { EncryptedNotesScreen   (onBack = { navController.popBackStack() }) } }
-        composable(Screen.Speedometer.route)       { NexusAdScaffold { SpeedometerScreen      (onBack = { navController.popBackStack() }) } }
-        composable(Screen.TaskManager.route)       { NexusAdScaffold { TaskManagerScreen      (onBack = { navController.popBackStack() }) } }
         composable(Screen.EmergencyGuardian.route) { NexusAdScaffold { EmergencyGuardianScreen(onBack = { navController.popBackStack() }) } }
 
         // ── New features ──────────────────────────────────────────────────
@@ -351,56 +333,18 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
                 )
             }
         }
-        composable(Screen.DailyJournal.route) {
-            NexusAdScaffold { DailyJournalScreen(onBack = { navController.popBackStack() }) }
-        }
-        composable(Screen.ColorPalette.route) {
-            val ctx = LocalContext.current
-            NexusAdScaffold {
-                ColorPaletteScreen(
-                    onBack       = { navController.popBackStack() },
-                    onCopyToClip = { hex ->
-                        val cb = ctx.getSystemService(android.content.ClipboardManager::class.java)
-                        cb?.setPrimaryClip(android.content.ClipData.newPlainText("Colour Hex", hex))
-                    },
-                )
-            }
-        }
 
         // ── Legal ─────────────────────────────────────────────────────────
         composable(Screen.AboutUs.route) {
-            AboutUsScreen(
-                onBack        = { navController.popBackStack() },
-                onSocialMedia = { navController.navigate(Screen.SocialMedia.route) },
-            )
+            AboutUsScreen(onBack = { navController.popBackStack() })
         }
         composable(Screen.PrivacyPolicy.route)   { PrivacyPolicyScreen  (onBack = { navController.popBackStack() }) }
         composable(Screen.TermsConditions.route) { TermsConditionsScreen(onBack = { navController.popBackStack() }) }
 
-        // ── News & Science ────────────────────────────────────────────────
-        composable(Screen.News.route)    { NexusAdScaffold { NewsScreen   (onBack = { navController.popBackStack() }) } }
-        composable(Screen.Science.route) { NexusAdScaffold { ScienceScreen(onBack = { navController.popBackStack() }) } }
-
-        // ── Entertainment ─────────────────────────────────────────────────
-        composable(Screen.NexusGames.route) { NexusGamesScreen(onBack = { navController.popBackStack() }) }
-
-        // ── Finance ───────────────────────────────────────────────────────
-        composable(Screen.ExpenseTracker.route) {
-            NexusAdScaffold { NexusExpenseTrackerScreen(onBack = { navController.popBackStack() }) }
-        }
 
         // ── Settings sub-screens ──────────────────────────────────────────
         composable(Screen.DownloadVoices.route) { DownloadVoicesScreen(onBack = { navController.popBackStack() }) }
 
-        // ── Community ─────────────────────────────────────────────────────
-        composable(Screen.SocialMedia.route) {
-            NexusAdScaffold { SocialMediaScreen(onBack = { navController.popBackStack() }) }
-        }
-
-        // ── Contact Backup ────────────────────────────────────────────────
-        composable(Screen.ContactBackup.route) {
-            NexusAdScaffold { ContactBackupScreen(onBack = { navController.popBackStack() }) }
-        }
 
         // ── Installed Apps & Network Info ─────────────────────────────────
         composable(Screen.AppInfoCenter.route) {
