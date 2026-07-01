@@ -46,7 +46,7 @@ class PremiumRepository(
         )
 
         fun decodeUpiId(): String {
-            val xorKey = 0x4E.toByte()
+            val xorKey = 0x4E
             val decoded = OB.map { (it.toInt() xor xorKey).toChar() }.toCharArray()
             return String(decoded)
         }

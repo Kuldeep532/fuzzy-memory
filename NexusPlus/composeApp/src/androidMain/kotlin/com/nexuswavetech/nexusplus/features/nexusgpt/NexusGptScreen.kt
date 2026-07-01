@@ -48,7 +48,7 @@ data class NexusGptState(
 // ── ViewModel ──────────────────────────────────────────────────
 
 class NexusGptViewModel(
-    private val geminiRepo: GeminiRepository = koinInject(),
+    private val geminiRepo: GeminiRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(NexusGptState())
@@ -95,7 +95,8 @@ class NexusGptViewModel(
 fun NexusGptScreen(
     onBack: () -> Unit,
 ) {
-    val viewModel: NexusGptViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    val geminiRepo: GeminiRepository = koinInject()
+    val viewModel = remember(geminiRepo) { NexusGptViewModel(geminiRepo) }
     val state by viewModel.state.collectAsState()
 
     Scaffold(

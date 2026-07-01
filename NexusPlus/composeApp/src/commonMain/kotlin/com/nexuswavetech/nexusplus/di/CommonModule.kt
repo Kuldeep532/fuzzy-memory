@@ -12,6 +12,7 @@ import com.nexuswavetech.nexusplus.core.SettingsRepository
 import com.nexuswavetech.nexusplus.features.allfeatures.AllFeaturesViewModel
 import com.nexuswavetech.nexusplus.features.tts.NseRepository
 import com.nexuswavetech.nexusplus.features.tts.NseViewModel
+import com.nexuswavetech.nexusplus.features.weather.WeatherRepository
 import com.nexuswavetech.nexusplus.features.weather.WeatherService
 import com.nexuswavetech.nexusplus.features.weather.WeatherViewModel
 import org.koin.dsl.module
