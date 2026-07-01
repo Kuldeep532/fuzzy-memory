@@ -7,8 +7,6 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,7 +27,6 @@ import com.unity3d.ads.UnityAdsShowOptions
 import com.unity3d.services.banners.BannerErrorInfo
 import com.unity3d.services.banners.BannerView
 import com.unity3d.services.banners.UnityBannerSize
-import kotlinx.coroutines.delay
 import org.koin.compose.koinInject
 
 private const val TAG = "NexusUnityAds"
@@ -85,30 +82,44 @@ fun NexusBannerAd(
 
     AnimatedVisibility(
         visible = isLoaded,
-        enter = slideInVertically { it } + fadeIn(),
-        exit = slideOutVertically { it } + fadeOut(),
+        enter = fadeIn(),
+        exit = fadeOut(),
     ) {
-        AndroidView(
-            factory = {
-                val activity = it.findActivity() ?: return@AndroidView android.view.View(it)
-                BannerView(activity, placementId, UnityBannerSize(320, 50)).apply {
-                    listener = object : BannerView.IListener {
-                        override fun onBannerLoaded(bannerAdView: BannerView?) {
-                            isLoaded = true
+        Column(modifier = modifier.fillMaxWidth()) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Text(
+                    text = "Ad",
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            AndroidView(
+                factory = {
+                    val activity = it.findActivity() ?: return@AndroidView android.view.View(it)
+                    BannerView(activity, placementId, UnityBannerSize(320, 50)).apply {
+                        listener = object : BannerView.IListener {
+                            override fun onBannerLoaded(bannerAdView: BannerView?) {
+                                isLoaded = true
+                            }
+                            override fun onBannerShown(bannerAdView: BannerView?) {}
+                            override fun onBannerClick(bannerAdView: BannerView?) {}
+                            override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo) {
+                                Log.w(TAG, "Banner load failed: ${errorInfo.errorMessage}")
+                                isLoaded = false
+                            }
+                            override fun onBannerLeftApplication(bannerAdView: BannerView?) {}
                         }
-                        override fun onBannerShown(bannerAdView: BannerView?) {}
-                        override fun onBannerClick(bannerAdView: BannerView?) {}
-                        override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo) {
-                            Log.w(TAG, "Banner load failed: ${errorInfo.errorMessage}")
-                            isLoaded = false
-                        }
-                        override fun onBannerLeftApplication(bannerAdView: BannerView?) {}
+                        load()
                     }
-                    load()
-                }
-            },
-            modifier = modifier.fillMaxWidth().height(50.dp),
-        )
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+            )
+        }
     }
 }
 
@@ -132,8 +143,9 @@ object NexusInterstitialManager {
         })
     }
 
-    /** Show interstitial if loaded. Always attempts to reload after showing. */
-    fun show(activity: Activity) {
+    /** Show interstitial only after an explicit caller-approved transition. */
+    fun show(activity: Activity, userInitiated: Boolean = false) {
+        if (!userInitiated) return
         if (!isLoaded || NexusUnityAdsManager.GAME_ID.isBlank()) {
             load(); return
         }
@@ -216,7 +228,6 @@ fun NexusAdScaffold(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val context = LocalContext.current
     val premiumRepo: PremiumRepository = koinInject()
     val isPremium by premiumRepo.isPremiumFlow.collectAsState(initial = false)
 
@@ -225,13 +236,8 @@ fun NexusAdScaffold(
         return
     }
 
-    // Show interstitial every 6th screen navigation (free users only)
-    LaunchedEffect(Unit) {
-        if (NexusAdController.onScreenView()) {
-            val activity = context as? android.app.Activity
-            activity?.let { NexusInterstitialManager.show(it) }
-        }
-    }
+    // No automatic interstitials on navigation. Ads stay non-disruptive and visibly labeled.
+    LaunchedEffect(Unit) { NexusAdController.onScreenView() }
 
     Column(modifier = modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1f)) { content() }

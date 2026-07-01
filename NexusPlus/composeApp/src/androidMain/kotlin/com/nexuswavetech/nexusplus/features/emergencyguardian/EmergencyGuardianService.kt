@@ -53,9 +53,26 @@ class EmergencyGuardianService : Service(), SensorEventListener {
         private const val COUNTDOWN_SEC    = 10
         private const val LOC_TIMEOUT_MS   = 30_000L
 
-        fun start(context: Context) {
-            val intent = Intent(context, EmergencyGuardianService::class.java)
-            context.startForegroundService(intent)
+        fun start(context: Context): Boolean {
+            val required = listOf(
+                Manifest.permission.SEND_SMS,
+                Manifest.permission.CALL_PHONE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            )
+            val hasAllPermissions = required.all {
+                ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+            }
+            if (!hasAllPermissions) return false
+
+            val intent = Intent(context, EmergencyGuardianService::class.java).apply {
+                action = "com.nexuswavetech.nexusplus.EMERGENCY_GUARDIAN_USER_START"
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+            return true
         }
 
         fun stop(context: Context) {
@@ -98,7 +115,7 @@ class EmergencyGuardianService : Service(), SensorEventListener {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_CANCEL) cancelCountdown()
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     override fun onDestroy() {
@@ -175,19 +192,33 @@ class EmergencyGuardianService : Service(), SensorEventListener {
     // ── Emergency dispatch ────────────────────────────────────────────────────
 
     private suspend fun dispatchEmergency() {
-        val locationText = withTimeoutOrNull(LOC_TIMEOUT_MS) { acquireLocation() }
-            ?.let { "Lat: ${it.latitude}, Lon: ${it.longitude}\nhttps://maps.google.com/?q=${it.latitude},${it.longitude}" }
-            ?: "Location unavailable"
-
-        val message  = "EMERGENCY ALERT from Nexus Guardian!\nI need immediate help!\n$locationText"
         val contacts = runCatching {
             EmergencyGuardianRepository(this).contactsFlow.first()
         }.getOrElse { emptyList() }
 
+        if (contacts.isEmpty()) {
+            notificationManager.notify(
+                NOTIF_ID,
+                buildDispatchedNotification(0, "No emergency contacts configured. No SMS or call was made."),
+            )
+            stopSelf()
+            return
+        }
+
+        val locationText = withTimeoutOrNull(LOC_TIMEOUT_MS) { acquireLocation() }
+            ?.let { "Lat: ${it.latitude}, Lon: ${it.longitude}\nhttps://maps.google.com/?q=${it.latitude},${it.longitude}" }
+            ?: "Location unavailable"
+
+        val message = "EMERGENCY ALERT from Nexus Guardian!\n" +
+            "I need immediate help!\n" +
+            "$locationText\n\n" +
+            "Sent by Nexus Plus after the owner activated Emergency Guardian."
+
         sendSmsToAll(message, contacts)
         callFirst(contacts)
 
-        notificationManager.notify(NOTIF_ID, buildDispatchedNotification(contacts.size))
+        notificationManager.notify(NOTIF_ID, buildDispatchedNotification(contacts.size, "SOS SMS sent to ${contacts.size} contact(s). Calling first contact now."))
+        stopSelf()
     }
 
     private fun sendSmsToAll(message: String, contacts: List<EmergencyContact>) {
@@ -269,7 +300,7 @@ class EmergencyGuardianService : Service(), SensorEventListener {
         NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
             .setContentTitle("Emergency Guardian Active")
-            .setContentText("Monitoring for distress signals. Stay safe.")
+            .setContentText("User-enabled SOS monitor. Shake detection can send SMS/location after a cancelable countdown.")
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
@@ -292,11 +323,11 @@ class EmergencyGuardianService : Service(), SensorEventListener {
             .build()
     }
 
-    private fun buildDispatchedNotification(contactCount: Int): Notification =
+    private fun buildDispatchedNotification(contactCount: Int, status: String): Notification =
         NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_alert)
-            .setContentTitle("🚨 Emergency Alert Dispatched")
-            .setContentText("SMS sent to $contactCount contact(s). Calling now.")
+            .setContentTitle(if (contactCount > 0) "Emergency Alert Dispatched" else "Emergency Alert Not Sent")
+            .setContentText(status)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_ALARM)

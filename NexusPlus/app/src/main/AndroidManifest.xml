@@ -43,10 +43,11 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- ── Location ─────────────────────────────────────────────────────────
-         Used by: Speedometer (GPS speed), Compass (magnetic bearing),
-                  Wi-Fi Analyzer (nearby networks).
-         FINE required for GPS accuracy in Speedometer.
-         Requested at runtime; not collected or transmitted remotely.
+         Used only after an in-app user action by: Emergency Guardian SOS
+         (share current location in an emergency SMS), Speedometer (GPS speed),
+         Compass (bearing), and Wi-Fi Analyzer (nearby networks).
+         No background location permission is declared. Location is not used for
+         ads, analytics, or tracking.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -87,11 +88,10 @@
     <uses-feature android:name="android.hardware.fingerprint" android:required="false" />
 
     <!-- ── Emergency Guardian ────────────────────────────────────────────────
-         Used by: Emergency Guardian (SOS — sends SMS with location to contacts).
-         SEND_SMS is used ONLY when user explicitly activates SOS mode.
-         FOREGROUND_SERVICE_LOCATION keeps GPS active during an SOS event.
-         These permissions are critical safety features — not used for advertising
-         or tracking.
+         Used only by the user-enabled SOS feature. SMS is sent only to contacts
+         the user enters after a visible 10-second cancelable countdown. Location
+         is retrieved only during SOS dispatch and is embedded in that SMS. These
+         permissions are never used for advertising, analytics, or silent tracking.
     -->
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
@@ -105,13 +105,10 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <!-- ── Package Visibility (API 30+) ──────────────────────────────────────
-         Used by: Installed Apps screen (AppInfoCenterScreen) — enumerates all
-         user-installed packages to show name, version, size, and install date.
-         QUERY_ALL_PACKAGES is required on Android 11+ for complete package list.
-         No package data is transmitted or stored beyond the device.
+         Nexus Plus does not request QUERY_ALL_PACKAGES. The Installed Apps tool
+         uses PackageManager's policy-limited visible package list and explains
+         this limitation in-app.
     -->
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
 
     <!-- ── Exact Alarms ──────────────────────────────────────────────────────
          Used by: My Reminder, Alarm Clock (fire alerts at precise user-set times).
@@ -189,7 +186,7 @@
         <!-- Nexus Media Player — Media3 background playback service (local files only) -->
         <service
             android:name=".features.music.NexusPlaybackService"
-            android:exported="true"
+            android:exported="false"
             android:foregroundServiceType="mediaPlayback"
             android:permission="android.permission.FOREGROUND_SERVICE">
             <intent-filter>
