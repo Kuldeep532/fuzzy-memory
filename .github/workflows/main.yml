@@ -64,14 +64,25 @@ jobs:
           python3 -m json.tool app/google-services.json > /tmp/google-services.json.validated
           mv /tmp/google-services.json.validated app/google-services.json
           chmod 600 app/google-services.json
+          echo "✓ google-services.json injected successfully"
 
-      # Fix: Setup Keystore File with correct absolute path
       - name: Setup Keystore File
         run: |
           cd NexusPlus
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
           chmod 600 app/release.keystore
           echo "KEYSTORE_PATH=$(pwd)/app/release.keystore" >> $GITHUB_ENV
+          echo "✓ Keystore file created at: $KEYSTORE_PATH"
+
+      - name: Export API Keys and Secrets for Build
+        shell: bash
+        run: |
+          echo "Exporting all secrets for Gradle build config injection..."
+          echo "GEMINI_API_KEY length: $(echo -n "${GEMINI_API_KEY}" | wc -c) chars"
+          echo "WEB_CLIENT_ID length: $(echo -n "${WEB_CLIENT_ID}" | wc -c) chars"
+          echo "UNITY_GAME_ID length: $(echo -n "${UNITY_GAME_ID}" | wc -c) chars"
+          echo "NASA_API_KEY length: $(echo -n "${NASA_API_KEY}" | wc -c) chars"
+          echo "✓ All secrets available for build config injection"
 
       - name: Build Signed Release APK
         if: github.event.inputs.build_type == 'apk'
@@ -83,6 +94,10 @@ jobs:
             -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            -PGEMINI_API_KEY="${GEMINI_API_KEY}" \
+            -PWEB_CLIENT_ID="${WEB_CLIENT_ID}" \
+            -PUNITY_GAME_ID="${UNITY_GAME_ID}" \
+            -PNASA_API_KEY="${NASA_API_KEY}" \
             2>&1 | tee build_output.log
 
       - name: Build Signed Release AAB
@@ -95,6 +110,10 @@ jobs:
             -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
             -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            -PGEMINI_API_KEY="${GEMINI_API_KEY}" \
+            -PWEB_CLIENT_ID="${WEB_CLIENT_ID}" \
+            -PUNITY_GAME_ID="${UNITY_GAME_ID}" \
+            -PNASA_API_KEY="${NASA_API_KEY}" \
             2>&1 | tee build_output.log
 
       - name: Upload Signed APK
