@@ -46,7 +46,7 @@ jobs:
           cd NexusPlus
           chmod +x gradlew
 
-      - name: Inject Google Services JSON from GitHub Secret
+      - name: Inject Google Services JSON from GitHub Secret (robust + debug)
         shell: bash
         run: |
           set -euo pipefail
@@ -55,16 +55,30 @@ jobs:
           rm -f app/google-services.json
           find . -path './.gradle' -prune -o -path './build' -prune -o -path './*/build' -prune -o -name 'google-services.json' -type f -exec rm -f {} +
 
-          if [ -z "${GOOGLE_SERVICES_JSON}" ]; then
-            echo "ERROR: GOOGLE_SERVICES_JSON GitHub Secret is required and must be Base64-encoded." >&2
+          echo "DEBUG: checking presence of secrets (lengths only)"
+          echo "DEBUG: KEYSTORE_BASE64 length: $(echo -n "${{ secrets.KEYSTORE_BASE64 }}" | wc -c) chars"
+          echo "DEBUG: GEMINI_API_KEY length: $(echo -n "${{ secrets.GEMINI_API_KEY }}" | wc -c) chars"
+
+          if [ -z "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
+            echo "ERROR: GOOGLE_SERVICES_JSON GitHub Secret is empty or not accessible to this workflow. Exiting." >&2
             exit 1
           fi
 
-          printf '%s' "${GOOGLE_SERVICES_JSON}" | base64 --decode > app/google-services.json
-          python3 -m json.tool app/google-services.json > /tmp/google-services.json.validated
+          if ! printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > app/google-services.json 2>/tmp/google-decode.err; then
+            echo "ERROR: GOOGLE_SERVICES_JSON failed to base64-decode." >&2
+            sed -n '1,200p' /tmp/google-decode.err >&2 || true
+            exit 1
+          fi
+
+          if ! python3 -m json.tool app/google-services.json > /tmp/google-services.json.validated 2>/tmp/google-json.err; then
+            echo "ERROR: Decoded google-services.json is not valid JSON." >&2
+            sed -n '1,200p' /tmp/google-json.err >&2 || true
+            exit 1
+          fi
+
           mv /tmp/google-services.json.validated app/google-services.json
           chmod 600 app/google-services.json
-          echo "✓ google-services.json injected successfully"
+          echo "✓ google-services.json injected and validated successfully"
 
       - name: Setup Keystore File
         run: |
