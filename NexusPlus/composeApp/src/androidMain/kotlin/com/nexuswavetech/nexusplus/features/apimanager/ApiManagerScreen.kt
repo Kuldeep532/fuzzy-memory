@@ -35,13 +35,13 @@ sealed class ApiKeyEntry(
     val description: String,
 ) {
     data object Gemini : ApiKeyEntry("gemini_api_key", "Gemini API Key", Icons.Filled.AutoAwesome, "Google Gemini AI API key for Aira, Video Description & Generation")
-    data object AdMob : ApiKeyEntry("admob_app_id", "AdMob App ID", Icons.Filled.AttachMoney, "Google AdMob application ID for ads")
+    data object UnityAds : ApiKeyEntry("unity_game_id", "Unity Game ID", Icons.Filled.VideogameAsset, "Unity Ads game ID for monetization")
     data object Pollinations : ApiKeyEntry("pollinations_api_key", "Pollinations API Key", Icons.Filled.Image, "API key for AI Image Generation (optional)")
     data object Custom1 : ApiKeyEntry("custom_api_1", "Custom API 1", Icons.Filled.SettingsInputComponent, "Add your own custom API key")
     data object Custom2 : ApiKeyEntry("custom_api_2", "Custom API 2", Icons.Filled.SettingsInputComponent, "Add your own custom API key")
 
     companion object {
-        val ALL = listOf(Gemini, AdMob, Pollinations, Custom1, Custom2)
+        val ALL = listOf(Gemini, UnityAds, Pollinations, Custom1, Custom2)
     }
 }
 

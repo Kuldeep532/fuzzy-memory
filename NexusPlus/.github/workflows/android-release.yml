@@ -62,9 +62,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
-          BANNER_AD_UNIT_ID: ${{ secrets.BANNER_AD_UNIT_ID }}
-          INTERSTITIAL_AD_UNIT_ID: ${{ secrets.INTERSTITIAL_AD_UNIT_ID }}
+          UNITY_GAME_ID: ${{ secrets.UNITY_GAME_ID }}
           NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -83,6 +81,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           WEB_CLIENT_ID: ${{ secrets.WEB_CLIENT_ID }}
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          UNITY_GAME_ID: ${{ secrets.UNITY_GAME_ID }}
           NASA_API_KEY: ${{ secrets.NASA_API_KEY }}
         run: ./gradlew test

@@ -508,11 +508,11 @@ object FeatureCatalog {
         FeatureItem(
             id          = FeatureId.API_MANAGER,
             name        = "API Manager",
-            description = "Manage all your API keys in one place. Add, edit and securely store keys for Gemini, AdMob and more.",
+            description = "Manage all your API keys in one place. Add, edit and securely store keys for Gemini, Unity Ads and more.",
             icon        = Icons.Filled.SettingsInputComponent,
             route       = Screen.ApiManager.route,
             category    = FeatureCategory.TOOLS,
-            keywords    = listOf("api", "keys", "manager", "secrets", "gemini", "admob", "configuration"),
+            keywords    = listOf("api", "keys", "manager", "secrets", "gemini", "unity", "configuration"),
             isNew       = true,
         ),
         FeatureItem(

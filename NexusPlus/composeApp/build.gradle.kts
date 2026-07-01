@@ -99,6 +99,7 @@ kotlin {
             implementation(libs.androidx.credentials)
             implementation(libs.androidx.credentials.play.services)
             implementation(libs.googleid)
+            implementation(libs.unity.ads)
         }
 
         val desktopMain by getting {

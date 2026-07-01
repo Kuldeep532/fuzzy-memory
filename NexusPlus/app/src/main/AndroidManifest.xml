@@ -133,14 +133,8 @@
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config">
 
-        <!-- Google AdMob App ID — injected from ADMOB_APP_ID env var in CI; falls back to Google test ID -->
-        <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${ADMOB_APP_ID}" />
-        <!-- Delay app measurement until MobileAds.initialize() is called -->
-        <meta-data
-            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
-            android:value="true" />
+        <!-- Unity Ads does not require manifest meta-data entries.
+             Initialization happens programmatically in NexusPlusApplication.onCreate(). -->
 
         <activity
             android:name=".MainActivity"
