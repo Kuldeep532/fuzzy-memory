@@ -126,6 +126,16 @@ android {
         compose = true
         buildConfig = true
     }
+    buildTypes {
+        release {
+            buildConfigField("String", "WEB_CLIENT_ID", "\"${project.findProperty("WEB_CLIENT_ID") ?: ""}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: ""}\"")
+        }
+        debug {
+            buildConfigField("String", "WEB_CLIENT_ID", "\"\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"\"")
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
