@@ -121,15 +121,51 @@ android {
     defaultConfig {
         minSdk = 26
         targetSdk = 35
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SECRETS INJECTION VIA GRADLE — Read from environment variables / GitHub Secrets
+        // ═══════════════════════════════════════════════════════════════════════
+        buildConfigField(
+            "String",
+            "WEB_CLIENT_ID",
+            "\"${System.getenv("WEB_CLIENT_ID") ?: System.getProperty("WEB_CLIENT_ID", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "GEMINI_API_KEY",
+            "\"${System.getenv("GEMINI_API_KEY") ?: System.getProperty("GEMINI_API_KEY", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "ADMOB_APP_ID",
+            "\"${System.getenv("ADMOB_APP_ID") ?: System.getProperty("ADMOB_APP_ID", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "ADMOB_BANNER_ID",
+            "\"${System.getenv("ADMOB_BANNER_ID") ?: System.getProperty("ADMOB_BANNER_ID", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "ADMOB_INTERSTITIAL_ID",
+            "\"${System.getenv("ADMOB_INTERSTITIAL_ID") ?: System.getProperty("ADMOB_INTERSTITIAL_ID", "")}\""
+        )
+
+        // Manifest placeholders for Firebase & Google Sign-In
+        manifestPlaceholders["WEB_CLIENT_ID"] = System.getenv("WEB_CLIENT_ID") ?: System.getProperty("WEB_CLIENT_ID", "")
+        manifestPlaceholders["ADMOB_APP_ID"] = System.getenv("ADMOB_APP_ID") ?: System.getProperty("ADMOB_APP_ID", "")
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     packaging {
         resources {
             excludes += setOf(
