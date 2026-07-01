@@ -25,5 +25,8 @@ class NexusPlusApplication : Application() {
         NexusSoundManager.init(this, get<SettingsRepository>())
         get<FirstLaunchManager>().checkAndQueue()
         get<RemoteConfigRepository>().fetchAndActivate()
+
+        // Initialize Unity Ads (no-op if UNITY_GAME_ID is not set)
+        com.nexuswavetech.nexusplus.ads.NexusUnityAdsManager.initialize(this)
     }
 }
