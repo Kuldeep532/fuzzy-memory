@@ -10,13 +10,13 @@ package com.nexuswavetech.nexusplus.core
  */
 enum class FeatureId {
 
-    // ── Media & Entertainment ─────────────────────────────────────────────
+    // ── Media & Entertainment ────────────────────────────────
     AI_IMAGE_GENERATOR,
     MUSIC_STREAMING,
     SMART_IMAGE_EDITOR,
     NEXUS_IMAGE_VIEWER,
 
-    // ── Productivity ──────────────────────────────────────────────────────
+    // ── Productivity ──────────────────────────────────────────────
     PDF_SUITE,
     FILE_MANAGER,
     ALARM_CLOCK,
@@ -27,7 +27,7 @@ enum class FeatureId {
     NEXUS_DOC_READER,
     TEXT_TO_PDF,
 
-    // ── Utilities ─────────────────────────────────────────────────────────
+    // ── Utilities ────────────────────────────────────────────────────
     NEXUS_TTS,
     VOICE_TYPER,
     CURRENCY_CONVERTER,
@@ -41,7 +41,7 @@ enum class FeatureId {
     WEATHER,
     MY_REMINDER,
 
-    // ── Smart Tools ───────────────────────────────────────────────────────
+    // ── Smart Tools ───────────────────────────────────────────────
     QR_GENERATOR,
     FLASHLIGHT,
     COMPASS,
@@ -55,10 +55,10 @@ enum class FeatureId {
     APP_INFO_CENTER,
     NETWORK_INFO,
 
-    // ── AI ────────────────────────────────────────────────────────────────
+    // ── AI ────────────────────────────────────────────────────────────
     AIRA_AI,
 
-    // ── Security & Privacy ────────────────────────────────────────────────
+    // ── Security & Privacy ───────────────────────────────────────
     EMERGENCY_GUARDIAN,
     BIOMETRIC_VAULT,
     ENCRYPTER_DECRYPTER,
@@ -69,14 +69,8 @@ enum class FeatureId {
     NEXUS_HEALTH_VAULT,
     TOTP_AUTHENTICATOR,
 
-    // ── Smart Tools (additional) ──────────────────────────────────────────
+    // ── Smart Tools (additional) ─────────────────────────────────────
     NETWORK_SPEED_TEST,
-
-    // ── Utilities (additional) ────────────────────────────────────────────
-
-    // ── Entertainment ─────────────────────────────────────────────────────
-
-    // ── Finance ───────────────────────────────────────────────────────────
 
     // v1.4.0
     SMART_DOCUMENT_SCANNER,
@@ -87,7 +81,12 @@ enum class FeatureId {
     VIDEO_GENERATION,
     API_MANAGER,
 
-    // ── Legacy backward-compat aliases ────────────────────────────────────
+    // Science & Space
+    NASA_APOD,
+    NASA_MARS_ROVER,
+    NEXUS_GPT,
+
+    // ── Legacy backward-compat aliases ────────────────────────────────────────
     NEWS,              // removed in v1.5.0 — kept for DataStore migration
     SCIENCE,           // removed in v1.5.0 — kept for DataStore migration
     NEXUS_GAMES,       // removed in v1.5.0 — kept for DataStore migration

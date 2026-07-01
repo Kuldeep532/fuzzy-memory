@@ -9,7 +9,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-enum class PaymentPlan(val key: String) { MONTHLY("monthly"), YEARLY("yearly") }
+enum class PaymentPlan(val key: String) {
+    MONTHLY("monthly"),
+    HALF_YEARLY("half_yearly"),
+    YEARLY("yearly"),
+}
 
 data class PaymentUiState(
     val selectedPlan: PaymentPlan = PaymentPlan.MONTHLY,
@@ -32,8 +36,9 @@ class PaymentViewModel(
 
     val upiId:    String get() = premium.upiId
     val upiName:  String get() = premium.upiName
-    val monthlyAmount: Int get() = premium.monthlyAmount
-    val yearlyAmount:  Int get() = premium.yearlyAmount
+    val monthlyAmount:     Int get() = premium.monthlyAmount
+    val halfYearlyAmount:  Int get() = premium.halfYearlyAmount
+    val yearlyAmount:      Int get() = premium.yearlyAmount
 
     init {
         viewModelScope.launch {
@@ -54,7 +59,6 @@ class PaymentViewModel(
     fun onPaymentReturned() {
         viewModelScope.launch {
             _state.value = _state.value.copy(isSubmitting = true, autoVerifyPending = true, errorMessage = null)
-            // Poll Firestore for up to 60 seconds to detect the premium activation
             var verified = false
             var attempts = 0
             while (attempts < 30 && !verified) {

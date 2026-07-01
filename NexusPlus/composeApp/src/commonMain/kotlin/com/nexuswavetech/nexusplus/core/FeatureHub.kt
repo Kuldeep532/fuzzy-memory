@@ -44,4 +44,10 @@ enum class FeatureHub(
         icon        = Icons.Filled.Build,
         route       = "hub/utilities",
     ),
+    SCIENCE(
+        displayName = "Science & Space",
+        description = "NASA APOD, Mars Rover, space exploration & science news",
+        icon        = Icons.Filled.Science,
+        route       = "hub/science",
+    ),
 }

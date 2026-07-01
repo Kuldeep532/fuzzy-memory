@@ -113,19 +113,28 @@ fun PaymentScreen(
             Text("Choose a plan", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 PlanCard(
-                    title   = "Monthly",
-                    price   = "₹${viewModel.monthlyAmount}",
-                    sub     = "per month",
-                    badge   = null,
+                    title    = "Monthly",
+                    price    = "₹${viewModel.monthlyAmount}",
+                    sub      = "per month",
+                    badge    = null,
                     selected = state.selectedPlan == PaymentPlan.MONTHLY,
                     onClick  = { viewModel.selectPlan(PaymentPlan.MONTHLY) },
                     modifier = Modifier.weight(1f),
                 )
                 PlanCard(
-                    title   = "Yearly",
-                    price   = "₹${viewModel.yearlyAmount}",
-                    sub     = "per year",
-                    badge   = "Save 29%",
+                    title    = "6 Months",
+                    price    = "₹${viewModel.halfYearlyAmount}",
+                    sub      = "per 6 months",
+                    badge    = "Save 14%",
+                    selected = state.selectedPlan == PaymentPlan.HALF_YEARLY,
+                    onClick  = { viewModel.selectPlan(PaymentPlan.HALF_YEARLY) },
+                    modifier = Modifier.weight(1f),
+                )
+                PlanCard(
+                    title    = "Yearly",
+                    price    = "₹${viewModel.yearlyAmount}",
+                    sub      = "per year",
+                    badge    = "Save 29%",
                     selected = state.selectedPlan == PaymentPlan.YEARLY,
                     onClick  = { viewModel.selectPlan(PaymentPlan.YEARLY) },
                     modifier = Modifier.weight(1f),
@@ -133,7 +142,11 @@ fun PaymentScreen(
             }
 
             // Pay via UPI button
-            val amount = if (state.selectedPlan == PaymentPlan.MONTHLY) viewModel.monthlyAmount else viewModel.yearlyAmount
+            val amount = when (state.selectedPlan) {
+                PaymentPlan.MONTHLY     -> viewModel.monthlyAmount
+                PaymentPlan.HALF_YEARLY -> viewModel.halfYearlyAmount
+                PaymentPlan.YEARLY      -> viewModel.yearlyAmount
+            }
             Button(
                 onClick  = { launchUpi(state.selectedPlan) },
                 modifier = Modifier.fillMaxWidth().height(54.dp).semantics { contentDescription = "Pay ₹$amount via UPI" },

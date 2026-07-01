@@ -12,6 +12,7 @@ sealed class Screen(val route: String) {
     object AIHub        : Screen("hub/ai")
     object MediaHub     : Screen("hub/media")
     object UtilitiesHub : Screen("hub/utilities")
+    object ScienceHub   : Screen("hub/science")
 
     // ── Global screens ──────────────────────────────────────────────────────
     object Settings           : Screen("settings")
@@ -99,9 +100,23 @@ sealed class Screen(val route: String) {
     object VideoDescription     : Screen("feature/video_description")
     object QrCodeScanner        : Screen("feature/qr_scanner")
 
+    object TextToPdf            : Screen("feature/text_to_pdf")
+    object DailyJournal         : Screen("feature/daily_journal")
+    object ColorPalette         : Screen("feature/color_palette")
+    object NexusDialer          : Screen("feature/nexus_dialer")
+    object TextAnalyzer         : Screen("feature/text_analyzer")
+    object UrlShortener         : Screen("feature/url_shortener")
+    object NexusGames           : Screen("feature/nexus_games")
+    object ExpenseTracker       : Screen("feature/expense_tracker")
+
     // v1.5.0
     object VideoGeneration      : Screen("feature/video_generation")
     object ApiManager           : Screen("feature/api_manager")
+
+    // Science / Space
+    object NasaApod            : Screen("feature/nasa_apod")
+    object NasaMarsRover        : Screen("feature/nasa_mars")
+    object NexusGpt             : Screen("feature/nexus_gpt")
 
     // ── Stub catch-all for features under development ───────────────────────
     object Stub : Screen("feature/stub")

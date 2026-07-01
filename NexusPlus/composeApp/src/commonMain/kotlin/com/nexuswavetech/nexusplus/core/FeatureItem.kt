@@ -30,6 +30,7 @@ enum class FeatureCategory(val label: String) {
     UTILITIES("Utilities"),
     TOOLS("Smart Tools"),
     SECURITY("Security & Privacy"),
+    SCIENCE("Science & Space"),
 }
 
 /** Maps each [FeatureCategory] to its parent [FeatureHub]. */
@@ -39,4 +40,5 @@ fun FeatureCategory.toHub(): FeatureHub = when (this) {
     FeatureCategory.MEDIA        -> FeatureHub.MEDIA
     FeatureCategory.UTILITIES    -> FeatureHub.UTILITIES
     FeatureCategory.TOOLS        -> FeatureHub.UTILITIES
+    FeatureCategory.SCIENCE      -> FeatureHub.SCIENCE
 }

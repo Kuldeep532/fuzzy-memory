@@ -32,6 +32,7 @@ val commonModule = module {
 
     // ── Services ────────────────────────────────────────────────────────
     single { WeatherService() }
+    single { WeatherRepository(get()) }
 
     // ── ViewModels (factory scope) ────────────────────────────────────────────────
     factory { WelcomeViewModel(authRepository = get(), sessionManager = get(), consentRepository = get()) }

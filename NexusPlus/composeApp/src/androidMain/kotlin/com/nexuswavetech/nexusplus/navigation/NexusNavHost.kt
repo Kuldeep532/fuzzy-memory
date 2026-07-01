@@ -70,6 +70,10 @@ import com.nexuswavetech.nexusplus.features.currency.CurrencyConverterScreen
 import com.nexuswavetech.nexusplus.features.videodesc.VideoDescriptionScreen
 import com.nexuswavetech.nexusplus.features.videogen.VideoGenerationScreen
 import com.nexuswavetech.nexusplus.features.apimanager.ApiManagerScreen
+import com.nexuswavetech.nexusplus.features.hub.ScienceHubScreen
+import com.nexuswavetech.nexusplus.features.nasa.NasaApodScreen
+import com.nexuswavetech.nexusplus.features.nasa.NasaMarsRoverScreen
+import com.nexuswavetech.nexusplus.features.nexusgpt.NexusGptScreen
 import com.nexuswavetech.nexusplus.features.battery.BatteryMonitorScreen
 import com.nexuswavetech.nexusplus.features.storage.StorageAnalyzerScreen
 import com.nexuswavetech.nexusplus.features.compass.CompassScreen
@@ -186,6 +190,7 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
         composable(Screen.AIHub.route)        { AIHubScreen       (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
         composable(Screen.MediaHub.route)     { MediaHubScreen    (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
         composable(Screen.UtilitiesHub.route) { UtilitiesHubScreen(onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
+        composable(Screen.ScienceHub.route)   { ScienceHubScreen  (onBack = { navController.popBackStack() }, onNavigate = { navController.navigate(it) }) }
 
         // ── Global screens ────────────────────────────────────────────────
         composable(Screen.Settings.route) {
@@ -363,6 +368,9 @@ fun NexusNavHost(currentVersionCode: Int = 0) {
             NexusAdScaffold { VideoGenerationScreen(onBack = { navController.popBackStack() }) }
         }
         composable(Screen.ApiManager.route) {
+        composable(Screen.NasaApod.route) { NexusAdScaffold { NasaApodScreen(onBack = { navController.popBackStack() }) } }
+        composable(Screen.NasaMarsRover.route) { NexusAdScaffold { NasaMarsRoverScreen(onBack = { navController.popBackStack() }) } }
+        composable(Screen.NexusGpt.route) { NexusAdScaffold { NexusGptScreen(onBack = { navController.popBackStack() }) } }
             NexusAdScaffold { ApiManagerScreen(onBack = { navController.popBackStack() }) }
         }
 

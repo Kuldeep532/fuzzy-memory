@@ -87,6 +87,7 @@ fun NexusBannerAd(
                         override fun onBannerLoaded(bannerAdView: BannerView?) {
                             isLoaded = true
                         }
+                        override fun onBannerShown(bannerAdView: BannerView?) {}
                         override fun onBannerClick(bannerAdView: BannerView?) {}
                         override fun onBannerFailedToLoad(bannerAdView: BannerView?, errorInfo: BannerErrorInfo) {
                             Log.w(TAG, "Banner load failed: ${errorInfo.errorMessage}")

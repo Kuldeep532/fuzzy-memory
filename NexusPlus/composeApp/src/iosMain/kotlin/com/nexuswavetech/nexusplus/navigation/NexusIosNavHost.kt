@@ -181,7 +181,7 @@ fun NexusIosNavHost() {
             Screen.AiImageGenerator,
             Screen.MusicStreaming, Screen.SmartImageEditor, Screen.NexusImageViewer,
             Screen.PdfSuite, Screen.DocHub, Screen.NexusDocReader,
-            Screen.EncrypterDecrypter, Screen.TextEncryptor, Screen.HashGenerator,
+            Screen.EncrypterDecrypter, Screen.HashGenerator,
             Screen.BiometricVault, Screen.TextTranslator, Screen.MorseCode,
             Screen.JsonFormatter, Screen.CalculatorCenter, Screen.VoiceTyper,
             Screen.MyReminder, Screen.QrCode, Screen.Flashlight,
@@ -192,9 +192,10 @@ fun NexusIosNavHost() {
             Screen.ColorDetector, Screen.AiraAi, Screen.NexusHealthVault,
             Screen.TotpAuthenticator, Screen.NetworkSpeedTest, Screen.NexusDialer,
             Screen.TextAnalyzer, Screen.UrlShortener, Screen.NexusGames,
-            Screen.NexusOtt, Screen.ExpenseTracker, Screen.EncryptedNotes,
-            Screen.Speedometer, Screen.TaskManager, Screen.ContactBackup,
-            Screen.NexusTts,
+            Screen.ExpenseTracker, Screen.EncryptedNotes,
+            Screen.TaskManager, Screen.ContactBackup,
+            Screen.NexusTts, Screen.SmartDocumentScanner,
+            Screen.VideoDescription, Screen.QrCodeScanner,
         )
         androidOnlyRoutes.forEach { screen ->
             composable(screen.route) {

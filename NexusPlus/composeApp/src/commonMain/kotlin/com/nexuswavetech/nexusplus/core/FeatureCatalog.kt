@@ -526,6 +526,38 @@ object FeatureCatalog {
             isNew       = true,
         ),
 
+        // ── Science & Space ────────────────────────────────────────────────
+        FeatureItem(
+            id          = FeatureId.NASA_APOD,
+            name        = "NASA APOD",
+            description = "Astronomy Picture of the Day — daily space imagery and explanation from NASA",
+            icon        = Icons.Filled.WbSunny,
+            route       = Screen.NasaApod.route,
+            category    = FeatureCategory.SCIENCE,
+            keywords    = listOf("nasa", "space", "astronomy", "picture", "apod", "image", "daily", "cosmos", "universe"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.NASA_MARS_ROVER,
+            name        = "Mars Rover Photos",
+            description = "Explore Mars through NASA rover cameras — Curiosity, Perseverance & more",
+            icon        = Icons.Filled.Rocket,
+            route       = Screen.NasaMarsRover.route,
+            category    = FeatureCategory.SCIENCE,
+            keywords    = listOf("mars", "nasa", "rover", "curiosity", "perseverance", "space", "red planet", "exploration"),
+            isNew       = true,
+        ),
+        FeatureItem(
+            id          = FeatureId.NEXUS_GPT,
+            name        = "Nexus GPT",
+            description = "Advanced AI assistant with context memory, reasoning, and premium model access",
+            icon        = Icons.Filled.ChatBubble,
+            route       = Screen.NexusGpt.route,
+            category    = FeatureCategory.SCIENCE,
+            keywords    = listOf("gpt", "ai", "assistant", "chat", "premium", "advanced", "reasoning", "memory", "smart"),
+            isNew       = true,
+        ),
+
     )
 
     /** All features grouped by [FeatureHub]. */
