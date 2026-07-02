@@ -121,6 +121,12 @@ android {
     defaultConfig {
         minSdk = 26
         targetSdk = 35
+        
+        // BuildConfig fields — read from Gradle properties passed by CI workflow
+        buildConfigField("String", "WEB_CLIENT_ID", "\"${project.findProperty("WEB_CLIENT_ID") ?: ""}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: ""}\"")
+        buildConfigField("String", "UNITY_GAME_ID", "\"${project.findProperty("UNITY_GAME_ID") ?: ""}\"")
+        buildConfigField("String", "NASA_API_KEY", "\"${project.findProperty("NASA_API_KEY") ?: ""}\"")
     }
     buildFeatures {
         compose = true
@@ -128,12 +134,10 @@ android {
     }
     buildTypes {
         release {
-            buildConfigField("String", "WEB_CLIENT_ID", "\"${project.findProperty("WEB_CLIENT_ID") ?: ""}\"")
-            buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: ""}\"")
+            // Override with release-specific values if needed
         }
         debug {
-            buildConfigField("String", "WEB_CLIENT_ID", "\"\"")
-            buildConfigField("String", "GEMINI_API_KEY", "\"\"")
+            // Debug overrides (optional)
         }
     }
     compileOptions {
