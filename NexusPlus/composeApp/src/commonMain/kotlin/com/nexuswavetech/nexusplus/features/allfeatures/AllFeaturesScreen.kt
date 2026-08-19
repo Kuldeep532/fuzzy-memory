@@ -48,6 +48,9 @@ fun AllFeaturesScreen(
         }
     }
 
+    // Local dropdown state
+    var dropdownExpanded by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
 
         // ── Header banner ─────────────────────────────────────────────────
@@ -119,38 +122,23 @@ fun AllFeaturesScreen(
                 .semantics { contentDescription = "Search features. Type to filter the list." },
         ) {}
 
-        // ── Category filter chips ──────────────────────────────────────────
-        LazyRow(
-            contentPadding        = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier              = Modifier.semantics { contentDescription = "Category filters" },
-        ) {
-            item {
-                FilterChip(
-                    selected     = uiState.selectedCategory == null,
-                    onClick      = { viewModel.onCategorySelected(null) },
-                    label        = { Text("All") },
-                    leadingIcon  = if (uiState.selectedCategory == null) ({
-                        Icon(Icons.Filled.Done, null, modifier = Modifier.size(16.dp))
-                    }) else null,
-                    modifier     = Modifier.semantics {
-                        contentDescription = "All categories${if (uiState.selectedCategory == null) ". Selected." else ""}"
-                    },
-                )
+        // ── Single dropdown (replaces filter chips)
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box {
+                Button(onClick = { dropdownExpanded = true }, modifier = Modifier.height(44.dp)) {
+                    Text(text = uiState.selectedCategory?.label ?: "All")
+                    Icon(Icons.Filled.ArrowDropDown, contentDescription = "Open category")
+                }
+                DropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
+                    DropdownMenuItem(text = { Text("All") }, onClick = { viewModel.onCategorySelected(null); dropdownExpanded = false })
+                    FeatureCategory.entries.forEach { cat ->
+                        DropdownMenuItem(text = { Text(cat.label) }, onClick = { viewModel.onCategorySelected(cat); dropdownExpanded = false })
+                    }
+                }
             }
-            items(FeatureCategory.entries) { category ->
-                FilterChip(
-                    selected    = uiState.selectedCategory == category,
-                    onClick     = { viewModel.onCategorySelected(category) },
-                    leadingIcon = {
-                        Icon(category.icon(), null, modifier = Modifier.size(16.dp))
-                    },
-                    label       = { Text(category.label) },
-                    modifier    = Modifier.semantics {
-                        contentDescription = "${category.label} filter${if (uiState.selectedCategory == category) ". Selected." else ""}"
-                    },
-                )
-            }
+            Spacer(Modifier.weight(1f))
         }
 
         Spacer(Modifier.height(4.dp))
