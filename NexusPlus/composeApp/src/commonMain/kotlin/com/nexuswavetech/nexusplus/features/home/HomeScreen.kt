@@ -32,7 +32,6 @@ import com.nexuswavetech.nexusplus.core.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 import com.nexuswavetech.nexusplus.ui.components.FeatureCard
 import com.nexuswavetech.nexusplus.ui.components.GatekeeperDialog
-import com.nexuswavetech.nexusplus.ui.components.HubCard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -54,6 +53,11 @@ fun HomeScreen(rootNavController: NavController) {
     val mostUsedIds by recentRepo.mostUsedIds.collectAsState(initial = emptyList())
 
     var gatekeeperBlocked by remember { mutableStateOf<String?>(null) }
+
+    // Search / filter state (single dropdown)
+    var homeSearchQuery by remember { mutableStateOf("") }
+    var dropdownExpanded by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf<FeatureCategory?>(null) }
 
     // ── Derived feature lists ─────────────────────────────────────────────
 
@@ -92,6 +96,19 @@ fun HomeScreen(rootNavController: NavController) {
         catalog.filter { it.id.name !in usedIds }.take(5).map(::enrich)
     }
 
+    // Filtered favorites based on homeSearchQuery and selectedCategory
+    val filteredFavorites = remember(favoritedFeatures, homeSearchQuery, selectedCategory) {
+        favoritedFeatures.filter { f ->
+            val matchesQuery = homeSearchQuery.isBlank() || (
+                f.name.contains(homeSearchQuery, ignoreCase = true) ||
+                f.description.contains(homeSearchQuery, ignoreCase = true) ||
+                f.keywords.any { it.contains(homeSearchQuery, ignoreCase = true) }
+            )
+            val matchesCategory = selectedCategory == null || f.category == selectedCategory
+            matchesQuery && matchesCategory
+        }
+    }
+
     // ── Tap handler ───────────────────────────────────────────────────────
     fun onFeatureTap(feature: FeatureItem) {
         val result = NexusGatekeeper.checkAccess(
@@ -120,7 +137,7 @@ fun HomeScreen(rootNavController: NavController) {
         scope.launch { favoritesRepository.togglePin(feature.id) }
     }
 
-    // ── UI ────────────────────────────────────────────────────────────────
+    // ── UI ────────────────────────────────────────────────────────────
     LazyColumn(
         modifier       = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 32.dp),
@@ -166,7 +183,58 @@ fun HomeScreen(rootNavController: NavController) {
                     )
                 }
             }
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(12.dp))
+        }
+
+        // Home search + single dropdown filter
+        item {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = homeSearchQuery,
+                    onValueChange = { homeSearchQuery = it },
+                    placeholder = { Text("Search favorites and features…") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                    modifier = Modifier.weight(1f).semantics { contentDescription = "Home search" },
+                    singleLine = true,
+                )
+
+                Box {
+                    Button(onClick = { dropdownExpanded = true }, modifier = Modifier.height(56.dp)) {
+                        Text(selectedCategory?.label ?: "All")
+                        Icon(Icons.Filled.ArrowDropDown, contentDescription = "Open category")
+                    }
+                    DropdownMenu(expanded = dropdownExpanded, onDismissRequest = { dropdownExpanded = false }) {
+                        DropdownMenuItem(text = { Text("All") }, onClick = { selectedCategory = null; dropdownExpanded = false })
+                        FeatureCategory.entries.forEach { cat ->
+                            DropdownMenuItem(text = { Text(cat.label) }, onClick = { selectedCategory = cat; dropdownExpanded = false })
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
+        // Favorites (moved up near top)
+        if (filteredFavorites.isNotEmpty()) {
+            item {
+                HomeSectionHeader(
+                    title    = "Favorites",
+                    icon     = Icons.Filled.Favorite,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Spacer(Modifier.height(8.dp))
+                LazyRow(
+                    contentPadding        = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    items(filteredFavorites, key = { "fav_${it.id.name}" }) { feature ->
+                        QuickChip(feature = feature, onClick = { onFeatureTap(feature) })
+                    }
+                }
+                Spacer(Modifier.height(20.dp))
+            }
         }
 
         // ── New Features ──────────────────────────────────────────────────
@@ -263,48 +331,6 @@ fun HomeScreen(rootNavController: NavController) {
             }
         }
 
-        // ── Favorites ─────────────────────────────────────────────────────
-        if (favoritedFeatures.isNotEmpty()) {
-            item {
-                HomeSectionHeader(
-                    title    = "Favorites",
-                    icon     = Icons.Filled.Favorite,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-                Spacer(Modifier.height(8.dp))
-                LazyRow(
-                    contentPadding        = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    items(favoritedFeatures, key = { "fav_${it.id.name}" }) { feature ->
-                        QuickChip(feature = feature, onClick = { onFeatureTap(feature) })
-                    }
-                }
-                Spacer(Modifier.height(20.dp))
-            }
-        }
-
-        // ── Feature Hubs ──────────────────────────────────────────────────
-        item {
-            HomeSectionHeader(
-                title    = "Feature Hubs",
-                icon     = Icons.Filled.GridView,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
-            Spacer(Modifier.height(10.dp))
-        }
-
-        items(FeatureHub.entries, key = { "hub_${it.name}" }) { hub ->
-            HubCard(
-                hub          = hub,
-                featureCount = FeatureCatalog.forHub(hub).size,
-                onClick      = { rootNavController.navigate(hub.route) },
-                modifier     = Modifier
-                    .padding(horizontal = 16.dp)
-                    .padding(bottom = 10.dp),
-            )
-        }
-
         // ── Suggested for You ─────────────────────────────────────────────
         if (suggestedFeatures.isNotEmpty()) {
             item {
@@ -370,7 +396,7 @@ fun HomeScreen(rootNavController: NavController) {
     }
 }
 
-// ── Private helpers ─────────────────────────────────────────────────────────
+// ── Private helpers ────────────────────────────────────────────────────────
 
 @Composable
 private fun HomeSectionHeader(
