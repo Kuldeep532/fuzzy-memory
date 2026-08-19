@@ -1,10 +1,8 @@
 package com.nexuswavetech.nexusplus.core.registry
 
 import com.nexuswavetech.nexusplus.core.FeatureCategory
-import com.nexuswavetech.nexusplus.core.FeatureHub
 import com.nexuswavetech.nexusplus.core.FeatureId
 import com.nexuswavetech.nexusplus.core.FeatureItem
-import com.nexuswavetech.nexusplus.core.toHub
 
 /**
  * FeatureRegistry — dynamic, reflection-free feature registry.
@@ -31,16 +29,10 @@ object FeatureRegistry {
     fun byCategory(category: FeatureCategory): List<FeatureItem> =
         all.values.filter { it.category == category }
 
-    fun byHub(hub: FeatureHub): List<FeatureItem> =
-        all.values.filter { it.category.toHub() == hub }
-
     val totalCount: Int get() = all.size
 
     fun countByCategory(category: FeatureCategory): Int =
         all.values.count { it.category == category }
-
-    fun countByHub(hub: FeatureHub): Int =
-        all.values.count { it.category.toHub() == hub }
 
     fun search(query: String): List<FeatureItem> {
         val q = query.lowercase()
