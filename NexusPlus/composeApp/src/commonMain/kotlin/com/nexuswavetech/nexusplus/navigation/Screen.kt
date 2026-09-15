@@ -1,44 +1,51 @@
 package com.nexuswavetech.nexusplus.navigation
 
+/**
+ * NEXUS PLUS v2.0 - NAVIGATION ROUTES
+ * 
+ * Only 15 active feature routes + global screens.
+ * All broken/incomplete routes removed.
+ */
+
 sealed class Screen(val route: String) {
 
-    // ── Entry ───────────────────────────────────────────────────────────
+    // ── Entry Points ────────────────────────────────────────────────────
     object Welcome : Screen("welcome")
     object Main    : Screen("main")
 
-    // ── Global screens ──────────────────────────────────────────────────────
+    // ── Global Screens ──────────────────────────────────────────────────
     object Settings           : Screen("settings")
     object Profile            : Screen("profile")
     object NotificationCenter : Screen("notifications")
     object Subscription       : Screen("subscription")
 
-    // ── Utilities feature screens ───────────────────────────────────────────
-    object CalculatorCenter : Screen("feature/calculator_center")
+    // ── UTILITIES (5) ─────────────────────────────────────────────────
+    object CalculatorCenter : Screen("feature/calculator")
     object Stopwatch        : Screen("feature/stopwatch")
-    object CurrencyConverter : Screen("feature/currency_converter")
-    object UnitConverter     : Screen("feature/unit_converter")
+    object CurrencyConverter : Screen("feature/currency")
+    object UnitConverter     : Screen("feature/units")
     object Weather           : Screen("feature/weather")
 
-    // ── Smart Tools feature screens ──────────────────────────────────────────
-    object QrCode        : Screen("feature/qr_code")
+    // ── SMART TOOLS (5) ────────────────────────────────────────────────
+    object QrCode        : Screen("feature/qr_generator")
     object Flashlight    : Screen("feature/flashlight")
     object Compass       : Screen("feature/compass")
-    object BatteryMonitor : Screen("feature/battery_monitor")
-    object StorageAnalyzer : Screen("feature/storage_analyzer")
+    object BatteryMonitor : Screen("feature/battery")
+    object StorageAnalyzer : Screen("feature/storage")
 
-    // ── Security feature screens ────────────────────────────────────────────
-    object PasswordGenerator  : Screen("feature/password_generator")
-    object Base64Tool         : Screen("feature/base64_tool")
-    object HashGenerator      : Screen("feature/hash_generator")
+    // ── SECURITY (5) ──────────────────────────────────────────────────
+    object PasswordGenerator  : Screen("feature/password_gen")
+    object Base64Tool         : Screen("feature/base64")
+    object HashGenerator      : Screen("feature/hash_gen")
     object BiometricVault     : Screen("feature/biometric_vault")
-    object EncrypterDecrypter : Screen("feature/encrypter_decrypter")
+    object EncrypterDecrypter : Screen("feature/encrypter")
 
     // ── Legal ──────────────────────────────────────────────────────────
     object AboutUs         : Screen("legal/about")
     object PrivacyPolicy   : Screen("legal/privacy")
     object TermsConditions : Screen("legal/terms")
 
-    // ── Stub catch-all for features under development ───────────────────────
+    // ── Placeholder for future features ────────────────────────────────
     object Stub : Screen("feature/stub")
 }
 

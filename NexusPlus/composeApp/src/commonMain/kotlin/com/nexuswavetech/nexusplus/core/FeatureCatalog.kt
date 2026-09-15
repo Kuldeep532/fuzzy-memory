@@ -5,19 +5,22 @@ import androidx.compose.material.icons.filled.*
 import com.nexuswavetech.nexusplus.navigation.Screen
 
 /**
- * NEXUS PLUS 2.0 - MINIMAL CORE FEATURES
+ * NEXUS PLUS v2.0 - CORE FEATURES ONLY
  * 
- * Only 15 solid, production-ready features.
- * Clear, working, and easy to understand.
+ * 15 Production-Ready Features:
+ * - 5 Utilities (Calculator, Stopwatch, Currency, Units, Weather)
+ * - 5 Smart Tools (QR Gen, Flashlight, Compass, Battery, Storage)
+ * - 5 Security (Password Gen, Base64, Hash Gen, Biometric Vault, Encrypter)
  * 
- * New features will be added in future versions.
+ * All broken/incomplete features removed.
+ * New features coming in future versions.
  */
 
 object FeatureCatalog {
 
     val allFeatures: List<FeatureItem> = listOf(
 
-        // ── Core Utilities (5 features) ──────────────────────────────────
+        // ── UTILITIES (5) ──────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.CALCULATOR_CENTER,
             name        = "Calculator",
@@ -43,7 +46,7 @@ object FeatureCatalog {
             icon        = Icons.Filled.CurrencyExchange,
             route       = Screen.CurrencyConverter.route,
             category    = FeatureCategory.UTILITIES,
-            keywords    = listOf("currency", "convert", "exchange", "money"),
+            keywords    = listOf("currency", "convert", "exchange"),
         ),
         FeatureItem(
             id          = FeatureId.UNIT_CONVERTER,
@@ -64,7 +67,7 @@ object FeatureCatalog {
             keywords    = listOf("weather", "forecast", "temperature"),
         ),
 
-        // ── Tools (5 features) ───────────────────────────────────────────
+        // ── SMART TOOLS (5) ────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.QR_GENERATOR,
             name        = "QR Code Generator",
@@ -111,7 +114,7 @@ object FeatureCatalog {
             keywords    = listOf("storage", "disk", "space"),
         ),
 
-        // ── Security (5 features) ────────────────────────────────────────
+        // ── SECURITY (5) ───────────────────────────────────────────────
         FeatureItem(
             id          = FeatureId.PASSWORD_GENERATOR,
             name        = "Password Generator",
